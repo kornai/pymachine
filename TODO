@@ -1,0 +1,9 @@
+- tests for the new parser
+- things with same name inside one definition should point to the same machine
+- apostrophe stuff
+- <default> value handling
+  - first, they should be only strings
+  - later they should be "printnames", while normal
+    properties shoulb be machine pointers (this means
+    there may be actually no existing machine with
+    this printname)

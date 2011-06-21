@@ -1,0 +1,8 @@
+This subproject will be used to represent "machines"
+(see semantics book for details)
+python implementation goals:
+  + working
+  + understandable code
+  + work with open source FST implementation
+  - can be slow, we don't care now
+  
