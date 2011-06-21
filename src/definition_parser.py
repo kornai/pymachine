@@ -42,37 +42,37 @@ class DefinitionParser:
         
         self.expression << Group(
                             # E -> U [ D ]
-                            (self.unary + self.lb.suppress() + Group(self.definition) + self.rb.suppress() ) |
+                            (self.unary + self.lb.suppress() + Group(self.definition) + self.rb.suppress() ) ^ 
 
                             # E -> U ( U )
-                            (self.unary + self.lp + self.unary + self.rp ) |
+                            (self.unary + self.lp + self.unary + self.rp ) ^
 
                             # E -> U B E
-                            (self.unary + self.binary + self.expression) |
+                            (self.unary + self.binary + self.expression) ^
 
                             # E -> U B
-                            (self.unary + self.binary) |
+                            (self.unary + self.binary) ^
                             
                             # E -> U
-                            (self.unary) |
-                            
+                            (self.unary) ^
+
                             # E -> B [ E ; E ] 
-                            (self.binary + self.lb.suppress() + Group(self.expression) + self.part_sep.suppress() + Group(self.expression) + self.rb.suppress()) |
+                            (self.binary + self.lb.suppress() + Group(self.expression) + self.part_sep.suppress() + Group(self.expression) + self.rb.suppress()) ^
                             
                             # E -> [ E ] B [ E ]
-                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) |
+                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) ^
                             
                             # E -> B [ E ]
-                            (self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) |
+                            (self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) ^
                             
                             # E -> [ E ] B
-                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary) |
+                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary) ^
                             
                             # E -> B E
                             (self.binary + self.expression)
                            )
         
-        self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#" + "-" + "/" + "_" ),) * 5
+        self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
         self.sen = (self.id + self.word + self.def_sep.suppress() + self.definition + Optional(self.comment_sep + self.dontcare).suppress()) + LineEnd()
     

@@ -33,5 +33,3 @@ causeAfter.base.partitions.append([])
 causeAfter.base.partitions[1].append(None) # NOM
 causeAfter.base.partitions[2].append(on)
 
-
-
