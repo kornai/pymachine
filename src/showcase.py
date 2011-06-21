@@ -33,5 +33,3 @@ on.base.partitions.append([])
 on.base.partitions[1].append(None) # NOM
 on.base.partitions[2].append(on)
 
-
-
