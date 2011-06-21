@@ -27,11 +27,11 @@ on.base.partitions.append([])
 on.base.partitions[1].append(kocka)
 on.base.partitions[2].append(gomb)
 
-on = Machine(Monoid("CAUSE/AFTER"))
-on.base.partitions.append([])
-on.base.partitions.append([])
-on.base.partitions[1].append(None) # NOM
-on.base.partitions[2].append(on)
+causeAfter = Machine(Monoid("CAUSE/AFTER"))
+causeAfter.base.partitions.append([])
+causeAfter.base.partitions.append([])
+causeAfter.base.partitions[1].append(None) # NOM
+causeAfter.base.partitions[2].append(on)
 
 
 

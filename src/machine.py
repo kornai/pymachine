@@ -35,7 +35,8 @@ class Machine:
                 s += "label=\"\"\n"
                 s += "color=lightgrey;\n"
                 for m in reversed(p):
-                    s += m.to_dot()
+                    if isinstance(m, Machine):
+                        s += m.to_dot()
                 s += "}\n"
         else:
             #s += "color=white;\n"
