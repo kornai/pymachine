@@ -72,7 +72,7 @@ class DefinitionParser:
                             (self.binary + self.expression)
                            )
         
-        self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#" + "-" + "/" + "_" ),) * 5
+        self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
         self.sen = (self.id + self.word + self.def_sep.suppress() + self.definition + Optional(self.comment_sep + self.dontcare).suppress()) + LineEnd()
     
