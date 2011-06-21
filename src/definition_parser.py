@@ -32,7 +32,6 @@ class DefinitionParser:
         
         self.unary = Word(string.lowercase + "_" + nums) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
-        self.ws = Word(string.whitespace)
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -42,34 +41,35 @@ class DefinitionParser:
         self.definition = (self.expression + Optional(OneOrMore(self.arg_sep.suppress() + self.expression)))
         
         self.expression << Group(
-                            # E -> B [ E ; E ] 
-                            (self.binary + self.lb.suppress() + Group(self.expression) + self.part_sep.suppress() + Group(self.expression) + self.rb.suppress()) |
-                            
-                            # E -> [ E ] B [ E ]
-                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) |
-                            
-                            # E -> B [ E ]
-                            (self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) |
-                            
-                            # E -> [ E ] B
-                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary) |
-                            
-                            # E -> B E
-                            (self.binary + self.ws.suppress() + self.expression) |
                             # E -> U [ D ]
-                            (self.unary + self.lb.suppress() + Group(self.definition) + self.rb.suppress() ) |
+                            (self.unary + self.lb.suppress() + Group(self.definition) + self.rb.suppress() ) ^ 
 
                             # E -> U ( U )
-                            (self.unary + self.lp + self.unary + self.rp ) |
+                            (self.unary + self.lp + self.unary + self.rp ) ^
 
                             # E -> U B E
-                            (self.unary + self.ws.suppress() + self.binary + self.ws.suppress() + self.expression) |
+                            (self.unary + self.binary + self.expression) ^
 
                             # E -> U B
-                            (self.unary + self.ws.suppress() + self.binary) |
+                            (self.unary + self.binary) ^
                             
                             # E -> U
-                            (self.unary)
+                            (self.unary) ^
+
+                            # E -> B [ E ; E ] 
+                            (self.binary + self.lb.suppress() + Group(self.expression) + self.part_sep.suppress() + Group(self.expression) + self.rb.suppress()) ^
+                            
+                            # E -> [ E ] B [ E ]
+                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) ^
+                            
+                            # E -> B [ E ]
+                            (self.binary + self.lb.suppress() + Group(self.expression) + self.rb.suppress()) ^
+                            
+                            # E -> [ E ] B
+                            (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary) ^
+                            
+                            # E -> B E
+                            (self.binary + self.expression)
                            )
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
