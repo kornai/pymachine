@@ -1,10 +1,13 @@
 from monoid import Monoid
+from control import Control
 
 class Machine:
-    def __init__(self, base):
+    def __init__(self, base, control=None):
         
         # control will be an FST representation later
-        self.control = None
+        if not isinstance(control, Control) and control is not None:
+            raise TypeError("control should be a Control instance")
+        self.control = control
         
         # base is a monoid
         if not isinstance(base, Monoid):
