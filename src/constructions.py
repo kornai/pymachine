@@ -13,6 +13,7 @@ TODO:
     the verb machine
 """
 from control import Control
+import re
 
 class Construction:
     def __init__(self, rule_left, rule_right, command):
@@ -20,11 +21,11 @@ class Construction:
         self.rule_right = [Control(part) for part in rule_right]
         self.command = command
 
+        self.append_rule_p = re.compile("([^\[]*)\[([^\]]*)\]")
+
     def __match__(self, machines):
         if len(machines) != self.rule_right:
             return False
-        # TODO
-        # use Control class to determine if they are matching
         possible_pairs = {}
         for machine in machines:
             pair_for_machine = []
@@ -42,8 +43,26 @@ class Construction:
         return pairs
 
     def do(self, machines):
-        if not self.__match__(machines):
+        pairs = self.__match__(machines)
+        if not pairs:
             return None
+        else:
+            self.run_command(pairs)
+
+    def run_command(self, pairs):
+        """
+        WARNING
+        there is only one command implemented: A[B]
+        later there should be more, with a more sophisticated impl.
+        or at least with a bunch of regexps instead of one
+        """
+        m = self.append_rule_p.match(self.command)
+        if m is not None:
+            l = m.groups()[0]
+            r = m.groups()[1]
+            pairs[l].base.partitions[1].append(pairs[r])
+        else:
+            raise NotImplementedError("Rule not supported")
 
 def read_constructions(f):
     constructions = set()
