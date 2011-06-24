@@ -28,5 +28,10 @@ class Monoid:
             else:
                 raise TypeError("Only machines can be added to partitions")
         else:
-            raise IndexError("That partition does not exist")
+            import sys
+            sys.stderr.write("WARNING: appending to a non-existing partition. New partition created\n")
+            while len(self.partitions) <= which_partition:
+                self.partitions.append([])
+            self.partitions[which_partition].append(what)
+            #raise IndexError("That partition does not exist")
 
