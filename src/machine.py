@@ -23,6 +23,12 @@ class Machine:
     def __eq__(self, other):
         return self.control == other.control and self.base == other.base
     
+    def __hash__(self):
+        return hash(id(self))
+
+    def append(self, which_partition, what):
+        self.base.append(which_partition, what)
+    
     def to_dot(self, toplevel=False):
         s = "subgraph"
         if toplevel:

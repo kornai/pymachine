@@ -1,3 +1,5 @@
+from machine import Machine
+
 class Monoid:
     """
     Our monoid class
@@ -19,3 +21,11 @@ class Monoid:
                 self.operations == other.operations and
                 self.unit == other.unit and
                 self.distinguished_partition == other.distinguished_partition)
+
+    def append(self, which_partition, what):
+        if len(self.partitions) > which_partition:
+            if isinstance(what, Machine):
+                self.partitions[which_partition].append(what)
+            else:
+                raise TypeError("Only machines can be added to partitions")
+
