@@ -1,5 +1,3 @@
-from machine import Machine
-
 class Monoid:
     """
     Our monoid class
@@ -24,6 +22,7 @@ class Monoid:
 
     def append(self, which_partition, what):
         if len(self.partitions) > which_partition:
+            from machine import Machine
             if isinstance(what, Machine):
                 self.partitions[which_partition].append(what)
             else:
