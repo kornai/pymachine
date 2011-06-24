@@ -27,4 +27,6 @@ class Monoid:
                 self.partitions[which_partition].append(what)
             else:
                 raise TypeError("Only machines can be added to partitions")
+        else:
+            raise IndexError("That partition does not exist")
 
