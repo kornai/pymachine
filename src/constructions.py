@@ -13,17 +13,101 @@ TODO:
     the verb machine
 """
 from control import PosControl as Control
-import re
+
+class Command:
+    """
+    Abstract class for commands in constructions
+    """
+
+    """
+    @pairs if a mapping between Control and Machine instances
+    keys of @pairs are Control instances,
+    values of @pairs are Machine instances.
+
+    runs the command over the machines
+    returns None if there is nothing to be changed,
+    otherwise a new machine list
+    """
+    def run(self, pairs):
+        pass
+
+    """
+    Factory method
+    """
+    @staticmethod
+    def get_instance(type_str, terminals):
+        import re
+        append_regex_pattern = re.compile("([^\[]*)\[([^\]]*)\]")
+        m = append_regex_pattern.match(type_str)
+        if m is not None:
+            return AppendRegexCommand(m.groups()[0], m.groups()[1])
+
+        one_rule_pattern = re.compile("|".join(terminals))
+        m = one_rule_pattern.match(type_str)
+        if m is not None:
+            return OneCommand(m.group(0))
+
+        if type_str == "*":
+            return VerbCommand()
+
+
+class AppendRegexCommand(Command):
+    """
+    Appends one of the machines at a partition of the other one
+    """
+    def __init__(self, into, what):
+        self.into = Control(into)
+        self.what = Control(what)
+
+    def run(self, pairs):
+        pairs[self.into].append(1, pairs[self.what])
+        return [pairs[self.into]]
+
+class OneCommand(Command):
+    """
+    Removes one from the @machines. The other is kept.
+    """
+    def __init__(self, stay):
+        self.stay = Control(stay)
+
+    def run(self, pairs):
+        filterer = lambda a: a[0] == self.stay
+        return [m for c, m in filter(filterer, pairs.items())]
+
+class VerbCommand(Command):
+    """
+    The machine of the verb is looked up in the defining dictionary,
+    and any deep cases found in that machine get matched by NP cases
+    """
+    def __init__(self):
+        pass
+        #raise NotImplementedError()
+    
+    def run(self, pairs):
+        return None
 
 class Construction:
+    """
+    instructions about how to perform transformations in machines
+    """
+
+    """
+    @rule_left: now this is not used
+    @rule_right: on what machines to perform operations, based on their Control
+    @command: what to do
+    """
     def __init__(self, rule_left, rule_right, command):
         self.rule_left = rule_left
         self.rule_right = [Control(part) for part in rule_right]
-        self.command = command
+        self.command = Command.get_instance(command, rule_right)
 
-        self.empty_rule_p = re.compile("|".join(rule_right))
-        self.append_rule_p = re.compile("([^\[]*)\[([^\]]*)\]")
+    """
+    checks if the given @machines are possible inputs for this construction
+    uses only @self.rule_right
 
+    returns False if not matched
+    returns a dictionary with (control, machine) pairs
+    """
     def __match__(self, machines):
         if len(machines) != len(self.rule_right):
             return False
@@ -61,36 +145,7 @@ class Construction:
         if not pairs:
             return None
         else:
-            return self.run_command(pairs)
-
-    def run_command(self, pairs):
-        """
-        WARNING
-        there is only one command implemented: A[B]
-        later there should be more, with a more sophisticated impl.
-        or at least with a bunch of regexps instead of one
-        """
-
-        # Do nothing rule handling
-        machines = []
-        em = self.empty_rule_p.match(self.command)
-        if em is not None:
-            for control, machine in pairs.items():
-                if Control(em.group(0)) == control:
-                    machines.append(machine)
-            return machines
-
-        # Append rule handling
-        am = self.append_rule_p.match(self.command)
-        if am is not None:
-            l = Control(am.groups()[0])
-            r = Control(am.groups()[1])
-            pairs[l].append(1, pairs[r])
-            machines.append(pairs[l])
-        else:
-            raise NotImplementedError("Rule not supported")
-        print machines
-        return machines
+            return self.command.run(pairs)
 
 def read_constructions(f):
     constructions = set()
