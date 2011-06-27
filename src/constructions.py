@@ -35,7 +35,7 @@ class Command:
     Factory method
     """
     @staticmethod
-    def get_instance(type_str, terminals):
+    def get_instance(type_str, terminals, definitions):
         import re
         append_regex_pattern = re.compile("([^\[]*)\[([^\]]*)\]")
         m = append_regex_pattern.match(type_str)
@@ -48,7 +48,7 @@ class Command:
             return OneCommand(m.group(0))
 
         if type_str == "*":
-            return VerbCommand()
+            return VerbCommand(definitions)
 
 
 class AppendRegexCommand(Command):
@@ -77,14 +77,15 @@ class OneCommand(Command):
 class VerbCommand(Command):
     """
     The machine of the verb is looked up in the defining dictionary,
-    and any deep cases found in that machine get matched by NP cases
+    and any deep cases found in that machine get matched with NP cases
     """
-    def __init__(self):
-        pass
-        #raise NotImplementedError()
+    def __init__(self, definitions):
+        self.definitions = dict([((k[0],k[1]), v) for k,v in definitions.items()])
     
     def run(self, pairs):
-        return None
+        verb_machine = self.pairs[Control("VERB")]
+        defined_machine = self.definitions[(str(verb_machine), "V")]
+        return verb_machine
 
 class Construction:
     """
@@ -96,10 +97,10 @@ class Construction:
     @rule_right: on what machines to perform operations, based on their Control
     @command: what to do
     """
-    def __init__(self, rule_left, rule_right, command):
+    def __init__(self, rule_left, rule_right, command, definitions):
         self.rule_left = rule_left
         self.rule_right = [Control(part) for part in rule_right]
-        self.command = Command.get_instance(command, rule_right)
+        self.command = Command.get_instance(command, rule_right, definitions)
 
     """
     checks if the given @machines are possible inputs for this construction
@@ -147,11 +148,11 @@ class Construction:
         else:
             return self.command.run(pairs)
 
-def read_constructions(f):
+def read_constructions(f, definitions=None):
     constructions = set()
     for l in f:
         l = l.strip().split("\t")
-        constructions.add(Construction(l[0], l[1].split(), l[2]))
+        constructions.add(Construction(l[0], l[1].split(), l[2], definitions))
     return constructions
 
 if __name__ == "__main__":
