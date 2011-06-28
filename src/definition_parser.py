@@ -195,12 +195,15 @@ class DefinitionParser:
         if dict_into is None:
             return machine
         else:
-            dict_into[tuple(parsed[0])] = machine
+            dict_into[tuple(parsed[1])] = machine
 
 def read(f):
     d = {}
     dp = DefinitionParser()
     for line in f:
+        l = line.strip()
+        if len(l) == 0:
+            continue
         dp.parse_into_machines(line.strip(), d)
     return d
 
