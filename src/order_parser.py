@@ -38,7 +38,7 @@ if __name__ == "__main__":
             for i in xrange(len(machines) - l + 1):
                 result = con.do(machines[i:i+l])
                 if result is not None:
-                    machines[i:i+2] = result
+                    machines[i:i+l] = result
                     something = True
 
         if not something:
