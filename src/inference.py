@@ -168,6 +168,30 @@ class InferenceEngine(object):
     def __init__(self):
         """Just to see that what members we have."""
         self.rules = []
+    
+    @staticmethod
+    def _parse_premise(premise):
+        """Parses the premise (condition) part of a rule and returns its
+        representation."""
+        pres = [pre.strip() for pre in premise.split(';')]
+        conds = []
+        for pre in pres:
+            cresult = InferenceEngine.COND_PATTERN.match(pre)
+            if cresult is None:
+                raise FormatError, "Invalid premise: " + pre
+            conds.append(Condition.getInstance(
+                cresult.group(2),
+                AttributeElem.analysePath(cresult.group(1)),
+                cresult.group(3)))
+        return conds
+
+    def add_rule(self, premise, action):
+        """Adds a rule to the engine. @premise is the string representation
+        of the premise; @action is an object that implements the Action
+        interface."""
+        conds = InferenceEngine._parse_premise(premise)
+        self.rules.append((conds, action))
+
 
     def load(self, rule_file):
         """Loads a set of rules to the engine from rule_file."""
@@ -178,17 +202,7 @@ class InferenceEngine(object):
                 if result is None:
                     continue
                 action = Action.getInstance(result.group(2))
-                pres = [pre.strip() for pre in result.group(1).split(';')]
-                conds = []
-                for pre in pres:
-                    cresult = InferenceEngine.COND_PATTERN.match(pre)
-                    if cresult is None:
-                        raise FormatError, "Invalid premise: " + pre
-                    conds.append(Condition.getInstance(
-                        cresult.group(2),
-                        AttributeElem.analysePath(cresult.group(1)),
-                        cresult.group(3)))
-                self.rules.append((conds, action))
+                self.add_rule(result.group(1), action)
 
     def infer(self, root):
         """Runs the inference on the object graph whose root is root."""
@@ -203,7 +217,7 @@ class InferenceEngine(object):
 
     def apply(self, current, parent):
         """Applies all possible rules to the current object."""
-        print "Before: " + current.base.partitions[0]
+        #print "Before: " + current.base.partitions[0]
         for rule in self.rules:
             matches = True
             for cond in rule[0]:
@@ -212,7 +226,7 @@ class InferenceEngine(object):
                     break
             if matches:
                 rule[1].act(current, parent)
-        print "After: " + current.base.partitions[0]
+        #print "After: " + current.base.partitions[0]
 
     @staticmethod
     def strip(line):
@@ -283,3 +297,4 @@ if __name__ == '__main__':
     import sys
     i.load(sys.argv[1])
     i.infer(put)
+
