@@ -81,11 +81,12 @@ class VerbCommand(Command):
     """
     def __init__(self, definitions):
         self.definitions = dict([((k[0],k[1]), v) for k,v in definitions.items()])
+        print self.definitions
     
     def run(self, pairs):
-        verb_machine = self.pairs[Control("VERB")]
+        verb_machine = pairs[Control("VERB")]
         defined_machine = self.definitions[(str(verb_machine), "V")]
-        return verb_machine
+        return [verb_machine]
 
 class Construction:
     """
@@ -113,31 +114,12 @@ class Construction:
         if len(machines) != len(self.rule_right):
             return False
 
-        possible_pairs = {}
-        for machine in machines:
-            pair_for_machine = []
-            for c in self.rule_right:
-                if machine.control.is_a(c):
-                    pair_for_machine.append(c)
-            possible_pairs[machine] = pair_for_machine
-        
         pairs = {}
-        for m, pp in possible_pairs.items():
-            if len(pp) > 1:
-                raise NotImplementedError("Now only definite matches (only 1-1) are supported")
-            elif len(pp) == 0:
-                return False
+        for c, machine in zip(self.rule_right, machines):
+            if machine.control.is_a(c):
+                pairs[c] = machine
             else:
-                """if two machines match the same rule, then it's not
-                a real match"""
-                if m in pairs.values():
-                    return False
-                pairs[pp[0]] = m
-
-        """if there is no mapping for each part of the rule, then it's not
-        a real match"""
-        if len(pairs) != len(self.rule_right):
-            return False
+                return False
 
         return pairs
 
