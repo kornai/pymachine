@@ -24,16 +24,12 @@ def create_machines(sen):
         machines.append(m)
     return machines
 
-if __name__ == "__main__":
-    order = read_order_file(file(sys.argv[1]))
-    definitions = read(file(sys.argv[3]))
-    cons = read_constructions(file(sys.argv[2]), definitions)
-
+def run(order, definitions, constructions):
     machines = create_machines(order)
 
     while True:
         something = False
-        for con in cons:
+        for con in constructions:
             l = len(con.rule_right)
             for i in xrange(len(machines) - l + 1):
                 result = con.do(machines[i:i+l])
@@ -45,5 +41,13 @@ if __name__ == "__main__":
             break
         else:
             pass
-    print " ".join([str(m) for m in machines])
+    # TODO why [0]?
+    return machines[0]
+
+if __name__ == "__main__":
+    order = read_order_file(file(sys.argv[1]))
+    definitions = read(file(sys.argv[3]))
+    cons = read_constructions(file(sys.argv[2]), definitions)
+    run(order, definitions, cons)
+
 
