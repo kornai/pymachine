@@ -25,6 +25,9 @@ class Control:
             raise Exception("Control can be compared only with other Control")
 
 class PosControl(Control):
+    import re
+    case_pattern = re.compile("NOUN[^C]*CAS<([^>]*)>")
+
     def __init__(self, pos):
         Control.__init__(self)
         self.pos = pos
@@ -44,4 +47,11 @@ class PosControl(Control):
             return True
         else:
             return False
+
+    def get_case(self):
+        s = PosControl.case_pattern.search(self.pos)
+        if s is not None:
+            return s.groups()[0]
+        else:
+            return None
 
