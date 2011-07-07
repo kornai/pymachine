@@ -92,7 +92,8 @@ class VerbCommand(Command):
         verb_machine = [m for i,c,m in pairs if c == Control("VERB")][0]
 
         done = [verb_machine]
-        defined_machine = self.definitions[(str(verb_machine), "V")]
+        from copy import deepcopy as copy
+        defined_machine = copy(self.definitions[(str(verb_machine), "V")])
 
         known_cases = [(m.control.get_case(),m) for _, _, m in pairs if m != verb_machine]
         known_cases = dict(filter(lambda x: x[0] is not None, known_cases))

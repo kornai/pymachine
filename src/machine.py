@@ -18,7 +18,7 @@ class Machine:
         """
         Returns machine's "printname"
         """
-        return str(self.base)
+        return unicode(self.base)
 
     def __unicode__(self):
         return unicode(self.base)
