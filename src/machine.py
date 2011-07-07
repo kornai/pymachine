@@ -30,17 +30,17 @@ class Machine:
         self.base.append(which_partition, what)
     
     def to_dot(self, toplevel=False):
-        s = "subgraph"
+        s = u"subgraph"
         if toplevel:
-            s = "graph"
+            s = u"graph"
         
-        s += " cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(self))
-        s += "label={0};\n".format(self.base.partitions[0])
+        s += u" cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(self))
+        s += u"label={0};\n".format(self.base.partitions[0])
         
         if len(self.base.partitions) > 1:
             s += "color=black;\n"
             for p in reversed(self.base.partitions[1:]):
-                s += "subgraph cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(p))
+                s += u"subgraph cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(p))
                 s += "label=\"\"\n"
                 s += "color=lightgrey;\n"
                 for m in reversed(p):
@@ -49,7 +49,7 @@ class Machine:
                 s += "}\n"
         else:
             #s += "color=white;\n"
-            s += "{0}[color=white, fontcolor=white];\n".format(self.base.partitions[0])
+            s += u"{0}[color=white, fontcolor=white];\n".format(self.base.partitions[0])
         s += "}\n"
         
         return s
