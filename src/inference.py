@@ -217,7 +217,7 @@ class InferenceEngine(object):
 
     def apply(self, current, parent):
         """Applies all possible rules to the current object."""
-        #print "Before: " + current.base.partitions[0]
+        #print (u"Before: " + current.base.partitions[0]).encode('utf-8')
         for rule in self.rules:
             matches = True
             for cond in rule[0]:
@@ -226,7 +226,7 @@ class InferenceEngine(object):
                     break
             if matches:
                 rule[1].act(current, parent)
-        #print "After: " + current.base.partitions[0]
+        #print (u"After: " + current.base.partitions[0]).encode('utf-8')
 
     @staticmethod
     def strip(line):
