@@ -1,10 +1,13 @@
 from monoid import Monoid
+from control import Control
 
 class Machine:
-    def __init__(self, base):
+    def __init__(self, base, control=None):
         
         # control will be an FST representation later
-        self.control = None
+        if not isinstance(control, Control) and control is not None:
+            raise TypeError("control should be a Control instance")
+        self.control = control
         
         # base is a monoid
         if not isinstance(base, Monoid):
@@ -15,23 +18,32 @@ class Machine:
         """
         Returns machine's "printname"
         """
-        return str(self.base)
+        return unicode(self.base)
+
+    def __unicode__(self):
+        return unicode(self.base)
     
     def __eq__(self, other):
         return self.control == other.control and self.base == other.base
     
+    def __hash__(self):
+        return hash(id(self))
+
+    def append(self, which_partition, what):
+        self.base.append(which_partition, what)
+    
     def to_dot(self, toplevel=False):
-        s = "subgraph"
+        s = u"subgraph"
         if toplevel:
-            s = "graph"
+            s = u"graph"
         
-        s += " cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(self))
-        s += "label={0};\n".format(self.base.partitions[0])
+        s += u" cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(self))
+        s += u"label={0};\n".format(self.base.partitions[0])
         
         if len(self.base.partitions) > 1:
             s += "color=black;\n"
             for p in reversed(self.base.partitions[1:]):
-                s += "subgraph cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(p))
+                s += u"subgraph cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(p))
                 s += "label=\"\"\n"
                 s += "color=lightgrey;\n"
                 for m in reversed(p):
@@ -40,7 +52,7 @@ class Machine:
                 s += "}\n"
         else:
             #s += "color=white;\n"
-            s += "{0}[color=white, fontcolor=white];\n".format(self.base.partitions[0])
+            s += u"{0}[color=white, fontcolor=white];\n".format(self.base.partitions[0])
         s += "}\n"
         
         return s

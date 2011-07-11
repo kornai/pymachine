@@ -1,6 +1,18 @@
-- tests for the new parser
-- things with same name inside one definition should point to the same machine
-- apostrophe stuff
+- searching in machine tree
+  - search
+    - query machines (QM)
+      - printname: regex
+      - control: control.match()
+      - partitions: further QMs
+    - bool operations over QMs
+    - results contain
+      - path to result
+      - all matching subtree
+    - QMs have pointers in order to identify which children is matching
+      - ZsA have doubts about this
+  - operations
+
+
 - <default> value handling
   - first, they should be only strings
   - later they should be "printnames", while normal

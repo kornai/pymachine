@@ -112,7 +112,7 @@ class DefinitionParser:
         _str = cls._str
         if len(l) == 1:
             # unary
-            # later here should be a lookup whether we already know this machine
+            # later here should be a lookup to find out if we already know this machine
             if type(l[0]) == list:
                 return cls._parse_expr(l[0])
             else:
@@ -184,7 +184,7 @@ class DefinitionParser:
             else:
                 raise ParserException("there shouldn't be 4 nodes in a tree only if 2 of them are parentheses")
     
-    def parse_into_machines(self, s):
+    def parse_into_machines(self, s, dict_into=None):
         parsed = self.parse(s)
         parsed = DefinitionParser.__flatten__(parsed)
         
@@ -192,7 +192,20 @@ class DefinitionParser:
         machine.base.partitions.append([])
         for d in parsed[2:]:
             machine.base.partitions[1].append(DefinitionParser._parse_expr(d))
-        return machine
+        if dict_into is None:
+            return machine
+        else:
+            dict_into[tuple(parsed[1])] = machine
+
+def read(f):
+    d = {}
+    dp = DefinitionParser()
+    for line in f:
+        l = line.strip()
+        if len(l) == 0:
+            continue
+        dp.parse_into_machines(line.strip(), d)
+    return d
 
 if __name__ == "__main__":
     dp = DefinitionParser()

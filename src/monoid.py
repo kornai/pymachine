@@ -19,3 +19,19 @@ class Monoid:
                 self.operations == other.operations and
                 self.unit == other.unit and
                 self.distinguished_partition == other.distinguished_partition)
+
+    def append(self, which_partition, what):
+        if len(self.partitions) > which_partition:
+            from machine import Machine
+            if isinstance(what, Machine):
+                self.partitions[which_partition].append(what)
+            else:
+                raise TypeError("Only machines can be added to partitions")
+        else:
+            import sys
+            sys.stderr.write("WARNING: appending to a non-existing partition. New partition created\n")
+            while len(self.partitions) <= which_partition:
+                self.partitions.append([])
+            self.partitions[which_partition].append(what)
+            #raise IndexError("That partition does not exist")
+
