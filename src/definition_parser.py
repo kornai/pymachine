@@ -26,6 +26,7 @@ class DefinitionParser:
         self.arg_sep = Literal(",")
         self.part_sep = Literal(";")
         self.comment_sep = Literal("%")
+        self.prime = Literal("'")
         
         #self.deep_cases = (Literal("NOM") | Literal("ACC") | Literal("DAT") | Literal("INS") | Literal("ABL"))
         self.deep_cases = reduce(lambda a, b: a | b, (Literal(dc) for dc in DefinitionParser._deep_cases))
@@ -69,7 +70,13 @@ class DefinitionParser:
                             (self.lb.suppress() + Group(self.expression) + self.rb.suppress() + self.binary) ^
                             
                             # E -> B E
-                            (self.binary + self.expression)
+                            (self.binary + self.expression) ^
+
+                            # E -> 'B
+                            (self.prime + self.binary) ^
+
+                            # E -> B'
+                            (self.binary + self.prime)
                            )
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
