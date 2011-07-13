@@ -45,8 +45,8 @@ class DefinitionParser:
                             # E -> U [ D ]
                             (self.unary + self.lb.suppress() + Group(self.definition) + self.rb.suppress() ) ^ 
 
-                            # E -> U ( U )
-                            (self.unary + self.lp + self.unary + self.rp ) ^
+                            # E -> U ( U ) | U ( U [ E ] )
+                            (self.unary + self.lp + self.unary + Optional(self.lb + self.expression + self.rb) + self.rp ) ^
 
                             # E -> U B E
                             (self.unary + self.binary + self.expression) ^
