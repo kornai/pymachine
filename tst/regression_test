@@ -1,274 +1,696 @@
-10  -ba G in in do:  after[IN ACC] % is ACC the correct deep case
-11  -ba G into in do:  after[IN ACC] % is ACC the correct deep case
-13  -ban G inside intra w:  ACC CONTAIN NOM % are deep case variables correct?
-15  -bo1l G -work N/A -any:  before[IN ACC] % is ACC the correct deep case
-16  -bo1l G of ex -any:  material[ACC] % is this deep case an ACC?
+10  -ba G in in do: MaM after[IN ACC] % is ACC the correct deep case
+11  -ba G into in do: MaM after[IN ACC] % is ACC the correct deep case
+13  -ban G inside intra w: MaM ACC CONTAIN NOM % are deep case variables correct?
+15  -bo1l G -work N/A -any: MaM before[IN ACC] % is ACC the correct deep case
+16  -bo1l G of ex -any: MaM material[ACC] % is this deep case an ACC?
 30  -k G -en -i/-ae/-a -y: become
-32  -m G my meus mo1j:  i HAS ACC % is ACC the correct deep case?
+32  -m G my meus mo1j: MaM i HAS ACC % is ACC the correct deep case?
 33  -n G on super na: above, touch
-39  -ra G at apud przy:  AT ACC % after [ON ACC]
-41  -ro1l G of de o: before[on], after[on[lack]] % ZsA: kell tagada1s?
+39  -ra G at apud przy: ND AT ACC %MaM after [ON ACC]
 55  -talan G -less in- bez-: lack % ZsA ez egy ma1sik lack?
 56  -teli G -ful -osus -ny: full % HAS 
 63  a1be1ce1 N alphabet litterae alfabet: convention, order[letter] % ZsA
-64  a1bra1zat N expression facies mina:  state, face HAS
-65  a1da1z A fierce saevus gwal1towny:  state, INSTRUMENT strong (feeling), INSTRUMENT much (energy) % to infix %:  violent; ZsA to redefine, i cannot fix this
+64  a1bra1zat N expression facies mina: MaM state, face HAS
+65  a1da1z A fierce saevus gwal1towny: RG state, INSTRUMENT strong (feeling), INSTRUMENT much (energy) % to infix %: MaM violent; ZsA to redefine, i cannot fix this
 66  a1g N branch ramus gal1a1z1: part, tree HAS, dependent
 67  a1g N limb ramus konar: PART_OF body, leg IS_A, arm IS_A
-68  a1gy N bed lectus l1o1z1ko : furniture % INS rest
+68  a1gy N bed lectus l1o1z1ko : furniture, rest IN
 69  a1l- G mock adulterinus/falsus fal1szywy: imitate NOM, false
-70  a1ld V bless benedico bl1ogosl1awic1:  CAU ACC[ holy ]
-71  a1ldoz V make_offering immolo pos1wie1cic1: give, GOAL please, ACC God % ACC? biztos van erre egy ma1sik deep case, ez nem hiszem, hogy ACC lenne
-72  a1lkapocs N jaw maxilla szcze1ka:  bony, vertebrate HAS, AT mouth, teeth AT, PART_OF face
-78  a1llat N animal animal zwierze1:  live, move
-79  a1llkapocs N jaws maxilla szcze1ka:  two, jaw
-80  a1lloma1s N station mansio stacja:  stop AT
+70  a1ld V bless benedico bl1ogosl1awic1: MaM CAU ACC[ holy ]
+71  a1ldoz V make_offering immolo pos1wie1cic1: give, GOAL please, ACC <God> % ACC? biztos van erre egy ma1sik deep case, ez nem hiszem, hogy ACC lenne
+72  a1lkapocs N jaw maxilla szcze1ka: MaM bony, vertebrate HAS, AT mouth, teeth AT, PART_OF face
+78  a1llat N animal animal zwierze1: MaM live, move
+79  a1llkapocs N jaws maxilla szcze1ka: MaM <two>, jaw
+80  a1lloma1s N station mansio stacja: RG stop AT
 82  a1pol V care curo piele1gnowac1: help, ACC[sick]
-88  a1ram N electricity fluidum_electricum elektrycznos1c1:  HAS power, move, IN cabel 
-89  a1rny N shadow umbra cien1:  dark (shape), object CAU
-95  a1si1t U gape oscito ziewac1:  wonder, HAS[mouth[open]] % HUNta1tja a sza1ja1t 
-101  a1te1l V experience cognosco/video dos1wiadczac1:  [NOM]PARTICIPATE % PARTICIPATE_IN[ACC]?
-105  a1tlag N average plurimus_minimusque s1redni:  amount[normal]
-106  a1tlag N mean plurimus_minimusque s1redni:  average
-107  a1tok N curse exsecratio przeklen1stwo:  pray, GOAL[ACC HAS evil] % content: HAS?
-113  ad V give do dac1: CAU[[ACC]HAS]
-119  agga1ly N anxiety dubitatio niepoko1j:  state, mind HAS, bad, uncertainty CAU
-120  aggaszto1 A distressing dubius niepokoja1cy:  CAU anxiety
-121  aggo1do1 A anxious anxius zaniepokojony:  HAS anxiety
+88  a1ram N electricity fluidum_electricum elektrycznos1c1: MaM HAS power, move, IN cabel 
+89  a1rny N shadow umbra cien1: RG dark (shape), object CAU
+95  a1si1t U gape oscito ziewac1: MaM wonder, HAS[mouth[open]] % HUNta1tja a sza1ja1t 
+101  a1te1l V experience cognosco/video dos1wiadczac1: MaM [NOM]PARTICIPATE % PARTICIPATE_IN[ACC]?
+105  a1tlag N average plurimus_minimusque s1redni: MaM amount[normal]
+106  a1tlag N mean plurimus_minimusque s1redni: MaM average
+107  a1tok N curse exsecratio przeklen1stwo: MaM pray, GOAL[ACC HAS evil] % content: HAS?
+113  ad V give do dac1: CAU[ [ACC] HAS]
+119  agga1ly N anxiety dubitatio niepoko1j: MaM state, mind HAS, bad, uncertainty CAU
+120  aggaszto1 A distressing dubius niepokoja1cy: MaM CAU anxiety
+121  aggo1do1 A anxious anxius zaniepokojony: MaM HAS anxiety
 123  agyag N clay argilla glina: soil, BECOME hard
-131  akar V want volo chciec1:  NOM WISH
-139  alacsony A low demissus niski: small, AT height (scale)
-140  alak N figure figura figura: shape, human HAS shape %  Longman relief = a way of decorating wood... with a shape or figure 
+131  akar V want volo chciec1: MaM NOM WISH
+139  alacsony A low demissus niski: small, AT <height> (scale)
+140  alak N figure figura figura: shape, human HAS shape % MaM Longman relief = a way of decorating wood... with a shape or figure 
 141  alak N form forma forma:  objects HAS
 142  alak N shape figura ksztal1t: form, geometrical
-143  alaki A formal formalis formalny:  HAS structure % Longman acquaintance = formal knowledge...
-146  alap N base fundamentum podstawa:  part, AT bottom, SUPPORT[NOM]
-162  also1 A lower inferior nizszy:  [NOM NEAR bottom] ER % NEAR_TO ? Longman Captain Parker went below =to the lower level of the ship
+143  alaki A formal formalis formalny: MaM HAS structure % Longman acquaintance = formal knowledge...
+146  alap N base fundamentum podstawa: MaM part, AT bottom, SUPPORT[NOM]
+162  also1 A lower inferior nizszy: MaM [NOM NEAR bottom] ER % NEAR_TO ? Longman Captain Parker went below =to the lower level of the ship
 163  alszik U sleep dormio spac1: rest, LACK conscious
-174  arany A golden aureus zl1oty:  HAS color, gold HAS color
-175  arany N gold aurum zl1oto:  valuable, soft, yellow, metal % naive_theo GOAL[ MAKE coins], GOAL[MAKE jewellery]
-177  arc N face vultus twarz:  surface, front, PART_OF head, forehead PART_OF, chin PART_OF, ear PART_OF, jaw PART_OF
-196  ba1j N grace gratia wdzie1k:  charm
-197  ba1jos A gracious venustus wdzie1czny:  kind
-199  ba1nt V abuse abutor naduz1ywac1:  NOM TREAT ACC, bad % TREAT bad? (without comma) % TREAT[bad], modification of a binary as a whole, not on one of its partitions
+174  arany A golden aureus zl1oty: MaM HAS color, gold HAS color
+175  arany N gold aurum zl1oto: MaM valuable, soft, yellow, metal % naive_theo GOAL[ MAKE coins], GOAL[MAKE jewellery]
+177  arc N face vultus twarz: MaM surface, front, PART_OF head, forehead PART_OF, chin PART_OF, ear PART_OF, jaw PART_OF
+196  ba1j N grace gratia wdzie1k: MaM charm
+197  ba1jos A gracious venustus wdzie1czny: MaM kind
+199  ba1nt V abuse abutor naduz1ywac1: MaM NOM TREAT ACC, bad % TREAT bad? (without comma) % TREAT[bad], modification of a binary as a whole, not on one of its partitions
 201  ba1nt V offend offendo obrazic1: CAU[ACC HAS harm]
-204  ba1ra1ny N lamb agnus jagnie1:  young, sheep
-212  ba1tor A bold animosus odwaz1ny:  dare, fear[lack] % what if fear has to be taken as binary?
-213  ba1tor V brave fortis odwaz1ny:  HAS courage
-214  ba1torsa1g N courage animus odwaga:  will ER fear %will[strong] 2011.04.19
-216  baba N baby pupus niemowle1:   animal[young[very]]
+204  ba1ra1ny N lamb agnus jagnie1: MaM young, sheep
+212  ba1tor A bold animosus odwaz1ny: MaM dare, fear[lack] % what if fear has to be taken as binary?
+213  ba1tor V brave fortis odwaz1ny: ND HAS courage
+214  ba1torsa1g N courage animus odwaga: ND will ER fear %will[strong] 2011.04.19
+216  baba N baby pupus niemowle1: ND  animal[young[very]]
 217  baj N trouble malum kl1opot: bad, external
-218  bajos A troublesome molestus kl1opotliwy:  trouble
-222  bal N left laevus lewy:  side
-228  bara1t N friend amicus przyjaciel:  person, NOM KNOW, NOM LIKE, NOM TRUST
+218  bajos A troublesome molestus kl1opotliwy: ND trouble
+222  bal N left laevus lewy: MaM side
+228  bara1t N friend amicus przyjaciel: MaM person, NOM KNOW, NOM LIKE, NOM TRUST
 231  barna A brown fuscus bra1zowy: IS_A color, shit
-249  becsu2let N honour decus honor:  loyality[moral]
-256  beja1rat N entrance porta wejs1cie:  place, [person[enter]] THROUGH, door % Longman use in front of ...something = ...near its entrance
-258  bele1p V enter intro wejs1c1:  go INTO ACC % Longman use A fee is the amount you have to pay to enter or join something
-278  betu3 N letter littera litera:  written, symbol
-282  bevezet V introduce introduco wprowadzic1:  NOM PRESENT ACC, AT first( time )
-283  bevezete1s N introduction introductio wprowadzenie:  NOM INTRODUCE ACC % are deep cases allowed with nouns?
-288  bi1r V have habeo miec1:  NOM HAS ACC
+245  becses A precious pretiosus cenny: MaM HAS high(value) % jewel = precious stone
+249  becsu2let N honour decus honor: MaM loyality[moral]
+256  beja1rat N entrance porta wejs1cie: MaM place, [<person>[enter]] THROUGH, <door> % Longman use in front of ...something = ...near its entrance
+258  bele1p V enter intro wejs1c1: MaM go INTO ACC % Longman use A fee is the amount you have to pay to enter or join something
+275  beteg N patient aeger pacjent: MaM RECEIVE medical(care) % Longman clinic = an occasion when medical students are taught how to decide what illness a patient has
+278  betu3 N letter littera litera: MaM written, symbol
+282  bevezet V introduce introduco wprowadzic1: MaM NOM PRESENT ACC, AT first( time )
+283  bevezete1s N introduction introductio wprowadzenie: MaM NOM INTRODUCE ACC % are deep cases allowed with nouns?
+288  bi1r V have habeo miec1: MaM NOM HAS ACC
 289  bi1ro1 N judge iudex se1dzia: human, AT court, SRC decision
-302  biztat V encourage hortor zache1cic1:  INSPIRE, GIVE courage
-309  bo2jt N fast ieiunium post:  EAT less, observe, rite % had asterisk in definition. why?
-316  bo3kezu3se1g N generosity liberalitas hojnos1c1:  give[valuable]
-325  boldog A glad laetus zadowolony:  HAS joy
-327  boldogsa1g N happiness felicitas szcze1s1cie:  happy
-328  bolond N fool stultus gl1upek:  think[lack]
-335  bosszant V annoy irrito denerwowac1:  CAU[irritation]
-340  bronz N brass aes bra1z:  yellowish, alloy
-349  bu3ve1sz N magician praestigiator magik:  USE magic, profession
-351  buddhista N Buddhist Buddhista buddysta:  PART_OF buddhism %  adherent buddhism
-352  buddhizmus N Buddhism Buddhismus buddyzm:  religion, enc_Buddha SRC % reference to encyclopedia
-359  buta A stupid stultus gl1upi:  HAS low (intelligence)
+302  biztat V encourage hortor zache1cic1: MaM INSPIRE, GIVE courage
+309  bo2jt N fast ieiunium post: ND EAT less, observe, rite % had asterisk in definition. why?
+316  bo3kezu3se1g N generosity liberalitas hojnos1c1: MaM give[valuable]
+325  boldog A glad laetus zadowolony: MaM HAS joy
+327  boldogsa1g N happiness felicitas szcze1s1cie: MaM happy
+328  bolond N fool stultus gl1upek: MaM think[lack]
+335  bosszant V annoy irrito denerwowac1: MaM CAU[irritation]
+340  bronz N brass aes bra1z: MaM yellowish, alloy
+345  bu2szke A proud superbus dumny: MaM satisfied WITH something, RELATED_TO something
+349  bu3ve1sz N magician praestigiator magik: ND USE magic, profession
+351  buddhista N Buddhist Buddhista buddysta: MaM PART_OF buddhism % ND adherent buddhism
+352  buddhizmus N Buddhism Buddhismus buddyzm: ND religion, enc_Buddha SRC % reference to encyclopedia
+354  buli N party orgia zabawa: MaM peple AT, GOAL pleasure, celebration, eat AT, drink AT, dance AT % wedding party = a special meal or party that is held after a wedding
+359  buta A stupid stultus gl1upi: ND HAS low (intelligence)
 361  buzi N gay catamites gej: male, FUCK male
-379  civiliza1l V civilize a_fera_agrestique_vita_ad_humanum_cultum_civilemque_deduco cywilizowac1:  ACC HAS culture, CAU[culture ER]
-385  csapat N company manus towarzystwo:  group, human
-389  csat N clasp fibula klamra:  device, FASTEN physical_object
-392  csatlakozik V join comitor dol1a1czyc1:  NOM PUT ACC, CAU[together]
+379  civiliza1l V civilize a_fera_agrestique_vita_ad_humanum_cultum_civilemque_deduco cywilizowac1: MaM ACC HAS culture, CAU[culture ER]
+385  csapat N company manus towarzystwo: MaM group, human
+389  csat N clasp fibula klamra: MaM device, FASTEN physical_object
+392  csatlakozik V join comitor dol1a1czyc1: MaM NOM PUT ACC, CAU[together]
 402  gyu3ru3 U ring # #: metal, circle, AT finger
 408  csillag N star stella gwiazda: shiny, dot, AT sky, AT night
-409  csina1l V make facio robic1: CAU be 
-410  csinos A pretty bellus l1adny: attractive 
-412  csirke N chicken pullus kurcze1:  poultry % naive_theo GOAL[meat,egg]
-414  cso1k N kiss osculum pocal1unek:  INSTRUMENT[[lip] TOUCH [other(lip)]], EXPRESS affection % two different "lip"s
-423  csoda1l V admire miror podziwiac1:  regard, INSTRUMENT respect
-424  csoda1lat N admiration admiratio podziw:  admire
+409  csina1l V make facio robic1: CAU be RA
+410  csinos A pretty bellus l1adny: attractive RA
+412  csirke N chicken pullus kurcze1: ND poultry % naive_theo GOAL[meat,egg]
+414  cso1k N kiss osculum pocal1unek: MaM INSTRUMENT[ [lip] TOUCH [other(lip)]], EXPRESS affection % two different "lip"s
+418  cso3 N pipe fistula rura: MaM artefact, space IN, cylindric, CONDUCT material
+419  cso3 N tube fistula rura: MaM pipe
+423  csoda1l V admire miror podziwiac1: MaM respect
+424  csoda1lat N admiration admiratio podziw: MaM admire
 430  csomo1 N knot nodus we1zel1: rope HAS, fasten
-439  csupasz A bare nudus nagi: LACK clothes 
-460  di1szi1t V adorn orno zdobic1:  CAU[ACC[beautiful]] 
-463  dicse1r V exalt laudo chwalic1:  NOM PISE ACC
-464  dicse1r V praise laudo chwalic1:  say, admire
-465  dicso3 A glorious gloriosus chwalebny:  HAS glory
-466  dicso3i1t V extol laudo wychwalac1:  NOM PISE ACC
-467  dicso3se1g N glory gloria chwal1a:  divine (presence) %  fame
-469  divat N fashion mos moda: social, prized, trend, ABOUT clothing
-470  divatos A fashionable novus/elegans modny:  CONFORM[fashion] % CONFORM_TO?
+439  csupasz A bare nudus nagi: LACK clothes RA
+458  di1j N prize praemium nagroda: MaM winner GET, SIMBOLIZE honour
+459  di1sz N ornament ornamentum ornament: MaM physical_object, adorn
+460  di1szi1t V adorn orno zdobic1: MaM CAU[ACC[beautiful]] 
+463  dicse1r V exalt laudo chwalic1: MaM NOM PRAISE ACC
+464  dicse1r V praise laudo chwalic1: ND say, admire
+465  dicso3 A glorious gloriosus chwalebny: MaM HAS glory
+466  dicso3i1t V extol laudo wychwalac1: MaM NOM PRAISE ACC
+467  dicso3se1g N glory gloria chwal1a: ND divine (presence) % MaM fame
+469  divat N fashion mos moda: social, prized, trend, ABOUT <clothing>
+470  divatos A fashionable novus/elegans modny: MaM CONFORM[fashion] % CONFORM_TO?
 481  dolog N thing res rzecz: exist % should be primitive?
-484  dra1ga N dear carus ukochany:  person LOVE % in Longman only as a salutation 
-487  du1s A generous uber hojny:  generosity % HUN nagylelku3
-488  du2h N anger furor gniew:  feeling, bad, strong, aggressive
-491  durva A coarse asper szorstki:  HAS surface, [large (particles)] IN [surface]
-492  durva A rough asper szorstki: surface[lack( smooth)]  
+484  dra1ga N dear carus ukochany: MaM person LOVE % in Longman only as a salutation 
+487  du1s A generous uber hojny: MaM generosity % HUN nagylelku3
+488  du2h N anger furor gniew: MaM feeling, bad, strong, aggressive
+491  durva A coarse asper szorstki: MaM HAS surface, [large (particles)] IN [surface]
+492  durva A rough asper szorstki: surface[lack( smooth)] RA 
 493  durva A rude asper nieuprzejmy: LACK manner
-494  e1ber A awake vigilans czujny:  conscious % HUM e1bren van
-497  e1g U burn ardeo palic1:  destroy, INSTRUMENT fire
-498  e1hes A hungry esuriens gl1odny:  hunger
-499  e1hse1g N hunger esurio gl1o1d:  desire FOR food, discomfort
-501  e1kko3 N jewel gemma klejnot:  precious, stone, artefact
-502  e1kszer N jewellery ornamentum biz1uteria:  small, person WEAR, decoration, ring IS_A, necklace IS_A
+494  e1ber A awake vigilans czujny: MaM conscious % HUM e1bren van
+497  e1g U burn ardeo palic1: MaM destroy, INSTRUMENT fire
+498  e1hes A hungry esuriens gl1odny: MaM hunger
+499  e1hse1g N hunger esurio gl1o1d: MaM desire FOR food, discomfort
+501  e1kko3 N jewel gemma klejnot: MaM precious, stone, artefact
+502  e1kszer N jewellery ornamentum biz1uteria: MaM small, person WEAR, decoration, ring IS_A, necklace IS_A
 504  e1l U live vivo z1yc1: life
 505  e1let N life vita z1ycie: reproduce, eat, grow, respond, adapt
-506  e1lez V sharpen acuo ostrzyc1:  CAU sharp
-507  e1lo3 A alive vivus z1ywy:  life
-508  e1lvez V enjoy fruor cieszyc1_sie1:  [ACC] CAU[NOM HAS pleasure]
-512  e1p A sound salvus cal1y:  whole, firm
-515  e1rdek N interest commodum interes:  NOM BENEFIT  % relational noun, BENEFIT_FROM
-516  e1rdekes N interesting aptus_ad_delectandos_homines interesuja1cy:  GET attention
-517  e1rdeklo3de1s N interest studium zainteresowanie:  desire, GOAL[NOM KNOW]
-521  e1rez V feel sentio czuc1:  NOM PERCEIVE, NOTINSTRUMENT rational % Longman bound = to feel that you ought to do something
-523  e1rintkeze1s N intercourse commercium stosunek:  sex % Longman uses ko2zo2su2le1s. matinee = sexual intercourse in the daytime
-528  e1rtelem N meaning significatio znaczenie:  information IN NOM
-533  e1rze1s N feelings sensus uczcia:  mental, spontaneous, joy IS_A, sorrow IS_A, fear IS_A, anger IS_A % why plural? Longman primitive feelings are not based on reason
-559  egy N one unus jeden:  lack(more), undivided
-561  egyedi A special peculiaris specjalny:  common_2736[lack] % unary lack
+506  e1lez V sharpen acuo ostrzyc1: MaM CAU sharp
+507  e1lo3 A alive vivus z1ywy: ND life
+508  e1lvez V enjoy fruor cieszyc1_sie1: MaM [ACC] CAU[NOM HAS pleasure]
+512  e1p A sound salvus cal1y: ND whole, firm
+515  e1rdek N interest commodum interes: MaM NOM BENEFIT  % relational noun, BENEFIT_FROM
+516  e1rdekes N interesting aptus_ad_delectandos_homines interesuja1cy: MaM GET attention
+517  e1rdeklo3de1s N interest studium zainteresowanie: MaM desire, GOAL[NOM KNOW]
+521  e1rez V feel sentio czuc1: MaM NOM PERCEIVE, NOTINSTRUMENT rational % Longman bound = to feel that you ought to do something
+523  e1rintkeze1s N intercourse commercium stosunek: MaM sex % Longman uses ko2zo2su2le1s. matinee = sexual intercourse in the daytime
+528  e1rtelem N meaning significatio znaczenie: MaM information IN NOM
+533  e1rze1s N feelings sensus uczcia: MaM mental, spontaneous, joy IS_A, sorrow IS_A, fear IS_A, anger IS_A % why plural? Longman primitive feelings are not based on reason
+559  egy N one unus jeden: MaM lack(more), undivided
+561  egyedi A special peculiaris specjalny: MaM common_2736[lack] % unary lack
 568  egyes A particular singularis pewien: the % ez jo1?
-578  egyha1z N church ecclesia kos1cio1l1:  place, GOAL worship, institution, religion HAS
+578  egyha1z N church ecclesia kos1cio1l1: ND place, GOAL worship, institution, religion HAS
 583  egyse1g N unity unitas jednos1c1: one, SRC many
-592  el D off dis- wy-:  after[NOTAT ACC] % is this deep case ACC?
-595  elad V sell vendo sprzedac1:  NOM GIVE, GET money
-601  ele1gedett A pleased contentus zadowolony:  HAS pleasure
-611  eles A sharp acutus ostry:  [HAS edge] OR [HAS point], [CAN[CUT physical_object]] OR [CAN[PIERCE physical_object]] % OR
-612  eleven A lively vividus z1wawy:  HAS [much(energy)], active
+592  el D off dis- wy-: MaM after[NOTAT ACC] % is this deep case ACC?
+595  elad V sell vendo sprzedac1: MaM NOM GIVE, GET <money>
+601  ele1gedett A pleased contentus zadowolony: MaM HAS pleasure
+610  elenged V release dimitto wypus1cic1: MaM CAU[ACC[free]] % AFTER[lack(KEEP)]
+611  eles A sharp acutus ostry: MaM [HAS edge] OR [HAS point], [CAN[CUT physical_object]] OR [CAN[PIERCE physical_object]] % OR
+612  eleven A lively vividus z1wawy: MaM HAS [much(energy)], active
 615  elfogad V accept accipio akceptowac1: declare, recieve % right self
-628  ellen G against contra/adversus przeciwko: oppose %  IN opposite(direction)
-632  ellense1g N enemy hostis wro1g:  FEEL hatred, INTE injury, TRY[ damage ] % TRY_TO, relational, NOMs have to be inserted?
-633  ellense1ges A hostile inimicus wrogi:  angry,  unfriendly[deliberate] % deliberately unfriendly
-644  elo3re D forward protinus na_przo1d:  TO front
-647  elriaszt V discourage deterreo znieche1cac1:  CAU[ACC HAS confidence[lack]]
+619  elha1ri1t V repel repello odstraszac1: CAU[ACC NOTAT]
+628  ellen G against contra/adversus przeciwko: oppose % MaM IN opposite(direction)
+632  ellense1g N enemy hostis wro1g: MaM FEEL hatred, INTEND injury, TRY[ damage ] % TRY_TO, relational, NOMs have to be inserted?
+633  ellense1ges A hostile inimicus wrogi: MaM angry,  unfriendly[deliberate] % deliberately unfriendly
+639  elnyom V oppress opprimo uciskac1: MaM ACC[people], CAU[ACC NOTHAS normal(rights)]
+644  elo3re D forward protinus na_przo1d: MaM TO front
+647  elriaszt V discourage deterreo znieche1cac1: MaM CAU[ACC HAS confidence[lack]]
+653  elvesz U take adimo wzia1c1: MaM CAU[NOM HAS ACC]
 654  elvesz V take adimo wzia1c1: CAU self HAS, CAU [ABL NOTHAS ACC]
-655  elveszett A lost amissus zgubiony:  NOM HAS knowledge[lack], knowledge ABOUT place, NOM AT place % unification needed
-658  ember N human homo czl1owiek:  man_659
-659  ember N man homo czl1owiek:  mammal, HAS two(legs), HAS two(hands), think, CAN speak, CAN work, PART_OF society  % opposed to animals, divine beings, or machines
-660  emel V lift tollo podnies1c1:  MAKE arise %  CAUSE[NOM[arise]]
-664  emelkedik U arise ascendo wznosic1_sie1:  movement [up] % movement, up?
-666  emle1kezet N memory memoria pamie1c1:  information, human HAS, ABOUT past % Longman if an experience... is etched on your memory..., you cannot forget it
-670  enged V allow sino pozwolic1:  GIVE permission
-682  erko2lcs N morals mos moralnos1c1:  rules, ABOUT sex, DEFINES right_1191, DEFINES wrong
+655  elveszett A lost amissus zgubiony: MaM NOM HAS knowledge[lack], knowledge ABOUT place, NOM AT place % unification needed
+658  ember N human homo czl1owiek: MaM man_659
+659  ember N man homo czl1owiek: MaM mammal, HAS two(legs), HAS two(hands), think, CAN speak, CAN work, PART_OF society  % opposed to animals, divine beings, or machines
+660  emel V lift tollo podnies1c1: ND MAKE arise % MaM CAUSE[NOM[arise]]
+661  emel V raise elevo unies1c1: MaM lift
+664  emelkedik U arise ascendo wznosic1_sie1: ND movement [up] % movement, up?
+666  emle1kezet N memory memoria pamie1c1: MaM information, human HAS, ABOUT past % Longman if an experience... is etched on your memory..., you cannot forget it
+670  enged V allow sino pozwolic1: MaM GIVE permission
+682  erko2lcs N morals mos moralnos1c1: MaM rules, ABOUT <sex>, DEFINES right_1191, DEFINES wrong
 683  ero3 N force vis sil1a: power
-684  ero3 N power vis moc:  CAN[ CAUSE[ physical( change )]]
-685  ero3 N strength vis sil1a:  strong
-696  esku2szik U swear iuro przysie1gac1: DECLARE truth, GOAL authority, GOAL God
-700  eszik V eat edo jes1c1:  CAU[ACC IN mouth], NOM SWALLOW, ACC[food], NOM BITE, NOM CHEW, NOM HAS mouth % unification
-702  eszko2z N means facultas sposo1b:  [animate ACHIEVE]INSTRUMENT
-705  exakt A exact exactus dokl1adny:  correct % Longman use precise information
-711  fa1j U ache dolet bolec1:  sensation, bad, physical
-718  fakad U burst scato wytrysna1c1:  NOM BEGIN
-732  fe1l V fear timeo bac1_sie1:  fear
-734  fe1lelem N fear timor strach:  feeling, anxiety, danger CAU
-735  fe1lo3 A afraid timens/timendus przestraszony:  fear
-737  fe1lte1kenyse1g N jealousy invidia zazdros1c1:  jealous
-739  fe1ny N light lux s1wiatl1o:  ENABLE[animal SEE], visible(radiation)
-740  fe1nyez V polish polio polerowac1: CAU  surface[smooth, shiny] , ACC HAS surface 
-742  fe1nylik V shine splendeo s1wiecic1: CAU EMIT light 
-744  fe1rfi N man vir me1z1czyzna:  person, male % Longman man/woman of substance = a rich man or woman
-745  fe1rj N husband vir/maritus ma1z1:  male, married, NOM[wife] % relational noun
-752  fede1lzet N deck constratum pokl1ad:  floor, ship HAS
+684  ero3 N power vis moc: MaM CAN[ CAUSE[ physical( change )]]
+685  ero3 N strength vis sil1a: MaM strong
+696  esku2szik U swear iuro przysie1gac1: DECLARE truth, GOAL authority, GOAL <God>
+700  eszik V eat edo jes1c1: MaM CAU[ACC IN mouth], NOM SWALLOW, ACC[<food>], NOM <BITE>, NOM <CHEW>, NOM HAS mouth % unification
+702  eszko2z N means facultas sposo1b: MaM [animate ACHIEVE]INSTRUMENT
+705  exakt A exact exactus dokl1adny: MaM correct % Longman use precise information
+711  fa1j U ache dolet bolec1: MaM sensation, bad, <physical>
+718  fakad U burst scato wytrysna1c1: MaM NOM BEGIN
+719  fako1 A pale gilvus blady: MaM white, skin
+732  fe1l V fear timeo bac1_sie1: MaM fear
+734  fe1lelem N fear timor strach: MaM feeling, <anxiety>, danger CAU
+735  fe1lo3 A afraid timens/timendus przestraszony: MaM fear
+737  fe1lte1kenyse1g N jealousy invidia zazdros1c1: MaM jealous
+739  fe1ny N light lux s1wiatl1o: MaM ENABLE[animal SEE], visible(radiation)
+740  fe1nyez V polish polio polerowac1: CAU  surface[smooth, shiny] , ACC HAS surface RA
+742  fe1nylik V shine splendeo s1wiecic1: CAU EMIT light RA
+744  fe1rfi N man vir me1z1czyzna: MaM person, male % Longman man/woman of substance = a rich man or woman
+745  fe1rj N husband vir/maritus ma1z1: MaM male, married, NOM[wife] % relational noun
+752  fede1lzet N deck constratum pokl1ad: MaM floor, <ship HAS>
 755  fehe1r N white albus bial1y: IS_A color, light, snow, empty, clear
-756  fej N head caput gl1owa:  PART_OF animal, brain IN, face ON, top
+756  fej N head caput gl1owa: MaM PART_OF animal, brain IN, face ON, top
 761  fekete A black niger czarny: LACK color, dark, death % lack color? ez stimmel?
-763  fel A up sursum do_go1ry: above  %  I don't think this is the good definition
-774  feljegyze1s N note annotatio notatka:  brief, written % Longman hangjegy
-778  felkia1lt U cry_out exclamo wykrzykna1c1:  NOM UTTER loud % which sense?
-782  felte1tel N condition condicio warunek:  CAU[NOM[possible]]
-788  fenn D above supra ponad:  AT up % ZsA I don't think this is the good definition
-793  ferto3z V infect contamino zaraz1ac1:  CAU disease
-794  ferto3zo3 A infectious contagiosus zaraz1liwy:  infect
-795  fest V paint pingo malowac1: material, CHANGE color, ACC HAS color 
-801  figyelem N attention animi_attentio uwaga:  mental_state, CAU perceive
-808  finom A delicate subtilis delikatny:  fine   
-809  finom A fine elegans dobry:  acceptable  %  small OR light OR thin Longman hair = one of the long fine things... that grows on people's heads
-819  fo3 N grand primus gl1o1wny: big 
-826  foci N football ludus_calcius pil1ka_noz1na:  game, [team[two]] PLAY, INSTRUMENT ball % INSTRUMENT kick the ball, INSTRUMENT head the ball, INSTRUMENT carry the ball, INSTRUMENT goal % goal in the "kapu" sense
-832  fogad V welcome accipio witac1:  meet, friendly
-836  fok N degree gradus stopien1 :  steps, PART_OF process % scale HAS % Longman: qualification
-861  forr U boil fervo gotowac1_sie1:  liquid, hot, cooked, bubble IN
-862  forro1 A hot fervens gora1cy:  temperature, high
-864  fu1j V blow flo dmuchac1:  move, NOM IS_A wind, ACC IS_A air
-881  furcsa A strange mirus dziwny:  lack(familiar) % unary lack
-891  gazda N master dominus pan:  CONTROL NOM, HAS NOM
-892  gazdag A rich opulentus bogaty: HAS lot_of(money), human  %  or valuable possession %too long 
-897  gerjeszt V kindle inflammo zapalic1:  after [fire]
-903  gond N care diligentia opieka:  subjective_state, caution, responsibility % Longman Once inside, we didn't care whether it rained or not.
-904  gond N concern sollicitudo zmartwienie:  relevant, CAU anxious
-910  gonosz A mean malus zl1y:  lack(gentle)
-916  gya1sz N grief maeror z1al:  sorrow, death CAU
-917  gya1szol V grieve maereo byc1_w_z1al1obie:  grief
-918  gya1va A coward timidus tcho1z1liwy:  [danger] CAU[NOM HAS fear],  lack( noble )
-922  gyala1z V revile maledico oczerniac1:  abusive, communication % (spec. against god) is it default?
-928  gyenge1d A gentle mollis delikatny:  REGARD needs, others HAS needs % Longman coax = to persuade someone to do something that they do not want to do by talking to them in a kind, gentle, and patient way
-931  gyerek N child puer/puella dziecko:  person, lack( puberty )
-932  gyertya N candle candela s1wieca:  solid, cylindrical, wax, HAS wick, EMIT light
-934  gyo1gyi1t V cure sano uzdrawiac1:  RESTORE normal(function) % fura
-935  gyo1gyi1t V heal sano uzdrawiac1:  CAU health
-944  gyu1jt V light accendo zapalac1:  after [burn]
-949  gyu3lo2l V hate odi nienawidziec1:  feel[ACC[enemy]]
-950  gyu3lo2let N hatred invidia nienawis1c1:  hate
+763  fel A up sursum do_go1ry: above RA % ND I don't think this is the good definition
+771  felismer V recognize cognosco rozpoznac1: KNOW[identity], ACC HAS identity
+772  felismere1s N recognition cognitio rozpoznanie: MaM recognize
+774  feljegyze1s N note annotatio notatka: MaM brief, written % Longman hangjegy
+778  felkia1lt U cry_out exclamo wykrzykna1c1: MaM NOM UTTER loud % which sense?
+779  felmond V resign renuntio zrezygnowac1: MaM after[NOTHAS job], official, ANNOUNCE[NOTHAS job] % unification of the two "NOTHAS job"s are needed %Longman resign (from) a post
+782  felte1tel N condition condicio warunek: MaM CAU[NOM[possible]]
+785  felvesz V pick tollo podnosic1: MaM NOM SELECT ACC, before[ACC IN group], ACC[best OF group]
+788  fenn D above supra ponad: ND AT up % ZsA I don't think this is the good definition
+793  ferto3z V infect contamino zaraz1ac1: MaM CAU disease
+794  ferto3zo3 A infectious contagiosus zaraz1liwy: MaM infect
+795  fest V paint pingo malowac1: material, CHANGE color, ACC HAS color RA
+801  figyelem N attention animi_attentio uwaga: MaM mental_state, CAU perceive
+808  finom A delicate subtilis delikatny:  fine RA  
+809  finom A fine elegans dobry:  acceptable RA % MaM small OR light OR thin Longman hair = one of the long fine things... that grows on people's heads
+812  fizet V pay persolvo pl1acic1: MaM GIVE ACC, ACC[money], NOM BUY
+819  fo3 N grand primus gl1o1wny: big RA
+826  foci N football ludus_calcius pil1ka_noz1na: MaM game, [team[two]] PLAY, INSTRUMENT ball % INSTRUMENT kick the ball, INSTRUMENT head the ball, INSTRUMENT carry the ball, INSTRUMENT goal % goal in the "kapu" sense
+832  fogad V welcome accipio witac1: MaM meet, friendly
+836  fok N degree gradus stopien1 : MaM steps, PART_OF process % scale HAS % Longman: qualification
+861  forr U boil fervo gotowac1_sie1: MaM liquid, hot, <cooked>, bubble IN
+862  forro1 A hot fervens gora1cy: MaM temperature, high
+864  fu1j V blow flo dmuchac1: MaM move, NOM IS_A <wind>, ACC IS_A <air>
+881  furcsa A strange mirus dziwny: MaM lack(familiar) % unary lack
+891  gazda N master dominus pan: MaM CONTROL NOM, HAS NOM
+892  gazdag A rich opulentus bogaty: HAS lot_of(money), <human> RA %  or valuable possession %too long 
+897  gerjeszt V kindle inflammo zapalic1: MaM after [fire]
+899  go3g N pride superbia duma: MaM honour[self] % self is a keyword
+903  gond N care diligentia opieka: MaM subjective_state, caution, responsibility % Longman Once inside, we didn't care whether it rained or not.
+904  gond N concern sollicitudo zmartwienie: MaM relevant, <CAU anxious>
+910  gonosz A mean malus zl1y: MaM lack(gentle)
+916  gya1sz N grief maeror z1al: MaM sorrow, death CAU
+917  gya1szol V grieve maereo byc1_w_z1al1obie: MaM grief
+918  gya1va A coward timidus tcho1z1liwy: MaM [danger] CAU[NOM HAS fear],  lack( noble )
+922  gyala1z V revile maledico oczerniac1: ND abusive, communication % (spec. against god) is it default?
+928  gyenge1d A gentle mollis delikatny: MaM REGARD needs, others HAS needs % Longman coax = to persuade someone to do something that they do not want to do by talking to them in a kind, gentle, and patient way
+931  gyerek N child puer/puella dziecko: MaM person, lack( puberty )
+932  gyertya N candle candela s1wieca: MaM solid, <cylindrical>, <wax>, HAS wick, EMIT light
+934  gyo1gyi1t V cure sano uzdrawiac1: ND RESTORE normal(function) % fura
+935  gyo1gyi1t V heal sano uzdrawiac1: MaM CAU health
+937  gyo3z U win vinco wygrywac1: DEFEAT[everybody]
+940  gyors A fast celer szybki: MaM quick
+941  gyors A quick celer szybki: MaM NEED [short (time)] % [DO something] IN [short (time)]
+942  gyors A rapid celer szybki: MaM quick
+944  gyu1jt V light accendo zapalac1: MaM after [burn]
+949  gyu3lo2l V hate odi nienawidziec1: MaM feel[ACC[enemy]]
+950  gyu3lo2let N hatred invidia nienawis1c1: MaM hate
 951  gyufa N match igniarium zapal1ka: stick, wood, [person LIGHT fire] INSTRUMENT
-952  ha G if si jez1eli:  IN case, IN condition
-954  ha1la1s A grateful gratus wdzie1czny:  animate, animate APPRECIATE thing, [animate] WANT[ animate THANK thing ]
-960  ha1t N back tergum plecy:  human HAS body, body HAS, neck AT % unification needed, ? Longman be flat on your back = to be lying down so that all of your back is touching the floor
-962  ha1tte1r N background recessus tl1o:  SURROU NOM % relational noun, Longman if someone is the product of a particular background... Paula was the product of a sheltered middle-class home.
-963  ha1z N house domus dom:  building, home
-965  ha1zasodik V marry coniungo pobierac1_sie1:  after[NOM PART_OF marriage]
-970  hagy V leave sino pozwalac1:  after[NOM NOTAT ACC] % elhagyja a szoba1t. otthagyja a tollat: after[ACC NOTAT NOM]?
-971  hagy V let patior pozwalac1:  NOM ALLOW ACC
-999  haragos A angry iratus zl1y:  anger
-1000  harang N bell campana dzwon:  hollow, metal, instrument, HAS shape[cup], ring, HAS clapper % cup_shaped?
-1001  harap V bite mordeo gryz1c1:  NOM CUT ACC, INSTRUMENT teeth % OR grip OR tear
-1011  hata1r N border confinium granica:  line, AT[two( countires)]  
-1023  he1tko2znapi A ordinary quotidianus zwyczajny:  common_2736
-1029  helyes A correct rectus poprawny:  FULFILL norm
-1030  helyes A proper iustus poprawny:  perfect, AT situation 
-1037  hi1d N bridge pons most:  structure, PROVIDE passage, OVER river
-1043  hi1res A famous illustris sl1awny:  many KNOW
-1044  hi1rne1v N fame gloria sl1awa:  many RESPECT
-1045  hi1v V call voco wol1ac1:  speak TO, INITIATE contact
-1052  hiba1ztat V blame incuso winic1:  think[NOM[ responsible ]]
-1053  hideg N cold frigidus zimno:  temperature, low
-1064  hit N faith fides wiara:  belief, PART_OF religion % (not only: to review)
-1069  ho2lgy N lady domina dama:  woman
-1070  ho3 N heat calor gora1co:  energy, warm
-1072  hogy D how quo_modo jak:  manner
-1075  holnap D tomorrow cras jutro:  day, before[today] %  FOLLOW?
-1080  hord V carry fero nosic1:  NOM HOLD ACC, NOM TNSPORT ACC
-1086  hosszu1 A long longus dl1ugi:  size[horizontal,big]
-1095  hu1z V draw traho cia1gna1c1: 	NOM WRITE ACC % Longman use draw a line, painting
-1099  hu3 A faithful fidus wierny:  HAS faith
-1103  hu3vo2s A cool frigidus chl1odny:  moderately( cold )
-1108  i1j N bow arcus l1uk:  weapon, shot INSTRUMENT, arrow 
-1110  i1te1let N judgment iudicium osa1d:  decision, judge MAKE  
-1113  i1z N taste sapor smak:  food HAS, person FEEL, INSTRUMENT tongue 
-1116  ideg N nerve nervus nerw:  IN  body, CARRY sensory( impulse ) %  Longman neuron = nerve cell
-1122  ido3sebb A elder maior starszy:  wise, old, person
-1125  igaz A true verus prawdziwy:  CONFORM[fact]
-1132  illem N manners pudor maniery:  polite 
-1134  illik V match decet pasowac1:  similar, harmonize  % Longman coordinates = things such as clothes that can be worn or used together because their colours match...
-1135  illo3 A fit decens odpowiedni:  HAS proper(size), HAS proper(shape) % Longman fitted = built, made, or cut to fit a particular space a fitted wardrobe
-1139  ima1d V worship veneror wielbic1:  THINK[ACC[high]], SERVE[ACC], devotion
-1140  ima1dkozik V pray precor modlic1_sie1:  communicate WITH supernatural(being), being[god]
-1145  intenzi1v A keen intentus che1tny:  HAS desire % Longman The company is believed to be keen to sell its extensive brewing interests
-1151  irigy N jealous invidus zazdrosny:  anxiety, [rival HAS something]CAU
-1158  ismero3s A familiar notus znajomy:  NOM KNOW % Longman "something has a familiar ring"
-1159  isten N god deus bo1g:  being, ultimate, supernatural
-1160  istenno3 N goddess dea bogini:  female, god
-1164  ital N drink potio napo1j:  consumeable, liquid
-1165  ittas A drunk potus pijany:  alcohol CAU, NOM NOTHAS control
-1167  izgat V excite excito podniecac1:  ACC[person], CAU[ACC HAS strong (feeling)]
-1169  izu2let N joint articulus staw:  part, join AT
-1173  ja1te1k N game ludus gra:  activity, ENTERTAIN participant, HAS rule, competitive
-1179  je1gvere1s N hail grando grad:  precipitation, [big(ice)] FALL, SRC cloud
-1182  jel N mark nota znak:  visible, sign % Longman ditto macskako2ro2m, X
-2374  tesz V put pono kl1as1c1: [NOM] CAUSE [[ACC] AT]
-
+952  ha G if si jez1eli: MaM IN case, IN condition
+954  ha1la1s A grateful gratus wdzie1czny: MaM animate, animate APPRECIATE thing, [animate] WANT[ animate THANK thing ]
+959  ha1nyados N rate quotiens iloraz: MaM quantity % Longman take-up = rate at which people accept something that is offered to them
+960  ha1t N back tergum plecy: MaM human HAS body, body HAS, neck AT % unification needed, ? Longman be flat on your back = to be lying down so that all of your back is touching the floor
+962  ha1tte1r N background recessus tl1o: MaM SURROUND NOM % relational noun, Longman if someone is the product of a particular background... Paula was the product of a sheltered middle-class home.
+963  ha1z N house domus dom: MaM building, home
+965  ha1zasodik V marry coniungo pobierac1_sie1: MaM after[NOM PART_OF marriage]
+966  ha1zia1llat N pet domesticum_animal zwierza1tko_domowe: MaM animal, companion, person HAS companion
+970  hagy V leave sino pozwalac1: MaM after[NOM NOTAT ACC] % elhagyja a szoba1t. otthagyja a tollat: after[ACC NOTAT NOM]?
+971  hagy V let patior pozwalac1: MaM NOM ALLOW ACC
+986  halk A quiet submissus cichy: MaM lack(noise) % lack(MAKE[noise]) % Longman mouse = informal a quiet, nervous person
+999  haragos A angry iratus zl1y: MaM anger
+1000  harang N bell campana dzwon: MaM hollow, metal, instrument, HAS shape[cup], ring, <HAS clapper> % cup_shaped?
+1001  harap V bite mordeo gryz1c1: MaM NOM CUT ACC, INSTRUMENT <teeth> % OR grip OR tear
+1011  hata1r N border confinium granica:  line, AT[two( countires)] RA 
+1023  he1tko2znapi A ordinary quotidianus zwyczajny: MaM common_2736
+1026  hely N place locus miejsce: MaM point, IN place_2326  
+1027  hely N position locus miejsce: MaM place_1026  
+1029  helyes A correct rectus poprawny: MaM FULFILL norm
+1030  helyes A proper iustus poprawny:  perfect, AT situation RA
+1035  herceg N prince dux/princeps ksia1z1e: MaM male, PART_OF royal(family), son OF monarch % "son" is a relational noun, "monarch" is the related entity
+1037  hi1d N bridge pons most: MaM structure, PROVIDE passage, OVER <river>
+1043  hi1res A famous illustris sl1awny: MaM many KNOW
+1044  hi1rne1v N fame gloria sl1awa: MaM many RESPECT
+1045  hi1v V call voco wol1ac1: MaM speak TO, INITIATE contact
+1052  hiba1ztat V blame incuso winic1: MaM think[NOM[ responsible ]]
+1053  hideg N cold frigidus zimno: MaM temperature, low
+1064  hit N faith fides wiara: ND belief, PART_OF religion % (not only: to review)
+1069  ho2lgy N lady domina dama: MaM woman
+1070  ho3 N heat calor gora1co: MaM energy, warm
+1072  hogy D how quo_modo jak: MaM manner
+1075  holnap D tomorrow cras jutro: ND day, before[today] % MaM FOLLOW?
+1080  hord V carry fero nosic1: MaM NOM HOLD ACC, NOM TRANSPORT ACC
+1086  hosszu1 A long longus dl1ugi: MaM size[horizontal,big]
+1095  hu1z V draw traho cia1gna1c1: MaM	NOM WRITE ACC % Longman use draw a line, painting
+1099  hu3 A faithful fidus wierny: ND HAS faith
+1103  hu3vo2s A cool frigidus chl1odny: MaM moderately( cold )
+1106  i1ge1r V promise polliceor obiecywac1: MaM DECLARE[after[NOM DO]]
+1108  i1j N bow arcus l1uk:  weapon, shot INSTRUMENT, arrow RA
+1110  i1te1let N judgment iudicium osa1d:  decision, judge MAKE RA 
+1113  i1z N taste sapor smak:  <food> HAS, person FEEL, INSTRUMENT tongue RA
+1116  ideg N nerve nervus nerw: MaM IN  body, CARRY <sensory>( impulse ) %  Longman neuron = nerve cell
+1122  ido3sebb A elder maior starszy: ND wise, old, person
+1125  igaz A true verus prawdziwy: MaM CONFORM[fact]
+1127  igazol V prove demonstro udowadniac1: MaM after[ [other(people)] KNOW [ACC[true]]], INSTRUMENT facts
+1132  illem N manners pudor maniery:  polite RA
+1134  illik V match decet pasowac1: MaM similar, harmonize  % Longman coordinates = things such as clothes that can be worn or used together because their colours match...
+1135  illo3 A fit decens odpowiedni: MaM HAS proper(size), HAS proper(shape) % Longman fitted = built, made, or cut to fit a particular space a fitted wardrobe
+1139  ima1d V worship veneror wielbic1: ND THINK[ACC[high]], SERVE[ACC], devotion
+1140  ima1dkozik V pray precor modlic1_sie1: ND communicate WITH supernatural(being), being[<god>]
+1145  intenzi1v A keen intentus che1tny: MaM HAS desire % Longman The company is believed to be keen to sell its extensive brewing interests
+1151  irigy N jealous invidus zazdrosny: MaM anxiety, [rival HAS something]CAU
+1158  ismero3s A familiar notus znajomy: MaM NOM KNOW % Longman "something has a familiar ring"
+1159  isten N god deus bo1g: ND being, ultimate, supernatural
+1160  istenno3 N goddess dea bogini: ND female, god
+1164  ital N drink potio napo1j: ND consumeable, liquid
+1165  ittas A drunk potus pijany: MaM alcohol CAU, NOM NOTHAS control
+1167  izgat V excite excito podniecac1: MaM ACC[person], CAU[ACC HAS strong (feeling)]
+1169  izu2let N joint articulus staw: MaM part, join AT
+1173  ja1te1k N game ludus gra: MaM activity, ENTERTAIN participant, HAS rule, <competitive>
+1175  ja1tszik V play ludo bawic1_sie1: MaM game_1173  
+1179  je1gvere1s N hail grando grad: MaM precipitation, [big(ice)] FALL, SRC cloud
+1182  jel N mark nota znak: MaM visible, sign % Longman ditto macskako2ro2m, X
+1183  jel N sign signum znak: MaM [OBSERVE NOM] INSTRUMENT % relational noun
+1185  jelenle1t N presence praesentia obecnos1c1: MaM NOM AT place
+1186  jelent V mean sibi_vult znaczyc1: MaM NOM REPRESENT ACC, NOM[sign] % Longman ...All these words mean...
+1187  jellem N character habitus charakter: MaM features, distinguishes[ <person> ], <moral( strength )>
+1189  jo1 A good bonus dobry: MaM positive, desirable
+1190  jo1 A well bene dobrze: good RA
+1194  jo1va1hagy V approve approbo uznac1: MaM consider[ACC[right]], say[ACC[right]]
+1206  jut V get nanciscor dostawac1: MaM NOM REACH, NOM SUCCEED_2731 % Longman: When did you get home?, how did you get to be captain?
+1208  ka1r G pity miseret_me_alicuius szkoda: MaM sympathy, sorrow, [person[other,suffer]] CAU
+1214  kacsa N duck anas kaczka: ND bird, aquatic, migratory % unfinished 
+1223  kap V get accipio dostawac1: MaM after[NOM HAS ACC]
+1225  kap V receive nanciscor dostawac1: MaM get_1223  
+1228  kapita1ny N captain centurio kapitan: MaM rank, COMMAND[team]
+1231  kar N arm bracchium ramie1: MaM human HAS body, body HAS, limb, hand AT, wrist AT, shoulder AT
+1232  kara1csony N Christmas dies_natalis Boz1e_Narodzenie: ND holiday, christian, tree, presents, candle
+1236  ke1j N pleasure voluptas przyjemnos1c1: MaM nice
+1240  ke1nyelem N comfort commoditas wygoda: MaM pleasure, rest
+1254  ke1reg N bark cortex kora: MaM tough, cover[wood], protect[wood]
+1255  ke1rked V boast glorior chwalic1_sie1: MaM speak, ADMIRE[NOM]
+1264  ke1z N hand manus re1ka: MaM human HAS arm, arm HAS, AT forearm, GRASP object, HAS wrist, HAS palm, HAS fingers, HAS thumb % unification needed, "HAS four fingers", de "HAS o2t ujj"
+1267  kede1ly N cheer hilaritas nastro1j: MaM joy
+1271  kedvel A fond delector lubic1: MaM NOM LIKE ACC
+1272  kedvenc A pet delicia ulubiony: MaM favourite
+1274  kedves A kind benignus mil1y: MaM friendly
+1275  kedves A nice dulcis mil1y: MaM CAU[joy]
+1280  kegy N grace gratia  l1aska: ND divine FAVOR faithful % MaM mercy
+1281  kegyelem N mercy clementia mil1osierdzie: MaM compassionate, HAS power
+1282  kegyes A gracious comis l1askawy: MaM mercy
+1283  kegyetlen A cruel crudelis okrutny : MaM CAU pain, HAS lack( mercy )
+1288  kellemes A pleasant iucundus przyjemny: MaM nice
+1300  kereszt N cross crux krzyz1 : MaM symbol, [ upright(post)]PART_OF, transverse PART_OF, Christian 
+1301  kereszte1nyi A Christian Christianus chrzes1cijan1ski: ND adherent, PART_OF christianity
+1302  kereszte1nyse1g N Christianity religio_Christiana chrzes1cijan1stwo: ND religion, BASED_ON teachings, encycl_Christ HAS teachings
+1305  kert N garden hortus ogro1d:  place, open, [useful (plants)] IN RA 
+1306  keseru3 A bitter amarus goz1ki: MaM taste, sharp, unpleasant, coffee IS_A
+1316  ki D out foras wy-:  after[outside] RA 
+1318  ki1n N pain cruciatus bo1l: MaM unpleasant, sensation, injury CAU
+1320  ki1nos A awkward molestus niezre1czny: strange, NOTCAU comfort RA % MaM lack( graceful )
+1321  ki1se1r V accompany comitor towarzyszyc1: MaM NOM WITH ACC
+1324  kia1bra1ndi1t V disappoint fallo rozczarowac1: MaM CAU[NOM[unhappy]], before[NOM HAS expectation], expectation[fail] % event struct
+1327  kibi1r V endure perfero znosic1: MaM NOM UNDERGO ACC, NOM[ suffer ]
+1330  kiele1gi1t V gratify libidinor wynagradzac1: MaM NOM SATISFY ACC
+1331  kiele1gi1t V satisfy satio zaspokajac1: MaM CAU[ACC[ pleased ]]
+1349  kio2nt V pour_out effundo wylewac1: MaM 1852
+1350  kira1ly N king rex kro1l: MaM man, RULE[country], PART_OF [royal( family )]
+1353  kira1lyno3 N queen regina kro1lowa: MaM woman, monarch
+1355  kis A little parvus mal1y: MaM small
+1357  kisasszony G Miss N/A panna: MaM unmarried(woman)
+1358  kisasszony N miss dominula panna: MaM Miss
+1380  ko2nnyu3 A easy facilis l1atwy: MaM lack( difficult )
+1381  ko2nnyu3 A light levis lekki: MaM lack(heavy)
+1392  ko2szo2nt V hail saluto pozdrawiac1: MaM NOM SALUTE ACC
+1398  ko2telesse1g N duty officium obowia1zek: MaM task, <socitety> REQUIRE, <socitety> PRESCRIBE 
+1415  ko2zo2s N common communis wspo1lny: MaM BELONG[ more(<people>)] % BELONG_TO
+1428  kopog U knock pulso pukac1: MaM STRIKE door, MAKE sound, ASK_FOR entrance % see 2739
+1432  korhol V chide vitupero ganic1: MaM EXPRESS disapproval
+1434  korona N crown corona korona : MaM adornment, symbol, ON head, gold % content: authority
+1435  korrekt A fair rectus/honestus prawidl1owy:  treat[ well ] RA 
+1438  kosz N dirt sordes brud: MaM earth IS_A, mud IS_A, dust IS_A
+1439  koszos A dirty sordidus brudny: MaM HAS dirt
+1445  ku1szik N creep repo czol1gac1_sie1: MaM move, body AT ground
+1453  ku2lo2no2s A odd mirus dziwny: MaM common_2736[lack] % unary lack % Longman strange
+1454  ku2lo2no2s A peculiar peculiaris szczego1lny: MaM common_2736[lack] % unary lack
+1465  kutya N dog canis pies: ND animal, carnivore, faithful, inferior
+1466  la1b N foot pes stopa: organ, leg HAS, AT ground 
+1471  la1nc N chain catena l1an1cuch: physical_object, HAS material, material[iron], rings[lot_of], [rings[coined]] PART_OF RA 
+1481  la1tva1ny N sight species widok: NOM SEE RA 
+1483  la1z N fever febris gora1czka: MaM abnormal, body HAS high (temperature)
+1484  laikus A lay laicus s1wiecki: ND person, training[lack,official]
+1487  ha1zassa1g N marriage nuptiae wesele: MaM legal(union), husband PART_OF union, wife PART_OF union
+1488  lakoma N feast convivium uczta: meal, planned, large, many PARTICIPATE, entertainment % PARTICIPATE_IN?
+1495  laza A relaxed laxus zrelaksowany: MaM loose
+1496  lazi1t V relax relaxo relaksowac1_sie1: MaM after[loose]
+1498  le D down deorsum w_do1l1: MaM TO position, [position[high]] ER % unification needed
+1500  le1legzet N breath spiritus oddech: MaM air, DURING respiration % [animal INHALE] OR [animal EXHALE]
+1501  le1legzik U breathe spiro oddechac1: MaM breath
+1510  le1tra N ladder scalae drabina: MaM equipment, GOAL climb, high, HAS rungs
+1520  legyo3z V defeat vinco pokonac1: MaM IN contest, HAS success, ACC loose
+1532  lemegy U descend descendo opadac1: ND go, after[NOM[down]]
+1539  leve1l N letter litterae list: MaM written, message
+1541  leves N soup ius zupa: RG food, liquid
+1543  liheg U pant anhelo dyszec1: RG breath, quick
+1544  lista N list tabulae lista: MaM series, HAS items, written
+1545  liszt N flour farina ma1ka: RG food, SRC grain
+1547  lo1 N horse equus kon1: RG animal, mammal, HAS[four (legs)], ride INSTRUMENT, pull
+1548  lo1g U hang pendeo wisiec1: MaM fasten, NOM above ACC, ACC NOTHAS support, ACC CAN swing, INSTRUMENT <cord>
+1558  ma D today hodie dzisiej: ND this (day) % MaM day, now
+1578  maga1n A private privatus priwatny: MaM [restricted(group)] USE, lack(public) % [one(person)] USE?
+1580  maga1nyos A lonely solus samotny: MaM unhappy, [NOM NOTHAS companion] CAU
+1582  magas N high altus wysoki: MaM HAS top, top ER average % unification needed, ?
+1594  marad U keep teneo trzymac1: MaM remain
+1595  marad U remain maneo zostawac1: MaM lack( change )
+1596  marad U stay maneo zostawac1: MaM remain AT
+1599  marha N cattle pecus bydl1o: ND mammal, herbivore, domesticated, PRODUCE milk
+1601  me1h N bee apis pszczol1a: MaM HAS wing, HAS hairy( body ), STING other(animal), insect, <social>, GATHER nectar, GATHER pollen, PRODUCE honey
+1602  me1ly N deep altus gl1e1boki: MaM HAS[bottom[far]] %syntax Longman a channel of two feet in depth
+1612  mecset N mosque aedes_sacra_Turcorum meczet: ND muslim, temple
+1614  medence N pool piscina basen: MaM water IN, <swim> IN, <play> IN
+1619  megbocsa1t V excuse ignosco wybaczac1: MaM NOM FORGIVE % Longman use excuse me
+1620  megbocsa1t V forgive ignosco wybaczac1: MaM after[ACC NOTHAS anger] % where to put lack?
+1639  megragad V apprehend apprehendo zl1apac1: MaM NOM GRASP ACC
+1642  megsebesi1t V injure vulnero ranic1: MaM NOM HARM ACC
+1646  megtart V keep teneo trzymac1: MaM before[NOM POSSESS ACC], after[NOM POSSESS ACC]
+1649  megtehet V afford possum_facere pozwalac1_sobie: MaM HAS[ <financial>( means )]
+1651  megtisztel V honour honoro uczcic1: MaM NOM RESPECT ACC
+1653  megu2l V commemorate celebro upamie1tniac1: MaM NOM REMEMBER, INSTRUMENT ceremony % no Longman use
+1654  megy U go eo is1c1:  CHANGE place, INSTRUMENT legs RA
+1656  mell N breast mamma piers1: MaM two, organ, ON chest, woman HAS
+1657  mell N chest pectus piers1: MaM front, PART_OF trunk
+1662  menet N procession agmen procesja: MaM line, people IN, move[slowly], ceremony % ko2rmenet % Longman Corpus Christi = a holy day...
+1665  menny N heaven caelum niebo: ND holiest (place), afterlife IN, god IN
+1670  mer V dare audeo waz1yc1_sie1: MaM NOM DARE ACC
+1671  mere1sz A daring audax odwaz1ny: MaM bold
+1672  mere1szel V dare audeo waz1yc1_sie1: MaM courageous[ enough], NOM TRY ACC
+1675  mersz N daring animus odwga: MaM bold
+1680  mester N master magister mistrz: MaM HAS skill, HAS practice % Longman mistress British English old-fashioned: a female teacher, see master, master's thesis
+1695  mind N all omnis wszyscy: MaM every
+1699  mino3se1g N quality qualitas jakos1c1: MaM NOM[good], inherent, characteristic % relational noun
+1701  mint D like sicut jak: MaM RESEMBLE ACC % content: similar % is the deep case correct?
+1710  mo1ka N fun iocus zabawa: MaM person ENJOY
+1716  moho1 A eager avidus che1tny: MaM HAS desire, impatient
+1723  morog V murmur murmuro szeptac1: MaM sound[low, indistinct, continuous]
+1731  mozog U move moveor ruszac1_sie1: MaM before[AT place], after[AT other(place)]
+1737  mulattat V amuse delecto bawic1: MaM CAU[ACC[ merry]]
+1740  munka N work opera praca: useful RA
+1746  nagy N great magnus wielki: MaM  big
+1755  nap N sun sol sl1on1ce: RG SRC light, SRC heat, bright, yellow, AT sky, AT day
+1763  ne1p- A popular popularis popularny: MaM many LIKE
+1764  ne1pszeru3se1g N popularity favor_popularis popularnos1c1: MaM popular
+1765  ne1v N name nomen imie1: MaM word, DESIGNATE entity, DISTINGUISH entity
+1766  ne1z V look specto patrzec1: MaM expression, face HAS % Longman: tekintet
+1770  negyed N quarter quarta_pars c1wierc1: MaM part, [four(part)] IN [whole]
+1771  nehe1z A difficult difficilis trudny: MaM DEMAND[ large( effort)] % effort OR skill 
+1772  nehe1z A heavy gravis ciez1ki:  HAS weight, weight ER RA 
+1773  nehe1zse1g N difficulty difficultas trudnos1c1: MaM difficult
+1779  nem G not non nie: MaM lack % ill-formad lack
+1782  nemes A noble nobilis szlachetny: MaM inheritance CAU, PART_OF social (class), IN feudalism
+1783  nemes N nobleman homo_nobilis szlachcic: MaM noble, man
+1787  nemzetko2zi A international internationalis mie1dzynarodowy: MaM INVOLE[ more(nation)]
+1789  nevet U laugh rideo s1miac1_sie1: MaM EXPRESS delight, <spontaneous>, utter[<unarticulated>(sound)]
+1790  nevete1s N laughter risus s1miech: MaM laugh
+1796  no3 U grow cresco rosna1c1: MaM HAS size, after[size ER] 
+1802  nya1r N summer aestas lato: ND season, before[spring], warm, fruitation AT, much(life)
+1803  nyak N neck cervices szyja: MaM PART_OF body, animal HAS body, SUPPORT head
+1804  nyal V lick lingo lizac1 : RG touch, INSTRUMENT tongue
+1807  nyelv N language lingua je1zyk: RG system, signs IN system, GOAL communication
+1808  nyelv N tongue lingua je1zyk: RG  PART_OF body, AT mouth, taste INSTRUMENT, speak INSTRUMENT
+1810  nyer U gain lucror zdobywac1: MaM NOM GET ACC[desirable]
+1814  nyi1lt A open apertus otwarty: MaM [thing] CAN[move THROUGH]
+1815  nyit V open aperio otwierac1: MaM CAU ACC[open]
+1827  nyugodt A calm tranquillus spokojny: MaM lack( motion), still
+1838  o1ta G from ex z: MaM NOM[period], SRC NOM %x from y: x IS_A period 
+1844  o2ko2r N ox bos mul1: ND sterilized, male, cattle, PULL cart, PULL plough
+1852  o2nt V pour fundo nalewac1: MaM ACC[liquid], after[liquid NOTIN], liquid[flow] % this syntax doesn't cover the intransitive use "o2mlik"
+1853  o2rdo2g N devil diabolus diabel1: ND evil, supernatural, being, enemy, god HAS enemy % MaM relational noun: god ENEMY?
+1855  o2ro2m N delight gaudium przyjemnos1c1: MaM great( pleasure )
+1856  o2ro2m N joy gaudium rados1c1: RG state, good
+1857  o2ro2mteli A jubilant laetus radosny: MaM HAS joy
+1864  o2sszekever V confuse confundo mylic1: MaM mistake, lack(	differentiate ), lack( clear)
+1866  o2sszeroppant N crush infringo miaz1dz1yc1: MaM NOM PRESS ACC, NOM BREAK ACC, INSTRUMENT[ two(surface)]
+1880  o3ru2lt A mad vesanus szalony: MaM HAS mind[confused] % Longman crazy = very strange or not sensible = mad
+1882  o3sz N autumn autumnus jesien1: ND season, before[summer], rain IN, decline
+1883  o3sz N fall autumnus jesien1: ND autumn
+1889  odahi1v V hail advoco przywol1ywac1: MaM ATTRACT attention, ACC HAS attention, INSTRUMENT <shouting> % is this syntax correct?
+1891  ok N cause causa powo1d: MaM reason
+1892  ok N reason ratio powo1d: MaM CAU NOM % not tipical causation, there is an agent in between
+1907  olvad V melt liquesco topic1_sie1: MaM NOM[material], heat CAU, before[material[solid]], after[material[liquid]]
+1909  ordi1t V howl rudo wyc1: MaM long, cry, NOM HAS sorrow, NOM[<dog>]
+1911  oroszla1n N lion leo lew: MaM large, animal, mammal, RESEMBLE cat, HAS mane, EAT flesh, courageous, strong
+1924  otthon N home domus dom: MaM place, NOM AT
+1930  pa1ratlan A odd impar nieparzysty: MaM number
+1931  pa1rhuzamos A parallel parallelus ro1wnolegl1y: MaM [constant(distance)] BETWEEN, lack(intersection) % Longman lane = one of the two or three parallel areas on a road which are divided by painted...
+1934  pakli N deck N/A talia: MaM pack, playing_cards IN
+1937  panaszkodik V complain queror skarz1yc1_sie1: MaM express[NOM[annoyed]]
+1938  pap N minister sacerdos pastor: ND person, [person] HAS[religious(duty)] % office instead of duty?
+1942  parancs N order iussum rozkaz: MaM authoritaty GIVE, [other(person)] OBEY  % Longman anti-social behaviour order = an official order which tells someone not to go to particular places...
+1943  park N park horti park: MaM area, land, public, lack(building), recreation IN, beautiful, natural, grass IN, trees IN, IN <town>, walk IN, play IN
+1950  pe1lda N example exemplum przykl1ad: MaM illustration, pattern HAS, representative, typical 
+1954  penge N blade lamina ostrze: MaM CUT physical_object, HAS edge, flat, <sword> HAS
+1959  pihen U rest quiesco odpoczywac1: MaM lack(work), relax, GOAL[tired(lack)]
+1967  pompa1s A splendid splendidus wspanial1y:  beautiful, impressive RA
+1969  pont N point punctum punkt: degree MaM % Longman score = to win a point in a sport... % To prove his point = show that he was right % reaches a particular point in their development
+1971  por N powder pulvis puder:  CAU attractive (face), <pink> RA
+1980  puska N gun sclopetum bron1: MaM weapon, HAS[ metal(tube)], FIRE projectile 
+1989  rajong U rave ardeo_amore uwielbiac1: MaM talk, ABOUT good, ADMIRE good, excited
+1992  rang N rank dignitas ranga: MaM position, IN organization, official, IN <armed_forces>, IN <police> IN <army>, IN <navy> % IN society
+1993  re1mu2lt A terrified perterritus przeraz1ony: ND HAS great (fear)
+1994  re1s N crack rima pe1knie1cie: MaM narrow, hole
+1995  re1sz N detail pars szczego1l1: part RA
+2006  reme1l U hope spero miec1_nadzieje1: MaM NOM DESIRE ACC, NOM WANT ACC, NOM believe[ACC[possible]]
+2007  remeg U tremble tremo trza1s1c1_sie1: MaM shake
+2009  rendes A neat dispositus schludny:  HAS[careful (arrangement)] RA
+2010  rendes A tidy diligens schludny:  good (arrangement), neat RA
+2016  reng A quake tremo trza1s1c1: MaM shake
+2017  reng U shake tremo trza1s1c1: MaM move, move IN direction[change], lack(stabil), move[lack(deliberate)] % "unrooted" tree
+2022  ro1ka N fox vulpes lis: ND animal, carnovire, wild, clever, STEAL poultry
+2023  ro1zsa N rose rosa ro1z1a:  flower, HAS[pleasant (smell)], <red>, HAS stems RA
+2031  robban V explode displodor wybuchac1: MaM burst
+2032  robbana1s N explosion diruptio wybuch: MaM burst
+2043  rossz A bad malus zl1y: MaM lack( good)
+2049  ru1g V kick calcitro kopac1: MaM NOM HIT ACC, INSTRUMENT foot
+2052  ruha N dress vestis suknia:  clothes RA
+2067  se1ru2le1s N harm vulnus szkoda: MaM bad
+2070  sebesse1g N speed celeritas pre1dkos1c1: MaM quick HAS
+2076  sejt N cell cella komo1rka: MaM HAS border, small, space
+2082  senki N nobody nemo nikt: MaM lack % ill-formad lack
+2085  sereg N host caterva tl1um: ND army
+2086  serkent V quicken hortor oz1ywiac1: MaM CAU[ACC[quick]]
+2094  si1r N grave sepulcrum gro1b: MaM place, burial AT, corpse AT, <corpse BENEATH ground>, tombstone AT
+2095  si1r U cry fleo pl1akac1: MaM weep[ aloud ], grief CAU
+2097  siet U hasten propero spieszyc1_sie1: MaM rush
+2098  siet U hurry propero spieszyc1_sie1: MaM rush
+2099  siet U rush propero spieszyc1_sie1: MaM act[ quick ]
+2100  sieto3s A hasty praceps pospieszny: MaM rapid
+2105  siralmas A miserable miserabilis z1al1osny: MaM lack(happy)
+2106  sirat V lament deploro z1al1owac1: MaM EXPRESS grief
+2110  so2te1t A dark obscurus ciemny: MaM lack( light )
+2137  sza1j N mouth os usta: MaM ON face, food IN, speak INSTRUMENT, opening
+2138  sza1m N number numerus numer: MaM quantity
+2142  sza1mol V count numero liczyc1: MaM DETERMINE number, ACC HAS number % to unify
+2145  sza1raz A dry siccus suchy: MaM lack( wet )
+2147  szaba1lyos A regular ordinatus zwykl1y: MaM CONFORM rule
+2153  szaka1ll N beard barba broda: MaM hair, AT face, man HAS face % to unify
+2162  sze1gyenkezve A ashamed cum_pudore zawstydzony: MaM emotion, bad, [BREAK[ norm ]] CAU
+2163  sze1k N chair sella krzesl1o: MaM furniture, seat, one USE
+2171  sze1pi1t V beautify exorno upie1kszac1:  CAU[ACC[beautfiul]] RA
+2172  sze1pse1g N beauty pulchritudo pie1kno :  attractive RA
+2177  szege1ny A poor pauper biedny: MaM NOTHAS much(money)
+2182  szem N eye oculus oko: MaM organ, see INSTRUMENT, animal HAS, ON face, <two>
+2183  szem N grain granum ziarno: MaM small, dry, cereal HAS, RESEMBLE seed
+2185  szeme1ly N person persona osoba: MaM man_659
+2195  szere1ny A humble modicus pokorny: MaM modest
+2196  szere1ny A modest modestus skromny: MaM think[ability[lack( important)]], NOM HAS ability % unification needed
+2200  szeret V love amo kochac1: MaM  emotion, positive, ACC[person], NOM CARE ACC
+2210  szi1v N heart cor serce: MaM organ, CIRCULATE blood, love IN
+2211  szid V scold obiurgo ganic1: MaM EXPRESS disapproval
+2227  szo1rakoztato1 A amusing iucundus zabawny: MaM AMUSE person
+2236  szoka1s N custom consuetudo zwyczaj: MaM common_2736 (behavior)
+2239  szoka1sos A usual usitatus zwyczajny: MaM common_2736 
+2252  szoros A tight artus ciasny:  fit (closely) RA 
+2255  szu1nyog N mosquito culex komar: MaM insect, SUCK blood, PIERCE skin, animal HAS skin
+2256  szu1r V pierce figo przekl1uwac1: MaM CAU[hole IN ACC], INSTRUMENT sharp
+2259  szu2kse1g N need necessitas potrzeba: MaM NOM NOTHAS ACC, NOM[satisfied[lack]]
+2261  szu2l V give_birth pario rodzic1: MaM CAU[ACC[born]], NOM[mother]
+2263  szu2lete1s N birth ortus narodziny: MaM born
+2264  szu2letik U be_born nascor rodzic1_sie1: MaM born
+2265  szu2letik V born nascor rodzic1_sie1: MaM after[live], NOM[ <child> ], SCR mother
+2276  ta1mada1s N offensive impetus ofensywa: MaM offend % see also 2738
+2278  ta1nc N dance saltatio taniec: MaM move, rhythmical, <INSTRUMENT music>
+2282  ta1rs N companion comes kompan: MaM person, ACCOMPANY NOM
+2284  ta1rs N partner socius partner: MaM WITH NOM, IN <marriage>, NOM IN <marriage>
+2285  ta1rsadalom N society societas towarzystwo: organized, group, people PART_OF RA 
+2288  ta1rsasa1g N society societas towarzystwo: organized, group, people PART_OF RA 
+2289  ta1rsulat N society societas towarzystwo: organized, group, people PART_OF RA 
+2296  tala1lkozik V meet convenio spotykac1: ND MAKE direct (contanct) % MaM [NOM] IN [contact], [INS] IN [contact]
+2297  talaj N ground solum ziemia: MaM solid, surface, AT earth
+2306  tanulsa1g N moral documentum moral1: MaM story TEACH
+2309  tart V hold teneo trzymac1: MaM ACC IN hand, NOM HAS hand
+2312  tart_vminek V regard arbitor uwaz1ac1_za: MaM THINK[ACC[DAT]]
+2318  tavasz N spring ver wiosna: ND first(season), warm, plants[revive], love IN
+2322  te1l N winter hiems zima: ND season, before[autumn], cold, snow IN, death IN
+2326  te1r N place forum plac: MaM thing IN, empty, [three(dimensions)] IN
+2327  te1r N space spatium przestrzen1: place_2326  
+2329  te1rdel V kneel genuflecto kle1kac1: MaM rest ON knee
+2331  tea N tea thea herbata: ND drink, SRC dry (leaf), SRC hot (water)
+2332  tegez N quiver pharetra kol1czan: MaM case, arrows IN % no Longman use
+2333  tegnap N yesterday heri wczoraj: ND day, after[today]
+2335  tehe1n N cow vacca krowa: MaM <mature>, <female>, <cattle>, <PRODUCES milk> % "domesticated" moved to the definition of cattle
+2340  tekint V regard specto uwaz1ac1: MaM regard_2312
+2349  templom N temple templum s1wia1tynia: ND building, [religious (activities)] IN
+2355  terep N area area teren: MaM PART_OF country
+2356  terhel V load onero l1adowac1: MaM PUT[lot], after[lot IN container]
+2362  terme1szet N nature natura natura: MaM essential(characteristics) % Longman the true nature of something is its real nature
+2366  teru2let N area area teren: MaM place_2326, HAS boundary
+2374  tesz V put pono kl1as1c1: CAU[ACC AT], NOM move ACC, ACC[physical_object]
+2378  tetszik V please placeo zadowalac1: RG CAU[DAT HAS joy]
+2386  tigris N tiger tigris tygrys: hairy, animal, HAS[four (legs)], agressive, HAS[yellow(lines)], HAS[lines[other, black]], big RA 
+2389  tiszta A clean mundus czysty: MaM [lack( dirt )]ON
+2391  tiszta A pure purus czysty: HAS one (material) RA 
+2392  tisztel V respect observo szanowac1: MaM attitude, [personal( qualities )] CAU, [ACC] HAS [qualities]
+2393  tisztelet N reverence honor szacunek: ND great (respect)
+2394  tiszteletreme1lto1 A honourable honestus szanowny: MaM many HONOUR
+2395  tiszteletteljes A respectful observantissimus godny: MaM respect
+2396  tiszti1t V cleanse purgo czys1c1ic1: MaM CAU[NOM[ clean]]
+2414  to2ro3de1s N heed cura uwaga: MaM attention
+2427  toll N feather penna pio1ro: soft,  AT bird RA 
+2431  tompa A dull hebes te1py: MaM lack( sharp ) %Longman use opposite of sharp (pain) 
+2440  tu2cso2k N cricket gryllus s1wierszcz : MaM insect, HAS[antennae], leap, <chirp>
+2443  tu2ko2r N mirror speculum lustro: MaM surface, REFLECT visible, image IN, object HAS image, object IN_FRONT_OF mirror
+2444  tu2nde1r N fairy diva_quaedam wro1z1ka: ND tiny, magical, being, flies
+2449  tu3 N pin acus pinezka:  device, FASTEN object, HAS material[<metal>] RA % biztosi1to1-, rajzszo2g
+2453  tu3r V permit sino pozwalac1: MaM NOM ALLOW ACC
+2454  tu3z N fire ignis ogien1: MaM CAU heat, CAU light, HAS flame, burn, <CAU smoke>
+2455  tud V know scio wiedziec1: MaM HAS[information ABOUT ACC]
+2457  tudat N mind conscientia umysl1: MaM faculty, human HAS faculty, IN brain, human HAS brain, thought INSTRUMENT, perception INSTRUMENT, emotion INSTRUMENT, will INSTRUMENT, memory INSTRUMENT, imagination INSTRUMENT
+2466  tyu1k N hen gallina kura: ND female, chicken, PRODUCE egg
+2474  u1r G Mr N/A pan: MaM man_744
+2476  u1r N gentleman dominus dz1entelmen: MaM man, HAS[ proper(behavior) ]
+2477  u1r N lord dominus pan: ND <god>
+2485  u2di1t V exhilarate exhilaro ods1wierzac1: MaM CAU[ACC[ happy ]] % CAU[ACC [feel refreshed]] % no Longman use
+2486  u2dvo2zo2l V greet saluto pozdawiac1: MaM NOM WELCOME ACC
+2496  u2nnep N holiday dies_festus s1wie1to: MaM period_of_time, [work[lack]] DURING, [studies[lack]] DURING, leisure, <CELEBRATE event> % HUN szu2net
+2498  u2nnepel U rejoice otior obchodzic1: feeling, joyful
+2504  u2t V hit pulso uderzac1: MaM NOM MOVE physical_object, physical_object AT, forceful
+2509  u3r N space vacuum przestrzen1: MaM solar_system IN, stars IN, galaxies IN, BEYOND atmosphere
+2510  u3z V chase sequor s1cigac1: quickly, NOM FOLLOW ACC, GOAL[NOM CATCH ACC] RA 
+2514  u3z V pursue sequor gonic1: MaM NOM FOLLOW ACC, WANT[NOM CAPTURE ACC]
+2515  udvar N court aula sa1d: MaM <open>, place, walls SURROUND ACC
+2517  ugat U bark latro szczekac1: MaM sound, <dog> UTTER, <harsh>, <gruff>, loud, abrupt 
+2523  ujjong U exult exsulto cieszyc1_sie1: MaM rejoice % no Longman use
+2524  undok A nasty foedus wredny: MaM unpleasant
+2532  uta1l V detest odi nienawidziec1: MaM DISLIKE intensely
+2533  uta1n A after post po: MaM FOLLOW ACC, IN order % is ACC the correct deep case?
+2542  va1g V cut seco cia1c1: NOM SEPARATE, INSTRUMENT edge RA 
+2544  va1gyik V desire desidero pragna1c1: MaM NOM WISH SUB % SUBLATIVE = -rA
+2549  va1llalat N company negotiatio firma: MaM GOAL business, organization
+2560  va1ros N town oppidum miasteczko:  [many (houses)] IN RA 
+2565  vad A wild ferus dziki:  agressive, [lack(control)] OVER RA 
+2570  vaj N butter butyrum masl1o: MaM fatty, soft, yellowish, churned, SRC milk, food % content: cooking and table use
+2580  valla1s N religion religio religia: ND system, faith HAS
+2581  valla1sos A religious religiosus religijny: ND HAS religion, HAS faith
+2583  valo1szi1nu3 A probable probabilis prawdopodobny: MaM likely
+2599  ve1r N blood sanguis krew: MaM fluid, heart CIRCULATE, IN vessel, reddish
+2600  ve1rzik U bleed sanguino krwawic1: MaM EMIT blood
+2604  vende1g N guest hospes gos1c1: MaM AT home, another HAS home, RECEIVE <hospitality>, before[NOM <INVITE>]
+2605  vende1gla1to1 N host hospes gospodarz: MaM INVITE guest
+2609  vesz V buy emo kupowac1: MaM [NOM GET ACC] INSTRUMENT[NOM PAY ACC]
+2612  vet V cast iacio rzudzac1: MaM NOM THROW ACC
+2620  vi1g A cheerful laetus wesol1y: MaM HAS joy
+2623  vicc N joke facetiae z1art: MaM story, CAU laughter, HAS[ punch_line ]
+2624  vicces A funny salsus s1mieszny: MaM fun
+2625  vida1m A merry hilarus wesol1y: MaM HAS joy
+2626  vigasz N comfort solacium pocieszenie: MaM REDUCE grief
+2629  vila1gos A bright clarus jasny: MaM shine
+2630  villa N fork furca widelec: MaM cutlery, <metal>, HAS[ <four>(prongs)], HAS handle, GOAL[MOVE food] % USE_FOR instead of GOAL
+2635  villan V flash mico bl1yskac1: MaM sudden, short, intense, light  % Longman thunderbolt = a flash of lightning
+2637  vira1g N flower flos kwiat: MaM plant HAS, <colorful>
+2639  vissza D back retro zpowrotem: MaM after[AT location], before[AT location]
+2658  vo2ro2s N red ruber czerwony: ND color, warm, fire IS_A, blood IS_A, RESEMBLE anger
+2664  vonz V attract attracho przycia1gac1: MaM CAU[interest[positive]], ACC HAS interest
+2665  vonzo1 A attractive suavis atrakcyjny: MaM NOM ATTRACT
+2673  zavar V disturb turbo przeszkadzac1: MaM CAU[ACC NOTHAS tranquillity]
+2675  zavart A abashed perturbatus zagubiony: MaM emation, bad,[ person BREAK norm] CAU
+2685  zseb N pocket sinus kieszen1: MaM bag, PART_OF garment, <money> IN, <keys> IN
+2689  zsido1 N Jew Iudaeus z1yd: ND adherent, PART_OF encycl_Judaism
+2690  zu1di1t V hail conicio zarzucac1: NOM MOVE ACC, INSTRUMENT force, ACC[lot]
+2695  # N account # #: MaM story
+2696 e1desget V attach # #: MaM NOM BIND ACC, NOM CAU love, love IN ACC 
+2697 fense1ges A august # #: MaM CAU respect
+2698 untat V bore # #: MaM [CAU weary] INSTRUMENT [dull], CAU dispirited % Longman use dull color, clothes, weather
+2699 hajol V bow # #: MaM greet, INSTRUMENT[INCLINE body], NOM HAS body
+2700 ko2ru2lme1ny N condition # #: MaM situation % content: modify
+2702 szertarta1s N ceremony # #: MaM formal, act, conventional
+2703 meghajol V bow # #: MaM bow_2699
+2709 szoronga1s N distress # #: MaM anxiety
+2710 rajzol V draw # #: MAKE lines, represent INSTRUMENT picture, INSTRUMENT <pencil>
+2711 mentse1g N excuse # #: MaM EXPLAIN bad, GOAL[NOM FORGIVE bad] % Longman use threadbare excuse = an excuse that is no longer effective because it has been used too much
+2712 tapasztalat N experience # #: MaM [person PARTICIPATE] CAU, NOM UNDERSTAND
+2713 robban V burst # #: MaM sudden, move, violent, pressure CAU, pressure IN NOM % Longman pop = to burst... with a short explosive sound 
+2714 rajongo1 N fan # #: MaM ADMIRE famous, passionate, enthusiastic, pop_star HAS, film_actor HAS, football_team HAS
+2714 puccos A fancy # #: MaM superior, quality
+2715 e1rze1k N sense # #: MaM faculty, hearing IS_A, sight IS_A, smell IS_A, touch IS_A, taste IS_A % content: bodily position, temperature, pain, balance
+2716 o2sszeg N figure # #: MaM number % Longman round = to reduce an exact figure to the nearest whole number
+2717 # N ball # #: MaM <spherical>, round, <GOAL sport> % labda, golyo1
+2718 csapa1s V blow # #: MaM sudden, hard, animate HIT, INSTRUMENT <fist>
+2719 re1zfu1vos N brass # #: MaM instrument, trumpet IS_A, trombone IS_A, french_horn IS_A, HAS [metal(tube)], musician BLOW
+2720 sapka N cap # #: MaM cloth, AT head, soft, FIT[close]
+2721 ko2zepes A medium # #: size %2011.04.19
+2732 me1rko3ze1s N match # #: MaM organized, sport, [two(<groups>)] AT % Longman throw a match. to deliberately lose
+2733 ne1lku2lo2z V miss # #: MaM feeling, ACC[lack] CAU % if you pine for a place or for something, you miss it a lot and...
+2734 gu1nyol V mock # #: MaM CAU[ACC SEEM stupid], LAUGH_AT ACC % Longman deride ... = mock 
+2734 ideges A nervous # #: MaM anxious, sensitive % Longman mice informal = a quiet, nervous person
+2736 a1tlagos A common # #: MaM normal % Longman to coin a phrase = when you use a very common expression, to show that you know it is used a lot
+2737 suga1r N beam # #: line, light, SRC <sun> RA % or lamp % Longman ray = a straight narrow beam of light from the sun or moon
+2738 se1rto2 A offensive # #: lack(polite) % Longman screw = an offensive word meaning to have sex with sy
+2739 kiu2t V knock # #: MaM NOM HIT ACC, CAU[ACC move] % HUN lever
+2741 # A familiar # #: ND supernatural, servant, master HAS  servant, master USE magic
+2742 # N father # #: ND priest
+2743 # N fold # #: ND group, [religious (people)] PART_OF
+2744 # N mass # #: ND collective, prayer, priest LEAD
+2745 # # spell # #: ND [INVOKE magic] INSTRUMENT [<spoken(word)>]
+2746 # N ghost # #: ND supernatural, being, spirit, [being[dead, natural]] HAS [spirit]
+2747 # N mammal # #: ND animal, HAS fur, HAS milk
+2748 # N herbivore # #: ND animal, EAT plant
+2749 # N herbivore # #: ND being, EAT meat
+2751 # N poultry # #: ND domesticated, bird
+2752 # A aquatic # #: ND AT[live; water]
+2754 di1szi1t V decorate # #: beautify, INSTRUMENT[NOM ADD decoration]
+2756 hogy # in_order_to # #: NOM HAS purpose[ACC] % deep cases need to be corrected
+2767 sorrend N order # #: MaM elements HAS, logical, relation IN, HAS first % Longman the running order = the order in which the different parts of an event have been arranged...
+2768 po1zna N post # #: MaM artefact, solid, upright, AT ground, <wood> % SUPPORT' 
+2769 posta N post # #: MaM mail
