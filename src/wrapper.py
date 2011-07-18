@@ -41,7 +41,7 @@ class Wrapper:
         oca_output = Popen([self.ocamorph, "--bin", self.ocamorph_bin,
                         "--tag_preamble", "",
                         "--tag_sep", "{0}".format(self.ocamorph_tag_sep),
-                        "--guess", "Fallback"], stdout=PIPE, stdin=PIPE).communicate("\n".join(command.split()))[0].strip()
+                        "--guess", "Fallback", "--blocking"], stdout=PIPE, stdin=PIPE).communicate("\n".join(command.split()))[0].strip()
         oca_output = oca_output.replace(self.ocamorph_tag_sep, "\t")
         tf = NamedTemporaryFile()
         tf_name = tf.name
@@ -65,17 +65,18 @@ class Wrapper:
         ie.load(self.inference_rules)
         ie.infer(machine)
 
-
     def run(self, command):
         from order_parser import run as run_order
         analysed_command = self.__run_morph_analysis(command)
+        print "Analysed_command: " + str(analysed_command)
         result = run_order(analysed_command, self.definitions, self.constructions)
+        print "After running order: " + str(result)
         self.__run_infer(result)
+        print "After inferring: " + str(result)
         return result
 
 if __name__ == "__main__":
     import sys
     w = Wrapper()
     result_machine = w.run(file(sys.argv[1]).read().strip().decode("utf-8"))
-    print result_machine.to_dot().encode("utf-8")
 

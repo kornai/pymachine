@@ -19,7 +19,7 @@ def read_order_file(f):
 def create_machines(sen):
     machines = []
     for _, pos in sen:
-        word, pos = pos.split("||", 1)
+        word, _, pos = pos.split("|", 2)
         m = Machine(Monoid(word), Control(pos))
         machines.append(m)
     return machines
