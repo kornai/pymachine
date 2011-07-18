@@ -26,7 +26,7 @@ class Control:
 
 class PosControl(Control):
     import re
-    case_pattern = re.compile("NOUN[^C]*CAS<([^>]*)>")
+    case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
 
     def __init__(self, pos):
         Control.__init__(self)
@@ -42,8 +42,10 @@ class PosControl(Control):
         return self.pos < other.pos
 
     def is_a(self, other):
+        import re
         Control.is_a(self, other)
-        if self.pos.find(other.pos) >- 1:
+        is_a_pattern = re.compile(other.pos)
+        if is_a_pattern.search(self.pos) is not None:
             return True
         else:
             return False
@@ -51,7 +53,7 @@ class PosControl(Control):
     def get_case(self):
         s = PosControl.case_pattern.search(self.pos)
         if s is not None:
-            return s.groups()[0]
+            return s.groups()[1]
         else:
             return None
 
