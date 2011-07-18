@@ -68,11 +68,8 @@ class Wrapper:
     def run(self, command):
         from order_parser import run as run_order
         analysed_command = self.__run_morph_analysis(command)
-        print "Analysed_command: " + str(analysed_command)
         result = run_order(analysed_command, self.definitions, self.constructions)
-        print "After running order: " + str(result)
         self.__run_infer(result)
-        print "After inferring: " + str(result)
         return result
 
 if __name__ == "__main__":
