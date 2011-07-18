@@ -4,7 +4,7 @@ from machine import Machine
 from monoid import Monoid
 from control import PosControl as Control
 from definition_parser import read
-from constructions import read_constructions
+from constructions import read_constructions, VerbCommand
 
 def read_order_file(f):
     sentence = []
@@ -24,19 +24,26 @@ def create_machines(sen):
         machines.append(m)
     return machines
 
+def run_constructions_over_machines(constructions, machines):
+    something = False
+    for con in constructions:
+        l = len(con.rule_right)
+        for i in xrange(len(machines) - l + 1):
+            result = con.do(machines[i:i+l])
+            if result is not None:
+                machines[i:i+l] = result
+                something = True
+    return something
+
 def run(order, definitions, constructions):
     machines = create_machines(order)
 
     while True:
         something = False
-        for con in constructions:
-            l = len(con.rule_right)
-            for i in xrange(len(machines) - l + 1):
-                result = con.do(machines[i:i+l])
-                if result is not None:
-                    machines[i:i+l] = result
-                    something = True
-
+        non_verb_constructions = [con for con in constructions if not isinstance(con.command, VerbCommand)]
+        verb_constructions = [con for con in constructions if isinstance(con.command, VerbCommand)]
+        something |= run_constructions_over_machines(non_verb_constructions, machines)
+        something |= run_constructions_over_machines(verb_constructions, machines)
         if not something:
             break
         else:
