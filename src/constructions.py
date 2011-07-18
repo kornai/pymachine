@@ -152,21 +152,38 @@ class Construction:
             return False
 
         pairs = []
+        for m in machines:
+            print m.base.partitions[0].encode("utf-8")
+        print
         for control_index, machine in zip(xrange(len(self.rule_right)), machines):
             c = self.rule_right[control_index]
             if machine.control.is_a(c):
                 pairs.append((control_index, c, machine))
             else:
                 return False
-
         return pairs
+
+    def change_main_control(self, machines):
+        """
+        hack function
+        """
+        if machines[0].control is None:
+            return
+        old_pos = machines[0].control.pos
+        if old_pos.startswith("NOUN") and len(old_pos) >= 6:
+            machines[0].control = Control(self.rule_left + "<" + old_pos.split("<", 1)[1])
+        else:
+            machines[0].control = Control(self.rule_left)
+
 
     def do(self, machines):
         pairs = self.__match__(machines)
         if not pairs:
             return None
         else:
-            return self.command.run(pairs)
+            transformed = self.command.run(pairs)
+            self.change_main_control(transformed)
+            return transformed
 
 def read_constructions(f, definitions=None):
     constructions = set()
