@@ -38,11 +38,21 @@ def run_constructions_over_machines(constructions, machines):
 def run(order, definitions, constructions):
     machines = create_machines(order)
 
+    #First: all non-verb commands
     while True:
         something = False
         non_verb_constructions = [con for con in constructions if not isinstance(con.command, VerbCommand)]
-        verb_constructions = [con for con in constructions if isinstance(con.command, VerbCommand)]
         something |= run_constructions_over_machines(non_verb_constructions, machines)
+        if not something:
+            break
+        else:
+            pass
+
+    #Second: verb commands
+    #TODO fucking copy-paste, should be put in a function
+    while True:
+        something = False
+        verb_constructions = [con for con in constructions if isinstance(con.command, VerbCommand)]
         something |= run_constructions_over_machines(verb_constructions, machines)
         if not something:
             break
