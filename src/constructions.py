@@ -152,9 +152,11 @@ class Construction:
             return False
 
         pairs = []
+        """
         for m in machines:
             print m.base.partitions[0].encode("utf-8")
         print
+        """
         for control_index, machine in zip(xrange(len(self.rule_right)), machines):
             c = self.rule_right[control_index]
             if machine.control.is_a(c):
