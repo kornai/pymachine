@@ -59,6 +59,14 @@ class Wrapper:
         tokens = [tok.split("\t")[:2] for tok in hundis_output.split("\n")]
         return tokens 
 
+    def __run_morph_analysis_v2(self, command):
+        from langtools.utils.huntools import MorphAnalyzer, Ocamorph, Hundisambig
+        o = Ocamorph(self.ocamorph, self.ocamorph_bin)
+        h = Hundisambig(self.hundisambig_bin, self.hundisambig_model)
+        a = MorphAnalyzer(o, h)
+        a = a.analyze([command.split("\n")])
+        return list(a)[0] 
+
     def __run_infer(self, machine):
         from inference import InferenceEngine as IE
         ie = IE()
