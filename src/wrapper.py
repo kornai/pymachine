@@ -74,10 +74,11 @@ class Wrapper:
         ie.infer(machine)
 
     def run(self, command):
-        from order_parser import run as run_order
+        from order_parser import OrderParser
         analysed_command = self.__run_morph_analysis(command)
         logging.debug( "Analysed_command: " + str(analysed_command) )
-        result = run_order(analysed_command, self.definitions, self.constructions)
+        op = OrderParser(self.constructions, self.definitions)
+        result = op.run(analysed_command)
         logging.debug( "After running order: " + str(result) )
         self.__run_infer(result)
         logging.debug( "After inferring: " + str(result) )
