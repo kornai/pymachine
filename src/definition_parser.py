@@ -43,6 +43,7 @@ class DefinitionParser:
         self.expression = Forward()
         
         # "enumerable expression
+        # D -> E | E, D
         self.definition = (self.expression + Optional(OneOrMore(self.arg_sep.suppress() + self.expression)))
         
         self.expression << Group(
@@ -85,6 +86,8 @@ class DefinitionParser:
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
+
+        # S -> W : D | W : D % _
         self.sen = (self.id + self.word + self.def_sep.suppress() + self.definition + Optional(self.comment_sep + self.dontcare).suppress()) + LineEnd()
     
     def parse(self, s):
