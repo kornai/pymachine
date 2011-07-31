@@ -1,0 +1,2 @@
+class UnknownWordException(Exception):
+    pass
