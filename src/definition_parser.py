@@ -198,7 +198,7 @@ class DefinitionParser:
             else:
                 raise ParserException("there shouldn't be 4 nodes in a tree only if 2 of them are parentheses")
     
-    def parse_into_machines(self, s, dict_into=None):
+    def parse_into_machines(self, s):
         parsed = self.parse(s)
         parsed = DefinitionParser.__flatten__(parsed)
         
@@ -206,12 +206,10 @@ class DefinitionParser:
         machine.base.partitions.append([])
         for d in parsed[2:]:
             machine.base.partitions[1].append(DefinitionParser._parse_expr(d))
-        if dict_into is None:
-            return machine
-        else:
-            dict_into[tuple(parsed[1])] = machine
+        return (machine, tuple(parsed[1]))
 
 def read(f):
+    from langtools.utils import accents
     d = {}
     dp = DefinitionParser()
     for line in f:
@@ -220,15 +218,17 @@ def read(f):
             continue
         if l.startswith("#"):
             continue
-        print l
-        dp.parse_into_machines(line.strip(), d)
+        m, t = dp.parse_into_machines(line.strip())
+        tl = list(t)
+        tl[0] = accents.proszeky_to_utf(tl[0].encode("utf-8"))
+        d[tuple(tl)] = m
     return d
 
 if __name__ == "__main__":
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-g":
-      m = dp.parse_into_machines(pstr)
+      m, _ = dp.parse_into_machines(pstr)
       print m.to_dot(True)
     else:
       print dp.parse(pstr)
