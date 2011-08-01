@@ -12,7 +12,7 @@ class OrderParser:
         self._constructions = constructions
         self._definitions = definitions
         # index has to be changed if other language
-        self._vocab = set(fourlang[1] for fourlang in self._definitions.keys())
+        self._vocab = set(fourlang[0] for fourlang in self._definitions.keys())
 
     def read_order_file(self, f):
         sentence = []
