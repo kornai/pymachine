@@ -133,7 +133,7 @@ class DefinitionParser:
                 if is_unary(l[0]):
                     return Machine(Monoid(l[0]))
                 else:
-                    raise ParserException("Only lower case strings or deep cases can be at unary position(" + str(l[0]) + ")")
+                    raise ParserException("Only lower case strings or deep cases or filled binaries can be at unary position(" + str(l[0]) + ")")
         
         elif len(l) == 2:
             
@@ -218,6 +218,9 @@ def read(f):
         l = line.strip()
         if len(l) == 0:
             continue
+        if l.startswith("#"):
+            continue
+        print l
         dp.parse_into_machines(line.strip(), d)
     return d
 
