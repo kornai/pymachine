@@ -42,8 +42,16 @@ class PosControl(Control):
         return self.pos < other.pos
 
     def is_a(self, other):
+        """
+        now only checks if self is a "type" of @other
+
+        """
         import re
+
+        # first call super.is_a
         Control.is_a(self, other)
+
+        # check if "is_a" with a dumb regexp
         is_a_pattern = re.compile(other.pos)
         if is_a_pattern.search(self.pos) is not None:
             return True
@@ -51,6 +59,10 @@ class PosControl(Control):
             return False
 
     def get_case(self):
+        """
+        returns self's case if self.case_pattern has a match
+        None otherwise
+        """
         s = PosControl.case_pattern.search(self.pos)
         if s is not None:
             return s.groups()[1]
