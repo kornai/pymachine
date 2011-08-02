@@ -50,10 +50,14 @@ class Command:
         if type_str == "*":
             return VerbCommand(definitions)
 
+        if type_str == "?":
+            return QuestionCommand()
+
 
 class AppendRegexCommand(Command):
     """
     Appends one of the machines at a partition of the other one
+    used for cube[yellow]-like expressions
     """
     def __init__(self, into, what):
         self.into = Control(into)
@@ -67,7 +71,8 @@ class AppendRegexCommand(Command):
 
 class OneCommand(Command):
     """
-    Removes one from the @machines. The other is kept.
+    Removes one from the machines. The other is kept.
+    used for DETs for example
     """
     def __init__(self, stay):
         self.stay = Control(stay)
@@ -76,7 +81,10 @@ class OneCommand(Command):
         filterer = lambda a: a[1] == self.stay
         return [m for _, _, m in filter(filterer, pairs)]
 
-class VerbCommand(Command):
+class FinalCommand(Command):
+    pass
+
+class VerbCommand(FinalCommand):
     """
     The machine of the verb is looked up in the defining dictionary,
     and any deep cases found in that machine get matched with NP cases
@@ -89,12 +97,16 @@ class VerbCommand(Command):
         return m.is_a(Control("VERB<SUBJUNC-IMP>"))
 
     def run(self, pairs):
-        verb_machine = [m for i,c,m in pairs if c == Control("VERB")][0]
+        verb_machine = [m for _,c,m in pairs if c == Control("VERB")][0]
 
         done = [verb_machine]
+
+        # if we make a change in the verb_machine, the original machine can't be changed
+        # so copy it first
         from copy import deepcopy as copy
         defined_machine = copy(self.definitions[(str(verb_machine), "V")])
 
+        # discover known cases to be used when filling slots
         known_cases = [(m.control.get_case(),m) for _, _, m in pairs if m != verb_machine]
         known_cases = dict(filter(lambda x: x[0] is not None, known_cases))
 
@@ -106,6 +118,7 @@ class VerbCommand(Command):
                 defined_machine.base.partitions[1][0].base.partitions[2][0].base.partitions[1][0] = m
                 done.append(m)
 
+        # if we have done everything, then we have done everything
         if len(done) == len(pairs):
             return [defined_machine]
 
@@ -125,6 +138,15 @@ class VerbCommand(Command):
         # now CAUSE is at first partition of put, but it should be instead of it?
         return [defined_machine.base.partitions[1][0]]
 
+class QuestionCommand(FinalCommand):
+    def run(self, pairs):
+        from machine import Machine
+        from monoid import Monoid
+        final_machine = Machine(Monoid("AT"))
+        final_machine.append(1, pairs[-1][2])
+        final_machine.append(2, pairs[0][2])
+        return [final_machine]
+
 class Construction:
     """
     instructions about how to perform transformations in machines
@@ -132,7 +154,8 @@ class Construction:
 
     def __init__(self, rule_left, rule_right, command, definitions):
         """
-        @rule_left: now this is not used
+        @rule_left: now this is used for changing control of resulting machine
+          if some change has been made
         @rule_right: on what machines to perform operations, based on their Control
         @command: what to do
         """
@@ -163,6 +186,7 @@ class Construction:
     def change_main_control(self, machines):
         """
         hack function
+        put self.rule_left into the control of the first machine
         """
         if machines[0].control is None:
             return
@@ -174,6 +198,10 @@ class Construction:
 
 
     def do(self, machines):
+        """
+        run construction over the machines and return None if nothing is changed
+        otherwise return transformed machine
+        """
         pairs = self.__match__(machines)
         if not pairs:
             return None
@@ -183,6 +211,9 @@ class Construction:
             return transformed
 
 def read_constructions(f, definitions=None):
+    """
+    TODO maybe a factory?
+    """
     constructions = set()
     for l in f:
         l = l.strip().split("\t")
