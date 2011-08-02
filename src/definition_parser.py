@@ -10,7 +10,7 @@ class ParserException(Exception):
 
 class DefinitionParser:
     _str = set([str, unicode])
-    _deep_cases = ["NOM" , "ACC" , "DAT" , "INS" 
+    _deep_cases = ["NOM" , "ACC" , "DAT" , "INS" , "OBL"
                    , "SUB", "SUE", "DEL"         # ON
                    , "ILL", "INE", "ELA"         # IN
                    , "ALL", "ADE", "ABL"         # AT
