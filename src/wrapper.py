@@ -35,6 +35,9 @@ class Wrapper:
        self.constructions = read_constructions(file(self.con_fn), self.definitions)
 
     def __run_morph_analysis(self, command):
+        """
+        calls ocamorph and hundisambig based on config
+        """
         from subprocess import Popen, PIPE
         from tempfile import NamedTemporaryFile
         command = command.encode(self.ocamorph_encoding)
@@ -60,6 +63,12 @@ class Wrapper:
         return tokens 
 
     def __run_morph_analysis_v2(self, command):
+        """
+        improved version of __run_morph_analysis, uses langtools
+
+        maybe this will be the place of using sockets and communicating with daemons
+        instead of using local ocamorph (and others) directly
+        """
         from langtools.utils.huntools import MorphAnalyzer, Ocamorph, Hundisambig
         o = Ocamorph(self.ocamorph, self.ocamorph_bin)
         h = Hundisambig(self.hundisambig_bin, self.hundisambig_model)
@@ -68,6 +77,10 @@ class Wrapper:
         return list(a)[0] 
 
     def __run_infer(self, machine):
+        """
+        run inference engine over the machines
+        (usually called after constructions has been run)
+        """
         from inference import InferenceEngine as IE
         ie = IE()
         ie.load(self.inference_rules)
@@ -75,11 +88,17 @@ class Wrapper:
 
     def run(self, command):
         from order_parser import OrderParser
+
+        # morph analysis
         analysed_command = self.__run_morph_analysis(command)
         logging.debug( "Analysed_command: " + unicode(analysed_command) )
+
+        # transforming command/order based on constructions and definitions
         op = OrderParser(self.constructions, self.definitions)
         result = op.run(analysed_command)
         logging.debug( "After running order: " + unicode(result) )
+
+        # running inference engine
         self.__run_infer(result)
         logging.debug( "After inferring: " + unicode(result) )
         return result
@@ -88,4 +107,4 @@ if __name__ == "__main__":
     import sys
     w = Wrapper()
     result_machine = w.run(file(sys.argv[1]).read().strip().decode("utf-8"))
-
+    
