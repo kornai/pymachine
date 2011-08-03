@@ -1,3 +1,4 @@
+import socket
 import logging
 config_filename = "machine.cfg"
 
@@ -21,6 +22,8 @@ class Wrapper:
         self.ocamorph_encoding = "LATIN1"
         self.hundisambig_bin = items["hundisambig_bin"]
         self.hundisambig_model = items["hundisambig_model"]
+        self.hunmorph_host = items["hunmorph_host"]
+        self.hunmorph_port = int(items["hunmorph_port"])
 
     def __read_files(self):
         self.__read_definitions()
@@ -41,10 +44,22 @@ class Wrapper:
         from subprocess import Popen, PIPE
         from tempfile import NamedTemporaryFile
         command = command.encode(self.ocamorph_encoding)
+        hunmorph_input = "\n".join(command.split())
+        s = socket.socket()
+        s.connect((self.hunmorph_host, self.hunmorph_port))
+        logging.debug('connected to hunmorph at %s:%d' % (self.hunmorph_host, self.hunmorph_port))
+        logging.debug('sending...')#: \n'+hunmorph_input)
+        s.send(hunmorph_input)
+        logging.debug('sent')
+        logging.debug('receiving...')
+        hunmorph_output = s.recv(4096)
+        logging.debug('received')
+        hunmorph_output = hunmorph_output.decode(self.ocamorph_encoding)
+        """
         oca_output = Popen([self.ocamorph, "--bin", self.ocamorph_bin,
                         "--tag_preamble", "",
                         "--tag_sep", "{0}".format(self.ocamorph_tag_sep),
-                        "--guess", "Fallback", "--blocking"], stdout=PIPE, stdin=PIPE).communicate("\n".join(command.split()))[0].strip()
+                        "--guess", "Fallback", "--blocking"], stdout=PIPE, stdin=PIPE).communicate( "\n".join(command.split()) )[0].strip()
         oca_output = oca_output.replace(self.ocamorph_tag_sep, "\t")
         tf = NamedTemporaryFile()
         tf_name = tf.name
@@ -58,8 +73,9 @@ class Wrapper:
                               stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate(hundis_input)[0].strip()
         hundis_output = hundis_output.decode(self.ocamorph_encoding)
         tf.close()
-
-        tokens = [tok.split("\t")[:2] for tok in hundis_output.split("\n")]
+        """
+        
+        tokens = [tok.split("\t")[:2] for tok in hunmorph_output.split("\n") if tok!='']
         return tokens 
 
     def __run_morph_analysis_v2(self, command):
