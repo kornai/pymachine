@@ -38,13 +38,15 @@ class OrderParser:
         returns a list of machines, one machine per word
         """
         machines = []
-        for _, pos in sen:
-            word, _, pos = pos.split("|", 2)
-            if word not in self._vocab:
+        for word, pos in sen:
+            stem, _, pos = pos.split("|", 2)
+            if stem not in self._vocab:
                 from exceptions import UnknownWordException
-                raise UnknownWordException(word)
+                if stem == 'unknown':
+                    raise UnknownWordException(word)
+                raise UnknownWordException(stem)
 
-            m = Machine(Monoid(word), Control(pos))
+            m = Machine(Monoid(stem), Control(pos))
             machines.append(m)
         return machines
 

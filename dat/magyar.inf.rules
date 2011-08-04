@@ -1,3 +1,5 @@
+# IN + A
+base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ ILL => rename:IN
 # ON + A
 base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ SBL => rename:ON
 # ON + D

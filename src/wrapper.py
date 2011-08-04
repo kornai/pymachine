@@ -15,6 +15,7 @@ class Wrapper:
         items = dict(config.items("machine"))
         self.def_fn = items["definitions"]
         self.con_fn = items["constructions"]
+        self.known_words = self.getKnownWords(items["known_words"])
         self.ocamorph = items["ocamorph"]
         self.ocamorph_bin = items["ocamorph_bin"]
         self.ocamorph_tag_sep = items["ocamorph_tag_sep"]
@@ -25,6 +26,9 @@ class Wrapper:
         self.hunmorph_host = items["hunmorph_host"]
         self.hunmorph_port = int(items["hunmorph_port"])
 
+    def getKnownWords(self, file):
+        return dict([line.decode('utf-8').strip().split()[:2] for line in open(file) if line!='\n'])
+    
     def __read_files(self):
         self.__read_definitions()
         self.__read_constructions()
@@ -43,6 +47,13 @@ class Wrapper:
         """
         from subprocess import Popen, PIPE
         from tempfile import NamedTemporaryFile
+        
+        try:
+            tokens = [[w, self.known_words[w]] for w in command.split()]
+            return tokens
+        except KeyError:
+            pass
+        logging.warning('not all words are known, falling back to ocamorph')
         command = command.encode(self.ocamorph_encoding)
         hunmorph_input = "\n".join(command.split())
         s = socket.socket()
