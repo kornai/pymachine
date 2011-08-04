@@ -1,6 +1,6 @@
 # ON + A
 base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ SBL => rename:ON
 # ON + D
-base.partitions[0] = AT;base.partitions[?].[?].control ~ SUP => rename:ON
+base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ SUP => rename:ON
 # -ro'l/-ro"l
-base.partitions[0] = AT;base.partitions[?].[?].control ~ DEL => rename:OFF
+base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ DEL => rename:OFF

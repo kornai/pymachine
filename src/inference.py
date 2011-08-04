@@ -3,6 +3,7 @@ import itertools
 
 from machine import Machine
 from monoid import Monoid
+from itertools import chain
 
 ## -------------------------------- Conditions --------------------------------
 
@@ -13,30 +14,37 @@ class Condition(object):
         self.value = value
 
     def holds(self, obj):
-        """Checks if the attribute has the prescribed value in obj."""
-        return self._holds(obj, self.attr_path, 0)
+        """Checks if the attribute has the prescribed value in obj. Returns
+        a pair. If the condition holds, the first element will be True and the
+        second will be the machine at the bottom of the attribute path."""
+        return self._holds(obj, self.attr_path, 0, obj)
 
     def _cmp(self, obj_value, true_value):
         """Compares the value the object has, and should have for the
-        condition to hold. Subclasses must override this method."""
+        condition to hold. Subclasses must override this method. For the return
+        value, see holds()."""
         raise NotImplementedError()
 
-    def _holds(self, val, attrs, depth):
+    def _holds(self, val, attrs, depth, curr_machine):
         """Recursively checks the condition in the graph. Required because we
         want to handle wildcard searches."""
         if len(attrs) == 0:
-            return self._cmp(val, self.value)
+            return (self._cmp(val, self.value), curr_machine)
         else:
             new_vals = attrs[0].get(val)
             if new_vals is not None:
                 for new_val in new_vals:
                     try:
-                        if self._holds(new_val, attrs[1:], depth + 1):
-                            return True
+                        next_machine = new_val if isinstance(new_val, Machine)\
+                                               else curr_machine
+                        ret_tup = self._holds(new_val, attrs[1:], depth + 1,
+                                              next_machine)
+                        if ret_tup[0]:
+                            return ret_tup
                     except AttributeError:
                         # print "error"
                         pass
-            return False
+            return (False, None)
 
     @staticmethod
     def getInstance(type, attr_path, value):
@@ -130,9 +138,9 @@ class Action(object):
     ..."""
     ACT_PATTERN = re.compile(r"^(\w+?):(.+)$")
 
-    """Action executed if the rule matches."""
-    def act(self, current, parent):
+    def act(self, current, parent, machines):
         """Acts on the current object."""
+        pass
 
     @staticmethod
     def getInstance(action):
@@ -152,9 +160,29 @@ class RenameAction(Action):
         """Name: the new name of the object."""
         self.name = name
 
-    def act(self, current, parent):
+    def act(self, current, parent, machines):
         """Renames the current object."""
         current.base.partitions[0] = self.name
+
+class ReplaceAction(Action):
+    """Replaces a machine parameter with another in the graph; the indices are
+    passed in the constructor. Cannot replace the root object."""
+    # TODO: the root object should be replaceable as well.
+    def __init__(self, old, new):
+        self.old = old
+        self.new = new
+
+    def act(self, current, parent, machines):
+        if max(self.old, self.new) < machines.length:
+            self._replace(current, machines[self.old], machines[self.new])
+
+    def _replace(self, current, m_from, m_to):
+        for p in xrange(1, 3):
+            for index, machine in enumerate(current.partitions[p]):
+                if machine == m_from:
+                    current.partitions[p][index] = m_to
+                else:
+                    self._replace(machine, m_from, m_to)
 
 ## -------------------------------- The engine --------------------------------
 
@@ -217,16 +245,18 @@ class InferenceEngine(object):
 
     def apply(self, current, parent):
         """Applies all possible rules to the current object."""
-        #print (u"Before: " + current.base.partitions[0]).encode('utf-8')
+        print (u"Before: " + current.base.partitions[0]).encode('utf-8')
         for rule in self.rules:
             matches = True
+            cond_res = []  # The results of the condition checks
             for cond in rule[0]:
-                if not cond.holds(current):
+                cond_res.append(cond.holds(current))
+                if not cond_res[-1][0]:
                     matches = False
                     break
             if matches:
-                rule[1].act(current, parent)
-        #print (u"After: " + current.base.partitions[0]).encode('utf-8')
+                rule[1].act(current, parent, [cond[1] for cond in cond_res])
+        print (u"After: " + current.base.partitions[0]).encode('utf-8')
 
     @staticmethod
     def strip(line):
@@ -241,6 +271,11 @@ class InferenceEngine(object):
 ## ----------------------------------- Test -----------------------------------
 
 if __name__ == '__main__':
+    from control import PosControl
+
+    i = InferenceEngine()
+    import sys
+    i.load(sys.argv[1])
 #    class C(object):
 #        def __init__(self):
 #            self.x = "3"
@@ -274,12 +309,12 @@ if __name__ == '__main__':
     kocka.base.partitions.append([])
     kocka.base.partitions[1].append(sarga)
     # legyen egy szofaja is, ez most string, ke1so3bb FSx
-    kocka.control = "NOUN<ACC>"
+    kocka.control = PosControl("NOUN<ACC>")
     
     gomb = Machine(Monoid("go2mb"))
     gomb.base.partitions.append([])
     gomb.base.partitions[1].append(kek)
-    gomb.control = "NOUN<SUBL>"
+    gomb.control = PosControl("NOUN<SBL>")
     
     on = Machine(Monoid("AT"))
     on.base.partitions.append([])
@@ -293,8 +328,19 @@ if __name__ == '__main__':
     put.base.partitions[1].append(None) # NOM
     put.base.partitions[2].append(on)
     
-    i = InferenceEngine()
-    import sys
-    i.load(sys.argv[1])
     i.infer(put)
 
+    behind = Machine(Monoid("behind"))
+    behind.base.partitions.append([])
+    behind.base.partitions.append([])
+    behind.base.partitions[1].append(kocka)
+
+    at = Machine(Monoid("AT"))
+    at.base.partitions.append([])
+    at.base.partitions.append([])
+    at.base.partitions[1].append(kocka)
+    at.base.partitions[2].append(behind)
+    
+    i.infer(put)
+    print "-----------------"
+    i.infer(at)
