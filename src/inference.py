@@ -245,7 +245,7 @@ class InferenceEngine(object):
 
     def apply(self, current, parent):
         """Applies all possible rules to the current object."""
-        print (u"Before: " + current.base.partitions[0]).encode('utf-8')
+        #print (u"Before: " + current.base.partitions[0]).encode('utf-8')
         for rule in self.rules:
             matches = True
             cond_res = []  # The results of the condition checks
@@ -256,7 +256,7 @@ class InferenceEngine(object):
                     break
             if matches:
                 rule[1].act(current, parent, [cond[1] for cond in cond_res])
-        print (u"After: " + current.base.partitions[0]).encode('utf-8')
+        #print (u"After: " + current.base.partitions[0]).encode('utf-8')
 
     @staticmethod
     def strip(line):
@@ -342,5 +342,5 @@ if __name__ == '__main__':
     at.base.partitions[2].append(behind)
     
     i.infer(put)
-    print "-----------------"
+    #print "-----------------"
     i.infer(at)

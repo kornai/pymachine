@@ -19,7 +19,7 @@ sárga	sárga||ADJ	K	S
 kék	kék||ADJ	K	S
 zöld	zöld||ADJ	K	S
 kicsi	kicsi||ADJ	K	S
-közepes	közép|NOUN[ATTRIB]|ADJ	K	S
+közepes	közepes|NOUN[ATTRIB]|ADJ	K	S
 nagy	nagy||ADJ	K	S
 
 tedd	tesz||VERB<SUBJUNC-IMP><PERS<2>><DEF>	K	S
