@@ -1,0 +1,34 @@
+kocka	kocka||NOUN	K	S
+kockát	kocka||NOUN<CAS<ACC>>	K	S
+kockára	kocka||NOUN<CAS<SBL>>	K	S
+gömb	gömb||NOUN	K	S
+gömböt	gömb||NOUN<CAS<ACC>>	K	S
+gömbre	gömb||NOUN<CAS<SBL>>	K	U
+kúp	kúp||NOUN	K	U
+kúpot	kúp||NOUN<CAS<ACC>>	K	U
+kúpra	kúp||NOUN<CAS<SBL>>	K	U
+
+mögé	mögé||POSTP	K	S
+elé	elé||POSTP	K	S
+fölé	fölé||POSTP	K	S
+mellé	mellé||POSTP	K	S
+alá	alá||POSTP	K	S
+
+piros	piros||ADJ	K	S
+sárga	sárga||ADJ	K	S
+kék	kék||ADJ	K	S
+zöld	zöld||ADJ	K	S
+kicsi	kicsi||ADJ	K	S
+közepes	közép|NOUN[ATTRIB]|ADJ	K	S
+nagy	nagy||ADJ	K	S
+
+tedd	tesz||VERB<SUBJUNC-IMP><PERS<2>><DEF>	K	S
+tegyed	tesz||VERB<SUBJUNC-IMP><PERS<2>><DEF>	K	U
+tegye	tesz||VERB<SUBJUNC-IMP><DEF>	K	S
+rakd	rak||VERB<SUBJUNC-IMP><PERS<2>><DEF>	K	S
+rakjad	rak||VERB<SUBJUNC-IMP><PERS<2>><DEF>	K	U
+rakja	rak||VERB<SUBJUNC-IMP><DEF>	K	S
+
+a	a||ART	K	S
+az	az||NOUN	K	S
+
