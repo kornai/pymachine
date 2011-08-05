@@ -148,6 +148,10 @@ class Action(object):
         if res is not None:
             if res.group(1) == 'rename':
                 return RenameAction(res.group(2).split(',')[0])
+            elif res.group(1) == 'collapse':
+                return CollapseAction(res.group(2).split(',')[0])
+            elif res.group(1) == 'getname':
+                return GetnameAction(res.group(2).split(',')[0])
         return None
 
 ## TODO: refactor and rename to ReplaceAction
@@ -164,26 +168,36 @@ class RenameAction(Action):
         """Renames the current object."""
         current.base.partitions[0] = self.name
 
-class ReplaceAction(Action):
-    """Replaces a machine parameter with another in the graph; the indices are
-    passed in the constructor. Cannot replace the root object."""
-    # TODO: the root object should be replaceable as well.
-    def __init__(self, old, new):
-        self.old = old
-        self.new = new
+class GetnameAction(Action):
+    """Renames the object to the name of another in the condition list."""
+    def __init__(self, rename_index):
+        """Rename_index: the condition that matches the machine whose name
+        we copy."""
+        self.rename_index = int(rename_index)
 
     def act(self, current, parent, machines):
-        if max(self.old, self.new) < machines.length:
-            self._replace(current, machines[self.old], machines[self.new])
+        """Renames the current object."""
+        if self.rename_index < len(machines):
+            current.base.partitions[0] = machines[self.rename_index].base.partitions[0]
 
-    def _replace(self, current, m_from, m_to):
-        for p in xrange(1, 3):
-            for index, machine in enumerate(current.partitions[p]):
-                if machine == m_from:
-                    current.partitions[p][index] = m_to
-                else:
-                    self._replace(machine, m_from, m_to)
+class CollapseAction(Action):
+    """Collapses the machine denoted by the condition index parameter; that is,
+    replaces it with all its children."""
+    def __init__(self, collapse_index):
+        self.collapse_index = int(collapse_index)
 
+    def act(self, current, parent, machines):
+        if self.collapse_index < len(machines):
+            self._collapse(current, machines[self.collapse_index])
+
+    def _collapse(self, current, m_coll):
+        for p in xrange(1, len(current.base.partitions)):
+            if m_coll in current.base.partitions[p]:
+                current.base.partitions[p].remove(m_coll)
+                current.base.partitions[p].extend(chain(*m_coll.base.partitions[1:]))
+            for child in current.base.partitions[p]:
+                self._collapse(child, m_coll)
+        
 ## -------------------------------- The engine --------------------------------
 
 class FormatError(Exception):
@@ -213,13 +227,13 @@ class InferenceEngine(object):
                 cresult.group(3)))
         return conds
 
-    def add_rule(self, premise, action):
+    def add_rule(self, premise, conclusion):
         """Adds a rule to the engine. @premise is the string representation
         of the premise; @action is an object that implements the Action
         interface."""
         conds = InferenceEngine._parse_premise(premise)
-        self.rules.append((conds, action))
-
+        actions = [Action.getInstance(a) for a in conclusion.split(';')]
+        self.rules.append((conds, actions))
 
     def load(self, rule_file):
         """Loads a set of rules to the engine from rule_file."""
@@ -229,8 +243,7 @@ class InferenceEngine(object):
                 result = InferenceEngine.RULE_PATTERN.match(rule)
                 if result is None:
                     continue
-                action = Action.getInstance(result.group(2))
-                self.add_rule(result.group(1), action)
+                self.add_rule(result.group(1), result.group(2))
 
     def infer(self, root):
         """Runs the inference on the object graph whose root is root."""
@@ -239,23 +252,24 @@ class InferenceEngine(object):
     def _visit(self, current, parent):
         """Recursively visits all machines in the graph."""
         self.apply(current, parent)
-        for machine in itertools.chain(*current.base.partitions[1:]):
+        for machine in chain(*current.base.partitions[1:]):
             if machine is not None:
                 self._visit(machine, current)
 
     def apply(self, current, parent):
         """Applies all possible rules to the current object."""
         #print (u"Before: " + current.base.partitions[0]).encode('utf-8')
-        for rule in self.rules:
+        for index, rule in enumerate(self.rules):
             matches = True
             cond_res = []  # The results of the condition checks
-            for cond in rule[0]:
+            for cindex, cond in enumerate(rule[0]):
                 cond_res.append(cond.holds(current))
                 if not cond_res[-1][0]:
                     matches = False
                     break
             if matches:
-                rule[1].act(current, parent, [cond[1] for cond in cond_res])
+                for action in rule[1]:
+                    action.act(current, parent, [cond[1] for cond in cond_res])
         #print (u"After: " + current.base.partitions[0]).encode('utf-8')
 
     @staticmethod
@@ -298,11 +312,13 @@ if __name__ == '__main__':
 
     # a sa1rga printnevu3 ge1p
     sarga = Machine(Monoid("sa1rga"))
+    sarga.control = PosControl("ADJ")
     # sarga.control == None, me1g nincs szo1faj
     # sarga.base == Monoid("sarga"), az a pe1lda1ny
     
     # ke1k ge1p ugyani1gy
     kek = Machine(Monoid("ke1k"))
+    kek.control = PosControl("ADJ")
     
     kocka = Machine(Monoid("kocka"))
     # a 0. parti1cio1 a printname, kell egy elso3 parti1cio1
@@ -330,7 +346,10 @@ if __name__ == '__main__':
     
     i.infer(put)
 
+    gomb.control = PosControl("NOUN<NOM>")
+
     behind = Machine(Monoid("behind"))
+    behind.control = PosControl("POSTP")
     behind.base.partitions.append([])
     behind.base.partitions.append([])
     behind.base.partitions[1].append(kocka)
@@ -338,9 +357,12 @@ if __name__ == '__main__':
     at = Machine(Monoid("AT"))
     at.base.partitions.append([])
     at.base.partitions.append([])
-    at.base.partitions[1].append(kocka)
+    at.base.partitions[1].append(gomb)
     at.base.partitions[2].append(behind)
     
-    i.infer(put)
-    #print "-----------------"
+#    print "-----------------"
+    with open('before', 'w') as f:
+        f.write(at.to_dot(True))
     i.infer(at)
+    with open('after', 'w') as f:
+        f.write(at.to_dot(True))

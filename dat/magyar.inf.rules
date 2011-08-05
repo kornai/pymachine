@@ -6,3 +6,5 @@ base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ SBL => rename:ON
 base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ SUP => rename:ON
 # -ro'l/-ro"l
 base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ DEL => rename:OFF
+# test
+base.partitions[0] = AT;base.partitions[?].[?].base.partitions[0] = behind => collapse:1;getname:1
