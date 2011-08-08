@@ -1,6 +1,6 @@
 import re
 import itertools
-
+import logging
 from machine import Machine
 from monoid import Monoid
 from itertools import chain
@@ -64,6 +64,7 @@ class EqualsCondition(Condition):
 class SubstringCondition(Condition):
     """Checks if the attribute contains the condition value as a substring."""
     def _cmp(self, obj_value, true_value):
+        logging.debug('obj: {0} true: {1}'.format(obj_value, true_value))
         return obj_value.find(true_value) >= 0
 
 ## ------------------------------- AttributeElems ------------------------------
@@ -259,12 +260,16 @@ class InferenceEngine(object):
     def apply(self, current, parent):
         """Applies all possible rules to the current object."""
         #print (u"Before: " + current.base.partitions[0]).encode('utf-8')
+        at = current.base.partitions[0] == 'AT'
+        logging.debug('current: '+unicode(current))
         for index, rule in enumerate(self.rules):
+            if at: logging.debug('rule: '+str(index))
             matches = True
             cond_res = []  # The results of the condition checks
             for cindex, cond in enumerate(rule[0]):
                 cond_res.append(cond.holds(current))
                 if not cond_res[-1][0]:
+                    if at: logging.debug('no match: '+str(cindex))
                     matches = False
                     break
             if matches:
