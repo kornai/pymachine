@@ -1,4 +1,5 @@
 import socket
+import os
 import logging
 config_filename = "machine.cfg"
 
@@ -10,19 +11,15 @@ class Wrapper:
 
     def __read_config(self):
         import ConfigParser
-        config = ConfigParser.SafeConfigParser()
+        config = ConfigParser.SafeConfigParser({'machinepath':os.environ['MACHINEPATH']})
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_fn = items["definitions"]
         self.con_fn = items["constructions"]
         self.known_words = self.getKnownWords(items["known_words"])
-        self.ocamorph = items["ocamorph"]
-        self.ocamorph_bin = items["ocamorph_bin"]
         self.ocamorph_tag_sep = items["ocamorph_tag_sep"]
         self.inference_rules = items["inference_rules"]
         self.ocamorph_encoding = "LATIN1"
-        self.hundisambig_bin = items["hundisambig_bin"]
-        self.hundisambig_model = items["hundisambig_model"]
         self.hunmorph_host = items["hunmorph_host"]
         self.hunmorph_port = int(items["hunmorph_port"])
 
@@ -66,26 +63,6 @@ class Wrapper:
         hunmorph_output = s.recv(4096)
         logging.debug('received')
         hunmorph_output = hunmorph_output.decode(self.ocamorph_encoding)
-        """
-        oca_output = Popen([self.ocamorph, "--bin", self.ocamorph_bin,
-                        "--tag_preamble", "",
-                        "--tag_sep", "{0}".format(self.ocamorph_tag_sep),
-                        "--guess", "Fallback", "--blocking"], stdout=PIPE, stdin=PIPE).communicate( "\n".join(command.split()) )[0].strip()
-        oca_output = oca_output.replace(self.ocamorph_tag_sep, "\t")
-        tf = NamedTemporaryFile()
-        tf_name = tf.name
-        tf.write("\n".join(set(oca_output.split("\n"))))
-        tf.flush()
-        hundis_input = "\n".join([t.split("\t")[0] for t in oca_output.split("\n")])
-        
-        hundis_output = Popen([self.hundisambig_bin,
-                               "--morphtable", tf_name,
-                               "--tagger-model", self.hundisambig_model],
-                              stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate(hundis_input)[0].strip()
-        hundis_output = hundis_output.decode(self.ocamorph_encoding)
-        tf.close()
-        """
-        
         tokens = [tok.split("\t")[:2] for tok in hunmorph_output.split("\n") if tok!='']
         return tokens 
 
