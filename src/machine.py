@@ -29,6 +29,9 @@ class Machine:
     def __hash__(self):
         return hash(id(self))
 
+    def allNames(self):
+        return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])
+        
     def append(self, which_partition, what):
         self.base.append(which_partition, what)
     
