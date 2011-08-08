@@ -7,4 +7,4 @@ base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ SUP => rename:ON
 # -ro'l/-ro"l
 base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ DEL => rename:OFF
 # test
-base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ POSTP => collapse:1;getname:1
+base.partitions[0] = AT;base.partitions[?].[?].control.pos ~ PP => collapse:1;getname:1
