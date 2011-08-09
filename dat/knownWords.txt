@@ -32,3 +32,4 @@ rakja	rak||VERB<SUBJUNC-IMP><DEF>	K	S
 a	a||ART	K	S
 az	az||NOUN	K	S
 
+hol	hol||ADV	K	S

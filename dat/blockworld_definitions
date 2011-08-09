@@ -10,6 +10,7 @@
 10000 go2mb N sphere # # : sphere
 10001 ku1p N cone # # : cone
 10002 henger N cylinder # # : cylinder
+10003 doboz N box # # : box
 10010 piros A red # # : red
 10020 kicsi A small parvus mally: small
 10021 ko2zepes A medium # # : medium
