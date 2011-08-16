@@ -33,3 +33,6 @@ a	a||ART	K	S
 az	az||NOUN	K	S
 
 hol	hol||ADV	K	S
+van	van||VERB	K	S
+dobozba	doboz||NOUN<CAS<ILL>>	K	U
+
