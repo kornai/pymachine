@@ -11,7 +11,15 @@
 10001 ku1p N cone # # : cone
 10002 henger N cylinder # # : cylinder
 10003 doboz N box # # : box
+10004 asztal N table # # : table
+10005 sarok N corner # # : corner
+10006 sark N corner # # : corner
 10010 piros A red # # : red
+10011 jobb A right # # : right
+10012 bal A left # # : left
+10013 also1 A low # # : low
+10014 felso3 A high # # : high
+10015 jo1 A good # # : good
 10020 kicsi A small parvus mally: small
 10021 ko2zepes A medium # # : medium
 10030 a D the # # : the
