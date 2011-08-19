@@ -132,7 +132,8 @@ class VerbCommand(FinalCommand):
 
         # else we do not know what to do
         else:
-            raise Exception("empty slots cannot be filled without guessing")
+            from machine_exceptions import UnknownSentenceException
+            raise UnknownSentenceException("empty slots cannot be filled without guessing")
 
         # TODO think it through
         # now CAUSE is at first partition of put, but it should be instead of it?
