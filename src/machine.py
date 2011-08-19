@@ -41,7 +41,7 @@ class Machine:
             s = u"graph"
         
         s += u" cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(self))
-        s += u"label={0};\n".format(self.base.partitions[0])
+        s += u"label={0}_{1};\n".format(self.base.partitions[0], id(self))
         
         if len(self.base.partitions) > 1:
             s += "color=black;\n"
