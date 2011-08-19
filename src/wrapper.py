@@ -11,7 +11,12 @@ class Wrapper:
 
     def __read_config(self):
         import ConfigParser
-        config = ConfigParser.SafeConfigParser({'machinepath':os.environ['MACHINEPATH']})
+        try:
+            machinepath = os.environ['MACHINEPATH']
+        except KeyError:
+            logging.critical('MACHINEPATH environment variable not set!')
+            sys.exit(-1)
+        config = ConfigParser.SafeConfigParser({'machinepath':machinepath})
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_fn = items["definitions"]
