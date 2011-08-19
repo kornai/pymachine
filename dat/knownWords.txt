@@ -19,7 +19,7 @@ sárga	sárga||ADJ	K	S
 kék	kék||ADJ	K	S
 zöld	zöld||ADJ	K	S
 kicsi	kicsi||ADJ	K	S
-közepes	közepes|NOUN[ATTRIB]|ADJ	K	S
+közepes	közép|NOUN[ATTRIB]|ADJ	K	S
 nagy	nagy||ADJ	K	S
 
 tedd	tesz||VERB<SUBJUNC-IMP><PERS<2>><DEF>	K	S
@@ -35,4 +35,11 @@ az	az||NOUN	K	S
 hol	hol||ADV	K	S
 van	van||VERB	K	S
 dobozba	doboz||NOUN<CAS<ILL>>	K	U
+sarokba	sarok||NOUN<CAS<ILL>>	K	S
+jobb	jó|ADJ[COMPAR]|ADJ	K	S
+bal	bal||ADJ	K	S
+alsó	alsó||ADJ	K	S
+felső	felső||ADJ	K	S
+hátsó	hátsó||ADJ	K	S
+elülső	elülső||ADJ	K	U
 
