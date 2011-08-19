@@ -6,7 +6,6 @@ from control import PosControl as Control
 from definition_parser import read
 from constructions import read_constructions, FinalCommand
 
-
 class OrderParser:
     def __init__(self, constructions, definitions):
         """
@@ -41,7 +40,7 @@ class OrderParser:
         for word, pos in sen:
             stem, _, pos = pos.split("|", 2)
             if stem not in self._vocab:
-                from exceptions import UnknownWordException
+                from machine_exceptions import UnknownWordException
                 if stem == 'unknown':
                     raise UnknownWordException(word)
                 raise UnknownWordException(stem)
