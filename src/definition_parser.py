@@ -28,9 +28,7 @@ class DefinitionParser:
     prime = "'"
 
     def __init__(self):
-        self.init_constants()
         self.init_parser()
-
     
     def init_parser(self):
         self.id = Word(nums)
