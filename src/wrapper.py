@@ -22,6 +22,7 @@ class Wrapper:
         self.def_fn = items["definitions"]
         self.con_fn = items["constructions"]
         self.known_words = self.getKnownWords(items["known_words"])
+        self.known_words.update(self.getKnownWords(items["morph_override"]))
         self.ocamorph_tag_sep = items["ocamorph_tag_sep"]
         self.inference_rules = items["inference_rules"]
         self.ocamorph_encoding = "LATIN1"
