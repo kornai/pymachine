@@ -55,10 +55,10 @@ class DefinitionParser:
         
         # "enumerable expression"
         # D -> E | E, D
-        self.definition = (self.expression + Optional(OneOrMore(self.arg_sep_lit.suppress() + self.expression)))
+        self.definition = Group(self.expression + Optional(OneOrMore(self.arg_sep_lit.suppress() + self.expression)))
         self.expression << Group(
                             # E -> U [ D ]
-                            (self.unary + self.lb_lit.suppress() + Group(self.definition) + self.rb_lit.suppress() ) ^ 
+                            (self.unary + self.lb_lit.suppress() + self.definition + self.rb_lit.suppress() ) ^ 
 
                             # E -> U ( U ) | U ( U [ E ] )
                             (self.unary + self.lp_lit + self.unary + Optional(self.lb_lit + self.expression + self.rb_lit) + self.rp_lit ) ^
@@ -73,16 +73,16 @@ class DefinitionParser:
                             (self.unary) ^
 
                             # E -> B [ E ; E ] 
-                            (self.binary + self.lb_lit.suppress() + Group(self.expression) + self.part_sep_lit.suppress() + Group(self.expression) + self.rb_lit.suppress()) ^
+                            (self.binary + self.lb_lit.suppress() + self.expression + self.part_sep_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
                             
                             # E -> [ E ] B [ E ]
-                            (self.lb_lit.suppress() + Group(self.expression) + self.rb_lit.suppress() + self.binary + self.lb_lit.suppress() + Group(self.expression) + self.rb_lit.suppress()) ^
+                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
                             
                             # E -> B [ E ]
-                            (self.binary + self.lb_lit.suppress() + Group(self.expression) + self.rb_lit.suppress()) ^
+                            (self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
                             
                             # E -> [ E ] B
-                            (self.lb_lit.suppress() + Group(self.expression) + self.rb_lit.suppress() + self.binary) ^
+                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary) ^
                             
                             # E -> B E
                             (self.binary + self.expression) ^
@@ -216,13 +216,13 @@ class DefinitionParser:
         raise NotImplementedError("kell-e a sok expression ele1 a Group() a szaba1lyokna1l az initne1l? Kezdetben volt e1rtelme, de ma1r nem emle1kszem, hogy mi. Lehet to2ro2lheto3.") 
         is_binary = cls._is_binary
         is_unary = cls._is_unary
-        is_expr = lambda r: type(r) == list
+        is_tree = lambda r: type(r) == list
 
         # E -> U [ D ]
         # ['unary', [['unary'], ['unary']]]
         if (len(expr) == 2 and
               is_unary(expr[0]) and
-              is_expr(expr[1])):
+              is_tree(expr[1])):
             m = Machine(Monoid(expr[0]))
             for _property in expr[1]:
                 m.append(1, cls.__parse_expr_v2(_property))
@@ -245,7 +245,7 @@ class DefinitionParser:
         if (len(expr) == 3 and
               is_unary(expr[0]) and
               is_binary(expr[1]) and
-              is_expr(expr[2])):
+              is_tree(expr[2])):
             m = Machine(Monoid(expr[1]))
             m.append(1, Machine(Monoid(expr[0])))
             m.append(2, cls.__parse_expr_v2(expr[2]))
@@ -267,22 +267,22 @@ class DefinitionParser:
             return Machine(Monoid(expr[0]))
 
         # E -> B [ E ; E ] 
-        # ['BINARY', [['unary']], [['unary']]]
+        # ['BINARY', ['unary'], ['unary']]
         if (len(expr) == 3 and
               is_binary(expr[0]) and
-              is_expr(expr[1]) and
-              is_expr(expr[2])):
+              is_tree(expr[1]) and
+              is_tree(expr[2])):
             m = Machine(Monoid(expr[0]))
             m.append(1, cls.__parse_expr_v2(expr[1]))
             m.append(2, cls.__parse_expr_v2(expr[2]))
             return m
 
         # E -> [ E ] B [ E ]
-        # [[['unary']], 'BINARY', [['unary']]]
+        # [['unary'], 'BINARY', ['unary']]
         if (len(expr) == 3 and
-              is_expr(expr[0]) and
+              is_tree(expr[0]) and
               is_binary(expr[1]) and
-              is_expr(expr[1])):
+              is_tree(expr[1])):
             m = Machine(Monoid(expr[1]))
             m.append(1, cls.__parse_expr_v2(expr[0]))
             m.append(2, cls.__parse_expr_v2(expr[2]))
@@ -290,18 +290,18 @@ class DefinitionParser:
             
 
         # E -> B [ E ]
-        # ['BINARY', [['unary']]]
+        # ['BINARY', ['unary']]
         if (len(expr) == 2 and
             is_binary(expr[0]) and
-            is_expr(expr[1])):
+            is_tree(expr[1])):
             m = Machine(Monoid(expr[0]))
             m.append(2, cls.__parse_expr_v2(expr[1]))
             return m
 
         # E -> [ E ] B
-        # [[['unary']], 'BINARY']
+        # [['unary'], 'BINARY']
         if (len(expr) == 2 and
-            is_expr(expr[0]) and
+            is_tree(expr[0]) and
             is_binary(expr[1])):
             m = Machine(Monoid(expr[1]))
             m.append(1, cls.__parse_expr_v2(expr[0]))
@@ -312,7 +312,7 @@ class DefinitionParser:
         # ['BINARY', ['unary']]
         if (len(expr) == 2 and
             is_binary(expr[0]) and
-            is_expr(expr[1])):
+            is_tree(expr[1])):
             m = Machine(Monoid(expr[0]))
             m.append(2, cls.__parse_expr_v2(expr[1]))
             return m
@@ -337,8 +337,8 @@ class DefinitionParser:
         
         machine = Machine(Monoid(parsed[1][2]))
         machine.base.partitions.append([])
-        for d in parsed[2:]:
-            machine.base.partitions[1].append(DefinitionParser._parse_expr(d))
+        for d in parsed[2]:
+            machine.append(1, DefinitionParser._parse_expr(d))
         return (machine, tuple(parsed[1]))
 
 def read(f):
