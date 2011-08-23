@@ -233,10 +233,10 @@ class DefinitionParser:
         if (len(expr) == 4 and
               is_unary(expr[0]) and
               expr[1] == cls.lp and
-              is_expr(expr[2]) and
+              is_unary(expr[2]) and
               expr[3] == cls.rp):
-            m = Machine(Monoid(expr[0]))
-            m.append(1, Machine(Monoid(expr[2])))
+            m = Machine(Monoid(expr[2]))
+            m.append(1, Machine(Monoid(expr[0])))
             return m
         # ???
 
