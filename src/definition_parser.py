@@ -1,5 +1,6 @@
 from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, OneOrMore, nums
 import string
+import logging
 
 from machine import Machine
 from monoid import Monoid
@@ -119,11 +120,11 @@ class DefinitionParser:
     
     @classmethod
     def _is_binary(cls, s):
-        return s.isupper() and not s in cls._deep_cases
+        return type(s) in cls._str and s.isupper() and not s in cls._deep_cases
     
     @classmethod
     def _is_unary(cls, s):
-        return s.islower() or s in cls._deep_cases
+        return type(s) in cls._str and s.islower() or s in cls._deep_cases
     
     @classmethod
     def _is_deep_case(cls, s):
@@ -206,14 +207,17 @@ class DefinitionParser:
                 m.base.partitions[1].append(Machine(Monoid(l[0])))
                 return m
             else:
-                raise ParserException("there shouldn't be 4 nodes in a tree only if 2 of them are parentheses")
+                pe = ParserException("there shouldn't be 4 nodes in a tree only if 2 of them are parentheses")
+                logging.debug(str(pe))
+                logging.debug(str(l))
+                raise pe
 
+    @classmethod
     def __parse_expr_v2(cls, expr):
         """
         creates machines from a parse node and its children
         there should be one handler for every rule
         """
-        raise NotImplementedError("kell-e a sok expression ele1 a Group() a szaba1lyokna1l az initne1l? Kezdetben volt e1rtelme, de ma1r nem emle1kszem, hogy mi. Lehet to2ro2lheto3.") 
         is_binary = cls._is_binary
         is_unary = cls._is_unary
         is_tree = lambda r: type(r) == list
@@ -259,6 +263,7 @@ class DefinitionParser:
             m = Machine(Monoid(expr[1]))
             m.append(1, Machine(Monoid(expr[0])))
             m.base.partitions.append([])
+            return m
 
         # E -> U
         # ['unary']
@@ -282,7 +287,7 @@ class DefinitionParser:
         if (len(expr) == 3 and
               is_tree(expr[0]) and
               is_binary(expr[1]) and
-              is_tree(expr[1])):
+              is_tree(expr[2])):
             m = Machine(Monoid(expr[1]))
             m.append(1, cls.__parse_expr_v2(expr[0]))
             m.append(2, cls.__parse_expr_v2(expr[2]))
@@ -330,15 +335,21 @@ class DefinitionParser:
             is_binary(expr[0]) and
             expr[1] == cls.prime):
             raise NotImplementedError()
+
+        
+        pe = ParserException("Unknown expression in definition")
+        logging.debug(str(pe))
+        logging.debug(expr)
+        raise pe
     
     def parse_into_machines(self, s):
         parsed = self.parse(s)
-        parsed = DefinitionParser.__flatten__(parsed)
+        #parsed = DefinitionParser.__flatten__(parsed)
         
         machine = Machine(Monoid(parsed[1][2]))
         machine.base.partitions.append([])
         for d in parsed[2]:
-            machine.append(1, DefinitionParser._parse_expr(d))
+            machine.append(1, DefinitionParser.__parse_expr_v2(d))
         return (machine, tuple(parsed[1]))
 
 def read(f):
