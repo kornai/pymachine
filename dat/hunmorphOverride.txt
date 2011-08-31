@@ -1,0 +1,2 @@
+jobb	jobb||ADJ	K	S
+az	az||ART	K	S
