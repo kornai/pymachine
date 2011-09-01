@@ -187,6 +187,8 @@ class Construction:
         pairs = []
         for control_index, machine in zip(xrange(len(self.rule_right)), machines):
             c = self.rule_right[control_index]
+            if machine.control is None:
+                continue
             if machine.control.is_a(c):
                 pairs.append((control_index, c, machine))
             else:
@@ -226,7 +228,11 @@ def read_constructions(f, definitions=None):
     """
     constructions = set()
     for l in f:
+        if l.startswith("#"):
+            continue
         l = l.strip().split("\t")
+        if len(l) < 3:
+            continue
         constructions.add(Construction(l[0], l[1].split(), l[2], definitions))
     return constructions
 
