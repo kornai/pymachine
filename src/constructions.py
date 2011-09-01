@@ -112,11 +112,15 @@ class VerbCommand(FinalCommand):
 
         # filling known cases
         for c, m in known_cases.items():
-            # TODO insert m into defined_machine somehow
-            # WARNING HACK: ACC machine position is hacked into the code ritht now
-            if c == defined_machine.base.partitions[1][0].base.partitions[2][0].base.partitions[1][0].base.partitions[0]:
-                defined_machine.base.partitions[1][0].base.partitions[2][0].base.partitions[1][0] = m
-                done.append(m)
+            places_to_fit = defined_machine.search(what=c)
+            # here i HACK into the code that i know that a VERB cannot be defined as a single deep case only,
+            # so we can search inside the tree
+            if len(places_to_fit) == 1:
+                result = places_to_fit[0]
+                if type(result) is tuple:
+                    place_machine, place_part_index = result
+                    place_machine.base.partitions[place_part_index][0] = m
+                    done.append(m)
 
         # if we have done everything, then we have done everything
         if len(done) == len(pairs):
@@ -125,10 +129,15 @@ class VerbCommand(FinalCommand):
         # if there is one unknown, it can be guessed
         if len(pairs) - len(done) == 1:
             # search for an empty place for the one left
+            
             left = [m for _,_,m in pairs if m not in done][0]
-            # TODO how to search for empty places
-            # WARNING: this is just hacked right now
-            defined_machine.base.partitions[1][0].base.partitions[2][0].base.partitions[2].append(left)
+            empty_places = defined_machine.search(empty=True)
+            if len(empty_places) == 1:
+                place_machine, place_part_index = empty_places[0]
+                place_machine.append(place_part_index, left)
+            else:
+                from machine_exceptions import UnknownSentenceException
+                raise UnknownSentenceException("TEMPHACK_1")
 
         # else we do not know what to do
         else:
@@ -136,7 +145,7 @@ class VerbCommand(FinalCommand):
             raise UnknownSentenceException("empty slots cannot be filled without guessing")
 
         # TODO think it through
-        # now CAUSE is at first partition of put, but it should be instead of it?
+        # now everything is at first partition of defined VERB, but it should be instead of it?
         return [defined_machine.base.partitions[1][0]]
 
 class QuestionCommand(FinalCommand):
