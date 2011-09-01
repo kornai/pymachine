@@ -26,6 +26,7 @@ class Control:
 
 class PosControl(Control):
     import re
+    noun_pattern = re.compile("^N(OUN|P)")
     case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
 
     def __init__(self, pos):
@@ -63,9 +64,13 @@ class PosControl(Control):
         returns self's case if self.case_pattern has a match
         None otherwise
         """
-        s = PosControl.case_pattern.search(self.pos)
-        if s is not None:
-            return s.groups()[1]
+        if PosControl.noun_pattern.search(self.pos) is not None:
+            s = PosControl.case_pattern.search(self.pos)
+            if s is not None:
+                return s.groups()[1]
+            else:
+                # if NOUN/NP has no case, it should be a NOM
+                return "NOM"
         else:
             return None
 
