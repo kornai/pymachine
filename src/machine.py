@@ -59,3 +59,16 @@ class Machine:
         s += "}\n"
         
         return s
+
+    def search(self, what=None, empty=False):
+        results = []
+        for part_i, part in enumerate(self.base.partitions[1:]):
+            if empty:
+                if len(part) == 0:
+                    results.append((self, part_i + 1))
+            for m in part:
+                if what is not None:
+                    if m.base.partitions[0] == what:
+                        results.append((self, part_i + 1))
+                results += m.search(what=what, empty=empty)
+        return results
