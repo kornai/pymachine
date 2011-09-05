@@ -12,6 +12,8 @@ TODO:
   - use Nouns and their deep cases in construction to insert them into
     the verb machine
 """
+import logging
+
 from control import PosControl as Control
 
 class Command:
@@ -60,12 +62,13 @@ class AppendRegexCommand(Command):
     used for cube[yellow]-like expressions
     """
     def __init__(self, into, what):
-        self.into = Control(into)
-        self.what = Control(what)
+        self.into = into
+        self.what = what
 
     def run(self, pairs):
-        into = [m for i,c,m in pairs if c == self.into][0]
-        what = [m for i,c,m in pairs if c == self.what][0]
+        into = [m for _,c,m in pairs if c == self.into][0]
+        what = [m for _,c,m in pairs if c == self.what][0]
+        logging.debug("applying AppendCommand on {0} to {1}".format(str(what), str(into)))
         into.append(1, what)
         return [into]
 
@@ -75,11 +78,13 @@ class OneCommand(Command):
     used for DETs for example
     """
     def __init__(self, stay):
-        self.stay = Control(stay)
+        self.stay = stay
 
     def run(self, pairs):
         filterer = lambda a: a[1] == self.stay
-        return [m for _, _, m in filter(filterer, pairs)]
+        filtered = [m for _, _, m in filter(filterer, pairs)]
+        logging.debug("applying OneCommand on {0}".format(str(filtered[0])))
+        return filtered 
 
 class FinalCommand(Command):
     pass
@@ -97,7 +102,8 @@ class VerbCommand(FinalCommand):
         return m.is_a(Control("VERB<SUBJUNC-IMP>"))
 
     def run(self, pairs):
-        verb_machine = [m for _,c,m in pairs if c == Control("VERB")][0]
+        verb_machine = [m for _,c,m in pairs if c == "VERB"][0]
+        logging.debug("Applying VerbCommand with verb {0}".format(str(verb_machine)))
 
         done = [verb_machine]
 
@@ -171,6 +177,7 @@ class Construction:
         """
         self.rule_left = rule_left
         self.rule_right = [Control(part) for part in rule_right]
+        self.rule_right = rule_right
         self.command = Command.get_instance(command, rule_right, definitions)
 
     def __match__(self, machines):
@@ -181,18 +188,35 @@ class Construction:
         returns False if not matched
         returns a dictionary with (control, machine) pairs
         """
+        logging.debug("Matching \"{0}\" to construction {1}...".format(
+            " ".join((str(m) for m in machines)), self.rule_left))
         if len(machines) != len(self.rule_right):
+            logging.debug("Matching \"{0}\" to construction {1} not successful (different length)".format(
+                " ".join((str(m) for m in machines)), self.rule_left))
             return False
 
         pairs = []
-        for control_index, machine in zip(xrange(len(self.rule_right)), machines):
-            c = self.rule_right[control_index]
-            if machine.control is None:
-                continue
-            if machine.control.is_a(c):
-                pairs.append((control_index, c, machine))
+        for right_index, machine in zip(xrange(len(self.rule_right)), machines):
+            right_item = self.rule_right[right_index]
+            if right_item.startswith("\"") and right_item.endswith("\""):
+                # check printname
+                if str(machine) == right_item[1:-1]:
+                    pairs.append((right_index, right_item, machine))
+                else:
+                    logging.debug("Matching \"{0}\" to construction {1} not successful (not matching printname)".format(
+                        " ".join((str(m) for m in machines)), self.rule_left))
+                    return False
             else:
-                return False
+                # check Control
+                c = Control(right_item)
+                if machine.control is None:
+                    continue
+                if machine.control.is_a(c):
+                    pairs.append((right_index, right_item, machine))
+                else:
+                    logging.debug("Matching \"{0}\" to construction {1} not successful(not matching control)".format(
+                        " ".join((str(m) for m in machines)), self.rule_left))
+                    return False
         return pairs
 
     def change_main_control(self, machines):

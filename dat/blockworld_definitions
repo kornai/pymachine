@@ -37,6 +37,7 @@
 10051 elo2tt P in_front_of # # : in_front_of
 10052 mellett P next_to # # : next_to
 10053 fo2lo2tt P above # # : above
+10054 alatt P under # # : under
 10044 ala1 P under # # : under
 10100 hol A where # # : hol
 10101 van V is # # : NOM AT
