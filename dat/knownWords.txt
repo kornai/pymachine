@@ -1,18 +1,27 @@
 kocka	kocka||NOUN	K	S
+kockán	kocka||NOUN<CAS<SUE>>	K	S
 kockát	kocka||NOUN<CAS<ACC>>	K	S
 kockára	kocka||NOUN<CAS<SBL>>	K	S
 gömb	gömb||NOUN	K	S
+gömbön	gömb||NOUN<CAS<SUE>>	K	U
 gömböt	gömb||NOUN<CAS<ACC>>	K	S
 gömbre	gömb||NOUN<CAS<SBL>>	K	U
 kúp	kúp||NOUN	K	U
+kúpon	kúp||NOUN<CAS<SUE>>	K	U
 kúpot	kúp||NOUN<CAS<ACC>>	K	U
 kúpra	kúp||NOUN<CAS<SBL>>	K	U
 
 mögé	mögé||POSTP	K	S
+mögött	mögött||POSTP	K	S
 elé	elé||POSTP	K	S
+előtt	előtt||POSTP	K	S
 fölé	fölé||POSTP	K	S
+fölött	fölött||POSTP	K	S
+felett	felett||POSTP	K	S
 mellé	mellé||POSTP	K	S
+mellett	mellett||POSTP	K	S
 alá	alá||POSTP	K	S
+alatt	alatt||POSTP	K	S
 
 piros	piros||ADJ	K	S
 sárga	sárga||ADJ	K	S
@@ -35,6 +44,7 @@ az	az||NOUN	K	S
 hol	hol||ADV	K	S
 van	van||VERB	K	S
 dobozba	doboz||NOUN<CAS<ILL>>	K	U
+sarok	sarok||NOUN	K	S
 sarokba	sarok||NOUN<CAS<ILL>>	K	S
 jobb	jó|ADJ[COMPAR]|ADJ	K	S
 bal	bal||ADJ	K	S
@@ -42,4 +52,6 @@ alsó	alsó||ADJ	K	S
 felső	felső||ADJ	K	S
 hátsó	hátsó||ADJ	K	S
 elülső	elülső||ADJ	K	U
+
+mi	mi||NOUN<PERS<1>><PLUR>	K	S
 
