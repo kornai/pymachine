@@ -101,16 +101,16 @@ class Wrapper:
 
         # morph analysis
         analysed_command = self.__run_morph_analysis(command)
-        logging.debug( "Analysed_command: " + unicode(analysed_command) )
+        logging.debug( "Analysed_command: " + unicode(analysed_command).encode("utf-8") )
 
         # transforming command/order based on constructions and definitions
         op = OrderParser(self.constructions, self.definitions)
         result = op.run(analysed_command)
-        logging.debug( "After running order: " + unicode(result) )
+        logging.debug( "After running order: " + unicode(result).encode("utf-8") )
 
         # running inference engine
         self.__run_infer(result)
-        logging.debug( "After inferring: " + unicode(result) )
+        logging.debug( "After inferring: " + unicode(result).encode("utf-8") )
         return result
 
 if __name__ == "__main__":
