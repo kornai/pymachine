@@ -159,8 +159,15 @@ class QuestionCommand(FinalCommand):
         from machine import Machine
         from monoid import Monoid
         final_machine = Machine(Monoid("AT"))
-        final_machine.append(1, pairs[-1][2])
-        final_machine.append(2, pairs[0][2])
+        for pairing in pairs:
+            if pairing[1] == "ADV":
+                final_machine.append(2,pairing[2])
+            elif pairing[1] == "VERB":
+                pass
+            else:
+                final_machine.append(1,pairing[2])
+#        final_machine.append(1, pairs[-1][2])
+#        final_machine.append(2, pairs[0][2])
         return [final_machine]
 
 class Construction:
