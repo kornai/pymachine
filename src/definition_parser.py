@@ -1,4 +1,4 @@
-from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, OneOrMore, nums, delimitedList
+from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList
 import string
 import logging
 
