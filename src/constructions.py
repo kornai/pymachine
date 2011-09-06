@@ -68,7 +68,7 @@ class AppendRegexCommand(Command):
     def run(self, pairs):
         into = [m for _,c,m in pairs if c == self.into][0]
         what = [m for _,c,m in pairs if c == self.what][0]
-        logging.debug(u"applying AppendCommand on {0} to {1}".format(unicode(what), unicode(into)))
+        logging.debug(u"applying AppendCommand on {0} to {1}".format(unicode(what), unicode(into)).encode("utf-8"))
         into.append(1, what)
         return [into]
 
@@ -83,7 +83,7 @@ class OneCommand(Command):
     def run(self, pairs):
         filterer = lambda a: a[1] == self.stay
         filtered = [m for _, _, m in filter(filterer, pairs)]
-        logging.debug(u"applying OneCommand on {0}".format(unicode(filtered[0])))
+        logging.debug(u"applying OneCommand on {0}".format(unicode(filtered[0])).encode("utf-8"))
         return filtered 
 
 class FinalCommand(Command):
@@ -103,7 +103,7 @@ class VerbCommand(FinalCommand):
 
     def run(self, pairs):
         verb_machine = [m for _,c,m in pairs if c == "VERB"][0]
-        logging.debug(u"Applying VerbCommand with verb {0}".format(unicode(verb_machine)))
+        logging.debug(u"Applying VerbCommand with verb {0}".format(unicode(verb_machine)).encode("utf-8"))
 
         done = [verb_machine]
 
@@ -189,10 +189,10 @@ class Construction:
         returns a dictionary with (control, machine) pairs
         """
         logging.debug(u"Matching \"{0}\" to construction {1}...".format(
-            " ".join((unicode(m) for m in machines)), self.rule_left))
+            " ".join((unicode(m) for m in machines)), self.rule_left).encode("utf-8"))
         if len(machines) != len(self.rule_right):
             logging.debug(u"Matching \"{0}\" to construction {1} not successful (different length)".format(
-                " ".join((unicode(m) for m in machines)), self.rule_left))
+                " ".join((unicode(m) for m in machines)), self.rule_left).encode("utf-8"))
             return False
 
         pairs = []
@@ -204,7 +204,7 @@ class Construction:
                     pairs.append((right_index, right_item, machine))
                 else:
                     logging.debug(u"Matching \"{0}\" to construction {1} not successful (not matching printname)".format(
-                        " ".join((unicode(m) for m in machines)), self.rule_left))
+                        " ".join((unicode(m) for m in machines)), self.rule_left).encode("utf-8"))
                     return False
             else:
                 # check Control
@@ -215,7 +215,7 @@ class Construction:
                     pairs.append((right_index, right_item, machine))
                 else:
                     logging.debug(u"Matching \"{0}\" to construction {1} not successful(not matching control)".format(
-                        " ".join((unicode(m) for m in machines)), self.rule_left))
+                        " ".join((unicode(m) for m in machines)), self.rule_left).encode("utf-8"))
                     return False
         return pairs
 
