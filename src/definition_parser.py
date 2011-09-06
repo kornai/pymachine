@@ -1,4 +1,4 @@
-from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, OneOrMore, nums
+from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, OneOrMore, nums, delimitedList
 import string
 import logging
 
@@ -56,7 +56,7 @@ class DefinitionParser:
         
         # "enumerable expression"
         # D -> E | E, D
-        self.definition = Group(self.expression + Optional(OneOrMore(self.arg_sep_lit.suppress() + self.expression)))
+        self.definition = Group(delimitedList(self.expression, delim=DefinitionParser.arg_sep))
         self.expression << Group(
                             # E -> U [ D ]
                             (self.unary + self.lb_lit.suppress() + self.definition + self.rb_lit.suppress() ) ^ 
