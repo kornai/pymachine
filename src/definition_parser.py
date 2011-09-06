@@ -1,4 +1,4 @@
-from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList
+from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
 import string
 import logging
 
@@ -67,7 +67,7 @@ class DefinitionParser:
                             (self.unary + self.lb_lit.suppress() + self.definition + self.rb_lit.suppress() ) ^ 
 
                             # E -> U ( U ) | U ( U [ E ] )
-                            (self.unary + self.lp_lit + self.unary + Optional(self.lb_lit + self.expression + self.rb_lit) + self.rp_lit ) ^
+                            (self.unary + self.lp_lit + self.unary + Optional(self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) + self.rp_lit ) ^
 
                             # E -> U B
                             (self.unary + self.binary) ^
