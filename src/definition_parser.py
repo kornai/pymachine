@@ -11,11 +11,11 @@ class ParserException(Exception):
 
 class DefinitionParser:
     _str = set([str, unicode])
-    _deep_cases = ["NOM" , "ACC" , "DAT" , "INS" , "OBL"
-                   , "SUB", "SUE", "DEL"         # ON
-                   , "ILL", "INE", "ELA"         # IN
-                   , "ALL", "ADE", "ABL"         # AT
-                   ]
+    _deep_cases = [ "NOM" , "ACC" , "DAT" , "INS" , "OBL"
+                    , "SUB", "SUE", "DEL"         # ON
+                    , "ILL", "INE", "ELA"         # IN
+                    , "ALL", "ADE", "ABL"         # AT
+                    ]
 
     lb = "["
     rb = "]"
@@ -27,6 +27,7 @@ class DefinitionParser:
     part_sep = ";"
     comment_sep = "%"
     prime = "'"
+    hyphen = "-"
 
     def __init__(self):
         self.init_parser()
@@ -43,11 +44,12 @@ class DefinitionParser:
         self.part_sep_lit = Literal(DefinitionParser.part_sep)
         self.comment_sep_lit = Literal(DefinitionParser.comment_sep)
         self.prime_lit = Literal(DefinitionParser.prime)
+        self.hyphen_lit = Literal(DefinitionParser.hyphen)
         
         #self.deep_cases = (Literal("NOM") | Literal("ACC") | Literal("DAT") | Literal("INS") | Literal("ABL"))
         self.deep_cases = reduce(lambda a, b: a | b, (Literal(dc) for dc in DefinitionParser._deep_cases))
         
-        self.unary = Word(string.lowercase + "_" + nums) | self.deep_cases
+        self.unary = Word(string.lowercase + "-_" +nums) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
         self.dontcare = SkipTo(LineEnd())
         
@@ -76,8 +78,8 @@ class DefinitionParser:
                             # E -> B [ E ; E ] 
                             (self.binary + self.lb_lit.suppress() + self.expression + self.part_sep_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
                             
-                            # E -> [ E ] B [ E ]
-                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
+                            # E -> [ E ] B [ E ] | [ E ] B E
+                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + Optional(self.lb_lit.suppress()) + self.expression + Optional(self.rb_lit.suppress())) ^
                             
                             # E -> B [ E ]
                             (self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
@@ -124,6 +126,7 @@ class DefinitionParser:
     
     @classmethod
     def _is_unary(cls, s):
+        # TODO unaries can contain hyphens
         return type(s) in cls._str and s.islower() or s in cls._deep_cases
     
     @classmethod
@@ -292,7 +295,6 @@ class DefinitionParser:
             m.append(1, cls.__parse_expr_v2(expr[0]))
             m.append(2, cls.__parse_expr_v2(expr[2]))
             return m
-            
 
         # E -> B [ E ]
         # ['BINARY', ['unary']]
