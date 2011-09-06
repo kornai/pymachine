@@ -1,4 +1,4 @@
-from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, OneOrMore, nums
+from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList
 import string
 import logging
 
@@ -58,38 +58,41 @@ class DefinitionParser:
         
         # "enumerable expression"
         # D -> E | E, D
-        self.definition = Group(self.expression + Optional(OneOrMore(self.arg_sep_lit.suppress() + self.expression)))
+        self.definition = Group(delimitedList(self.expression, delim=DefinitionParser.arg_sep))
         self.expression << Group(
+                            # E -> U
+                            (self.unary) ^
+
                             # E -> U [ D ]
                             (self.unary + self.lb_lit.suppress() + self.definition + self.rb_lit.suppress() ) ^ 
 
                             # E -> U ( U ) | U ( U [ E ] )
                             (self.unary + self.lp_lit + self.unary + Optional(self.lb_lit + self.expression + self.rb_lit) + self.rp_lit ) ^
 
-                            # E -> U B E
-                            (self.unary + self.binary + self.expression) ^
-
                             # E -> U B
                             (self.unary + self.binary) ^
                             
-                            # E -> U
-                            (self.unary) ^
+                            # E -> U B E
+                            (self.unary + self.binary + self.expression) ^
 
-                            # E -> B [ E ; E ] 
-                            (self.binary + self.lb_lit.suppress() + self.expression + self.part_sep_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
-                            
-                            # E -> [ E ] B [ E ] | [ E ] B E
-                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + Optional(self.lb_lit.suppress()) + self.expression + Optional(self.rb_lit.suppress())) ^
-                            
+                            # E -> B E
+                            (self.binary + self.expression) ^
+
                             # E -> B [ E ]
                             (self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
+                            
+                            # E -> B [ E ; E ] 
+                            (self.binary + self.lb_lit.suppress() + self.expression + self.part_sep_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
                             
                             # E -> [ E ] B
                             (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary) ^
                             
-                            # E -> B E
-                            (self.binary + self.expression) ^
-
+                            # E -> [ E ] B [ E ]
+                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
+                            
+                            # E -> [ E ] B E
+                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.expression ) ^
+                            
                             # E -> 'B
                             (self.prime_lit + self.binary) ^
 
