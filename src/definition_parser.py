@@ -1,4 +1,4 @@
-from pyparsing import Literal, Word, Group, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
+from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
 import string
 import logging
 
@@ -49,7 +49,7 @@ class DefinitionParser:
         #self.deep_cases = (Literal("NOM") | Literal("ACC") | Literal("DAT") | Literal("INS") | Literal("ABL"))
         self.deep_cases = reduce(lambda a, b: a | b, (Literal(dc) for dc in DefinitionParser._deep_cases))
         
-        self.unary = Word(string.lowercase + "-_" +nums) | self.deep_cases
+        self.unary = Combine(Optional("-") + Word(string.lowercase + "_") + Optional(Word(nums))) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
         self.dontcare = SkipTo(LineEnd())
         
