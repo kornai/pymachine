@@ -15,6 +15,7 @@ TODO:
 import logging
 
 from control import PosControl as Control
+from machine_exceptions import CaseAmbiguityException
 
 class Command:
     """
@@ -224,6 +225,9 @@ class Construction:
                     logging.debug(u"Matching \"{0}\" to construction {1} not successful(not matching control)".format(
                         " ".join((unicode(m) for m in machines)), self.rule_left).encode("utf-8"))
                     return False
+        logging.debug(u"Matching \"{0}\" to construction {1} successful".format(
+            " ".join((unicode(m) for m in machines)), self.rule_left).encode("utf-8"))
+
         return pairs
 
     def change_main_control(self, machines):
@@ -238,7 +242,6 @@ class Construction:
             machines[0].control = Control(self.rule_left + "<" + old_pos.split("<", 1)[1])
         else:
             machines[0].control = Control(self.rule_left)
-
 
     def do(self, machines):
         """
