@@ -1,10 +1,14 @@
 import sys
+import logging
+from collections import defaultdict
 
 from machine import Machine
 from monoid import Monoid
 from control import PosControl as Control
 from definition_parser import read
 from constructions import read_constructions, FinalCommand
+from machine_exceptions import UnknownWordException, TooManyArgumentsException, CaseAmbiguityException, LocationAmbiguityException
+from constants import locative_cases
 
 class OrderParser:
     def __init__(self, constructions, definitions):
@@ -40,7 +44,6 @@ class OrderParser:
         for word, pos in sen:
             stem, _, pos = pos.split("|", 2)
             if stem not in self._vocab:
-                from machine_exceptions import UnknownWordException
                 if stem == 'unknown':
                     raise UnknownWordException(word)
                 raise UnknownWordException(stem)
@@ -75,6 +78,26 @@ class OrderParser:
                     something = True
         return something
 
+    def check_ambiguity(self, machines):
+        known_cases = defaultdict(list)
+        known_locatives = []
+        for m in machines:
+            case = m.control.get_case()
+            if case is not None:
+                known_cases[case].append(m)
+                if case in locative_cases:
+                    known_locatives.append(m)
+            else:
+                if m.control.is_a(Control("PP")):
+                    known_locatives.append(m)
+
+        if len(known_locatives) > 1:
+            raise LocationAmbiguityException(known_locatives)
+
+        for case in known_cases:
+            if len(known_cases[case]) > 1:
+                raise CaseAmbiguityException(known_cases[case])
+
     def run(self, order):
         """
         main function
@@ -95,20 +118,27 @@ class OrderParser:
             else:
                 pass
 
+        self.check_ambiguity(machines)
+
         #Second: verb commands
         #TODO fucking copy-paste, should be put in a function
         while True:
             something = False
             final_constructions = [con for con in self._constructions if isinstance(con.command, FinalCommand)]
             something |= self.run_constructions_over_machines(final_constructions, machines)
-            if not something:
-                break
-            else:
-                pass
+            # only one verb command can be run right now
+            # no need to be in a while
+            break
 
         # TODO why [0]?
         # this is a temporary solution, the only valuable result is a list, that has only one element
-        return machines[0]
+
+        if len(machines) > 1:
+            logging.error(u"Too many arguments for a verb in a sentence: {0}".format(
+                " ".join(unicode(m) for m in machines[1:])))
+            raise TooManyArgumentsException(machines[1:]) 
+        else:
+            return machines[0]
 
 if __name__ == "__main__":
     definitions = read(file(sys.argv[3]))
