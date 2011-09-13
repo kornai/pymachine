@@ -2,7 +2,7 @@ S1	VERB ^(NOUN|PP|NP) ^(NOUN|PP|NP)	*	tedd a kocka1t a ku1pra
 S2	^(NOUN|PP|NP) VERB ^(NOUN|PP|NP)	*	a kocka1t tedd a ku1pra
 S3	^(NOUN|PP|NP) ^(NOUN|PP|NP) VERB	*	a kocka1t a ku1pra tedd
 S10	ADV VERB ^[NP]P	?	hol van a kocka?
-S10	^[NP]P ADV VERB 	?	hol van a kocka?
+S10	^NP ADV VERB 	?	a kocka hol van?
 S11	ADV ^[NP]P	?	hol a kocka?
 NP	ART NOUN	NOUN	a kocka
 NOUN	ADJ NOUN	NOUN[ADJ]	ke1k kocka
