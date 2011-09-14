@@ -7,7 +7,7 @@ from monoid import Monoid
 from control import PosControl as Control
 from definition_parser import read
 from constructions import read_constructions, FinalCommand
-from machine_exceptions import UnknownWordException, TooManyArgumentsException, TooManySameCasesException, TooManyLocationsException
+from machine_exceptions import UnknownWordException, UnknownSentenceException, TooManySameCasesException, TooManyLocationsException
 from constants import locative_cases
 
 class OrderParser:
@@ -136,7 +136,7 @@ class OrderParser:
         if len(machines) > 1:
             logging.error(u"Too many arguments for a verb in a sentence: {0}".format(
                 " ".join(unicode(m) for m in machines[1:])))
-            raise TooManyArgumentsException(machines[1:]) 
+            raise UnknownSentenceException() 
         else:
             return machines[0]
 
