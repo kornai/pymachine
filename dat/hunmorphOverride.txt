@@ -4,5 +4,6 @@ alatt	alá||POSTP	K	S
 felett	fölá||POSTP	K	S
 fölött	fölé||POSTP	K	S
 mellett	mellé||POSTP	K	S
-mögött mögé||POSTP	K	S
+mögött	mögé||POSTP	K	S
 közepes	közepes||ADJ	K	S
+hátrébb	hátrább||ADV	K	S
