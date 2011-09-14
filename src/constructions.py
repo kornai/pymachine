@@ -15,7 +15,7 @@ TODO:
 import logging
 
 from control import PosControl as Control
-from machine_exceptions import CaseAmbiguityException
+from machine_exceptions import TooManySameCasesException
 
 class Command:
     """

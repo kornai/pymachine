@@ -6,12 +6,13 @@ class UnknownSentenceException(Exception):
 
 class TooManyArgumentsException(Exception):
     def __init__(self, m):
-        self._machines = m
+        self.machines = m
 
-class CaseAmbiguityException(Exception):
-    def __init__(self, m):
-        self._ambiguate_machines = m
+class TooManySameCasesException(Exception):
+    def __init__(self, m, case):
+        self.ambiguate_machines = m
+        self.case = case
 
-class LocationAmbiguityException(Exception):
+class TooManyLocationsException(Exception):
     def __init__(self, m):
-        self._ambiguate_machines = m
+        self.ambiguate_machines = m

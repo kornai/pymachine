@@ -7,7 +7,7 @@ from monoid import Monoid
 from control import PosControl as Control
 from definition_parser import read
 from constructions import read_constructions, FinalCommand
-from machine_exceptions import UnknownWordException, TooManyArgumentsException, CaseAmbiguityException, LocationAmbiguityException
+from machine_exceptions import UnknownWordException, TooManyArgumentsException, TooManySameCasesException, TooManyLocationsException
 from constants import locative_cases
 
 class OrderParser:
@@ -92,11 +92,11 @@ class OrderParser:
                     known_locatives.append(m)
 
         if len(known_locatives) > 1:
-            raise LocationAmbiguityException(known_locatives)
+            raise TooManyLocationsException(known_locatives)
 
         for case in known_cases:
             if len(known_cases[case]) > 1:
-                raise CaseAmbiguityException(known_cases[case])
+                raise TooManySameCasesException(known_cases[case], case)
 
     def run(self, order):
         """
