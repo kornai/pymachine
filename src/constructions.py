@@ -15,6 +15,7 @@ TODO:
 import logging
 
 from control import PosControl as Control
+from machine_exceptions import UnknownSentenceException
 
 class Command:
     """
@@ -125,6 +126,8 @@ class VerbCommand(FinalCommand):
                 result = places_to_fit[0]
                 if type(result) is tuple:
                     place_machine, place_part_index = result
+                    logging.debug(u"Machine {0} (case {1}) is insterted into {2}th partition of {3}".format(
+                        unicode(m), c, place_part_index, unicode(place_machine)).encode("utf-8"))
                     place_machine.base.partitions[place_part_index][0] = m
                     done.append(m)
 
@@ -140,15 +143,21 @@ class VerbCommand(FinalCommand):
             empty_places = defined_machine.search(empty=True)
             if len(empty_places) == 1:
                 place_machine, place_part_index = empty_places[0]
+                logging.debug(u"Machine {0} is insterted into {1}th partition of {2}".format(
+                    unicode(left), place_part_index, unicode(place_machine)).encode("utf-8"))
                 place_machine.append(place_part_index, left)
             else:
-                from machine_exceptions import UnknownSentenceException
-                raise UnknownSentenceException("TEMPHACK_1")
+                raise UnknownSentenceException("there are more places left to fill")
 
         # else we do not know what to do
         else:
-            from machine_exceptions import UnknownSentenceException
             raise UnknownSentenceException("empty slots cannot be filled without guessing")
+
+        # Final check: if there is an ACC unfilled in the sentence, warn
+        # TODO hack
+        acc_places = defined_machine.search("ACC")
+        if len(acc_places) > 0:
+            raise UnknownSentenceException("ACC unfilled")
 
         # TODO think it through
         # now everything is at first partition of defined VERB, but it should be instead of it?
