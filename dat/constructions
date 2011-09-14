@@ -1,10 +1,11 @@
-S1	VERB ^(NOUN|PP|NP) ^(NOUN|PP|NP)	*	tedd a kocka1t a ku1pra
-S2	^(NOUN|PP|NP) VERB ^(NOUN|PP|NP)	*	a kocka1t tedd a ku1pra
-S3	^(NOUN|PP|NP) ^(NOUN|PP|NP) VERB	*	a kocka1t a ku1pra tedd
+S1	VERB ^(NOUN|PP|NP|ADV) ^(NOUN|PP|NP|ADV)	*	tedd a kocka1t a ku1pra
+S2	^(NOUN|PP|NP|ADV) VERB ^(NOUN|PP|NP|ADV)	*	a kocka1t tedd a ku1pra
+S3	^(NOUN|PP|NP|ADV) ^(NOUN|PP|NP|ADV) VERB	*	a kocka1t a ku1pra tedd
 S10	"hol" VERB NP	?	hol van a kocka?
-S10	NP "hol" VERB	?	a kocka hol van?
-S11	"hol" NP	?	hol a kocka?
+S11	NP "hol" VERB	?	a kocka hol van?
+S12	"hol" NP	?	hol a kocka?
 NP	ART NOUN	NOUN	a kocka
 NOUN	ADJ NOUN	NOUN[ADJ]	ke1k kocka
 PP	NP POSTP	POSTP[NP]	a kocka mo2go2tt
 PP	"mi" POSTP	POSTP["mi"]	mi alatt (van a kocka)
+
