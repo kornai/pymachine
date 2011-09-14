@@ -15,7 +15,6 @@ TODO:
 import logging
 
 from control import PosControl as Control
-from machine_exceptions import TooManySameCasesException
 
 class Command:
     """
@@ -161,7 +160,7 @@ class QuestionCommand(FinalCommand):
         from monoid import Monoid
         final_machine = Machine(Monoid("AT"))
         for pairing in pairs:
-            if pairing[1] == "ADV":
+            if pairing[1] == "\"hol\"":
                 final_machine.append(2,pairing[2])
             elif pairing[1] == "VERB":
                 pass
