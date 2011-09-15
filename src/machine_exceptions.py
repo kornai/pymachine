@@ -1,3 +1,5 @@
+class NoAnalysisException(Exception):
+    pass
 class UnknownWordException(Exception):
     pass
 

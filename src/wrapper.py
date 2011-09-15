@@ -59,19 +59,24 @@ class Wrapper:
         logging.warning('not all words are known, falling back to ocamorph')
         command = command.encode(self.ocamorph_encoding)
         hunmorph_input = "\n".join(command.split())
-        s = socket.socket()
-        s.connect((self.hunmorph_host, self.hunmorph_port))
-        logging.debug('connected to hunmorph at %s:%d' % (self.hunmorph_host, self.hunmorph_port))
-        logging.debug('sending...')#: \n'+hunmorph_input)
-        s.send(hunmorph_input)
-        logging.debug('sent')
-        logging.debug('receiving...')
-        hunmorph_output = s.recv(4096)
-        logging.debug('received')
-        hunmorph_output = hunmorph_output.decode(self.ocamorph_encoding)
-        tokens = [tok.split("\t")[:2] for tok in hunmorph_output.split("\n") if tok!='']
-        return tokens 
-
+        try:
+            s = socket.socket()
+            s.connect((self.hunmorph_host, self.hunmorph_port))
+            logging.debug('connected to hunmorph at %s:%d' % (self.hunmorph_host, self.hunmorph_port))
+            logging.debug('sending...')#: \n'+hunmorph_input)
+            s.send(hunmorph_input)
+            logging.debug('sent')
+            logging.debug('receiving...')
+            hunmorph_output = s.recv(4096)
+            logging.debug('received')
+            hunmorph_output = hunmorph_output.decode(self.ocamorph_encoding)
+            tokens = [tok.split("\t")[:2] for tok in hunmorph_output.split("\n") if tok!='']
+            return tokens 
+        except:
+            logging.error("unable to connect to ocamorph")
+            from machine_exceptions import NoAnalysisException
+            raise NoAnalysisException
+            
     def __run_morph_analysis_v2(self, command):
         """
         improved version of __run_morph_analysis, uses langtools
