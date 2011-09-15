@@ -1,6 +1,11 @@
-from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
-import string
 import logging
+try:
+    from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
+except ImportError:
+    import sys
+    logging.critical("PyParsing have to be installed on the computer")
+    sys.exit(-1)
+import string
 
 from machine import Machine
 from monoid import Monoid
