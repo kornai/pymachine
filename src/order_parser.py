@@ -134,8 +134,7 @@ class OrderParser:
         # this is a temporary solution, the only valuable result is a list, that has only one element
 
         if len(machines) > 1:
-            logging.error(u"Too many arguments for a verb in a sentence: {0}".format(
-                " ".join(unicode(m) for m in machines[1:])))
+            logging.debug(u"Sentence cannot be completely understood")
             raise UnknownSentenceException() 
         else:
             return machines[0]
