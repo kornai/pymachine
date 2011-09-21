@@ -25,7 +25,7 @@ class Wrapper:
         self.known_words.update(self.getKnownWords(items["morph_override"]))
         self.ocamorph_tag_sep = items["ocamorph_tag_sep"]
         self.inference_rules = items["inference_rules"]
-        self.ocamorph_encoding = "LATIN1"
+        self.ocamorph_encoding = "LATIN2"
         self.hunmorph_host = items["hunmorph_host"]
         self.hunmorph_port = int(items["hunmorph_port"])
 
