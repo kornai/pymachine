@@ -10,11 +10,9 @@ from constructions import read_constructions, FinalCommand
 from machine_exceptions import UnknownWordException, UnknownSentenceException, TooManySameCasesException, TooManyLocationsException
 from constants import locative_cases
 
-class OrderParser:
+class SentenceParser:
     def __init__(self, constructions, definitions):
         """
-        TODO rename to CommandParser? english expert needed
-
         constructions are used for transformations
         definitions are used to raise exception when unknown
           word in command
@@ -25,7 +23,7 @@ class OrderParser:
         # index has to be changed if other language
         self._vocab = set(fourlang[0] for fourlang in self._definitions.keys())
 
-    def read_order_file(self, f):
+    def read_sentence_file(self, f):
         sentence = []
         for line in f:
             le = line.strip().split("\t")
@@ -98,15 +96,15 @@ class OrderParser:
             if len(known_cases[case]) > 1:
                 raise TooManySameCasesException(known_cases[case], case)
 
-    def run(self, order):
+    def run(self, sentence):
         """
         main function
-        - creates machines from order
+        - creates machines from sentence
         - transform machines by using constructions
         """
 
         # creating machines
-        machines = self.create_machines(order)
+        machines = self.create_machines(sentence)
 
         #First: all non-final commands
         while True:
@@ -130,20 +128,19 @@ class OrderParser:
             # no need to be in a while
             break
 
-        # TODO why [0]?
-        # this is a temporary solution, the only valuable result is a list, that has only one element
-
         if len(machines) > 1:
             logging.debug(u"Sentence cannot be completely understood")
             raise UnknownSentenceException() 
         else:
+            # TODO why [0]?
+            # this is a temporary solution, the only valuable result is a list, that has only one element
             return machines[0]
 
 if __name__ == "__main__":
     definitions = read(file(sys.argv[3]))
     cons = read_constructions(file(sys.argv[2]), definitions)
-    op = OrderParser(cons, definitions)
-    order = op.read_order_file(file(sys.argv[1]))
-    op.run(order)
+    p = SentenceParser(cons, definitions)
+    sen = p.read_sentence_file(file(sys.argv[1]))
+    p.run(sen)
 
 
