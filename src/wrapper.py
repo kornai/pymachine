@@ -48,9 +48,6 @@ class Wrapper:
         """
         calls ocamorph and hundisambig based on config
         """
-        from subprocess import Popen, PIPE
-        from tempfile import NamedTemporaryFile
-        
         try:
             tokens = [[w, self.known_words[w]] for w in command.split()]
             return tokens
@@ -102,16 +99,16 @@ class Wrapper:
         ie.infer(machine)
 
     def run(self, command):
-        from order_parser import OrderParser
+        from sentence_parser import SentenceParser
 
         # morph analysis
         analysed_command = self.__run_morph_analysis(command)
         logging.debug( u"Analysed_command: {0}".format(unicode(analysed_command)).encode("utf-8") )
 
-        # transforming command/order based on constructions and definitions
-        op = OrderParser(self.constructions, self.definitions)
-        result = op.run(analysed_command)
-        logging.debug( u"After running order: {0}".format(unicode(result)).encode("utf-8") )
+        # transforming sentence based on constructions and definitions
+        p = SentenceParser(self.constructions, self.definitions)
+        result = p.run(analysed_command)
+        logging.debug( u"After running sentence: {0}".format(unicode(result)).encode("utf-8") )
 
         # running inference engine
         self.__run_infer(result)
