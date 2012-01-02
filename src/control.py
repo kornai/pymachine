@@ -74,3 +74,11 @@ class PosControl(Control):
         else:
             return None
 
+class FstControl(PosControl):
+    def __init__(self, pos):
+        Control.__init__(self)
+        self.pos = pos
+
+    def is_a(self, other):
+        return PosControl.is_a(other)
+
