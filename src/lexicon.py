@@ -1,6 +1,7 @@
 class Lexicon:
     """THE machine repository."""
     def __init__(self):
+        self.deep_cases = set([])  # Set of deep cases
         pass
 
     def activate(self, already_active):
@@ -13,3 +14,4 @@ class Lexicon:
         consideration; however, currently this method returns a machine if
         all non-primitive machines on its partitions are active."""
         return []
+

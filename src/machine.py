@@ -76,4 +76,7 @@ class Machine:
     def expand(self):
         """Expands an empty machine, ie. fills it partitions according to its
         definition. For an already expanded machine, this method is a no-op."""
+        # I don't think this is enough; we should have a list of already copied
+        # / instantiated machines?
         pass
+
