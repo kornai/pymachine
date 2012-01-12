@@ -17,26 +17,36 @@ class SpreadingActivation(object):
         expanded = []
         linking = {}  # {linker: [machines that have the linker on a partition]}
 
-        # Step 1
-        for machine in unexpanded:
-            machine.expand()
-            for partition in machine.base.partitions[1:]:
-                for submachine in partition:
-                    if submachine in self.lexicon.deep_cases:
-                        linking[submachine] = linking.get(submachine, []) + [machine]
-        expanded += unexpanded
-        unexpanded = []
+        while True:
+            # Step 1
+            for machine in unexpanded:
+                machine.expand()
+                for partition in machine.base.partitions[1:]:
+                    for submachine in partition:
+                        if submachine in self.lexicon.deep_cases:
+                            linking[submachine] = linking.get(submachine, []) + [machine]
+            expanded += unexpanded
+            unexpanded = []
 
-        # Step 2
-        # TODO: What if there are more than 2 of the same linker?
-        linker_to_remove = []
-        for linker, machines in linking.iteritems():
-            if len(machines) > 1:
-                self._link(linker, machines)
-                linker_to_remove.append(linker)
+            # Step 2
+            # TODO: What if there are more than 2 of the same linker?
+            linker_to_remove = []
+            for linker, machines in linking.iteritems():
+                if len(machines) > 1:
+                    self._link(linker, machines)
+                    linker_to_remove.append(linker)
+            for linker in linker_to_remove:
+                del linking[linker]
 
-        # Step 3
-        pass
+            # Step 3
+            unexpanded = self.lexicon.activate(expanded)
 
     def _link(self, linker, machines):
-        pass
+        """Links the machines along @p linker."""
+        for machine in machines:
+            for partition in machine.base.find(linker):
+                machine.remove(linker, partition)
+                for to_add in machines:
+                    if to_add != machine:
+                        machine.append_if_not_there(to_add, partition)
+

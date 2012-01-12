@@ -35,3 +35,18 @@ class Monoid:
             self.partitions[which_partition].append(what)
             #raise IndexError("That partition does not exist")
 
+    def remove(self, which_partition, what):
+        """Removes @p what from the specified partition."""
+        if len(self.partitions) > which_partition:
+            self.partitions[which_partition].remove(what)
+
+    def remove(self, what):
+        """Removes @p what from all partitions."""
+        # TODO: exclude the 0th?
+        for partition, _ in enumerate(self.partitions):
+            self.remove(partition, what)
+
+    def find(self, what):
+        """Returns the list of partitions on which @p what is found."""
+        return [p for p in self.partitions if what in p]
+

@@ -34,6 +34,21 @@ class Machine:
         
     def append(self, which_partition, what):
         self.base.append(which_partition, what)
+
+    def append_if_not_there(self, what, which_partition=1):
+        if len(self.base.partitions) > which_partition:
+            if what in self.base.partitions[which_partition]:
+                return
+        self.base.append(which_partition, what)
+
+    def remove(self, what, which_partition=None):
+        """Removes @p what from the specified partition. If @p which_partition
+        is @c None, @p what is removed from all partitions on which it is
+        found."""
+        if which_partition is not None:
+            self.base.remove(which_partition, what)
+        else:
+            self.base.remove(what)
     
     def to_dot(self, toplevel=False):
         s = u"subgraph"
