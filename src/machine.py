@@ -72,3 +72,8 @@ class Machine:
                         results.append((self, part_i + 1))
                 results += m.search(what=what, empty=empty)
         return results
+
+    def expand(self):
+        """Expands an empty machine, ie. fills it partitions according to its
+        definition. For an already expanded machine, this method is a no-op."""
+        pass
