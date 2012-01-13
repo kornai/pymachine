@@ -7,7 +7,7 @@ class SpreadingActivation(object):
     def activation_loop(self, sources):
         """Implements the algorithm. It goes as follows:
         @arg Expand all unexpanded words
-        @arg Unify along linkers (deep cases)
+        @arg Link along linkers (deep cases)
         @arg Check the lexicon to see if new words are activated by the ones
              already in the graph; if yes, add them to the graph. Repeat until
              no new words are found.
@@ -26,6 +26,7 @@ class SpreadingActivation(object):
                     for submachine in partition:
                         if submachine in self.lexicon.deep_cases:
                             linking[submachine] = linking.get(submachine, []) + [machine]
+            # TODO: activate Elvira here?
             expanded += unexpanded
             unexpanded = []
 
@@ -41,6 +42,8 @@ class SpreadingActivation(object):
 
             # Step 3
             unexpanded = self.lexicon.activate(expanded)
+
+        # TODO: activate Elvira here?
 
     def _link(self, linker, machines):
         """Links the machines along @p linker."""

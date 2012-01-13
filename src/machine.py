@@ -45,10 +45,7 @@ class Machine:
         """Removes @p what from the specified partition. If @p which_partition
         is @c None, @p what is removed from all partitions on which it is
         found."""
-        if which_partition is not None:
-            self.base.remove(which_partition, what)
-        else:
-            self.base.remove(what)
+        self.base.remove(what, which_partition)
     
     def to_dot(self, toplevel=False):
         s = u"subgraph"
