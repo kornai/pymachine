@@ -13,11 +13,12 @@ class SpreadingActivation(object):
              no new words are found.
         The algorithm stops when ... I don't know."""
         # TODO: NPs/ linkers to be contended
-        unexpanded = list(source)
+        unexpanded = list(sources)
         expanded = []
         linking = {}  # {linker: [machines that have the linker on a partition]}
 
-        while True:
+        # This condition will not work w/ the full lexicon, obviously.
+        while len(unexpanded) > 0:
             # Step 1
             for machine in unexpanded:
                 machine.expand()
