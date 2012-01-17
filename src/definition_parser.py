@@ -51,10 +51,11 @@ class DefinitionParser:
         self.prime_lit = Literal(DefinitionParser.prime)
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
         
-        #self.deep_cases = (Literal("NOM") | Literal("ACC") | Literal("DAT") | Literal("INS") | Literal("ABL"))
-        self.deep_cases = reduce(lambda a, b: a | b, (Literal(dc) for dc in DefinitionParser._deep_cases))
+        self.deep_cases = reduce(lambda a, b: a | b,
+            (Literal(dc) for dc in DefinitionParser._deep_cases))
         
-        self.unary = Combine(Optional("-") + Word(string.lowercase + "_") + Optional(Word(nums))) | self.deep_cases
+        self.unary = Combine(Optional("-") + Word(string.lowercase + "_") +
+                             Optional(Word(nums))) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
         self.dontcare = SkipTo(LineEnd())
         
@@ -63,47 +64,48 @@ class DefinitionParser:
         
         # "enumerable expression"
         # D -> E | E, D
-        self.definition = Group(delimitedList(self.expression, delim=DefinitionParser.arg_sep))
+        self.definition = Group(delimitedList(self.expression,
+            delim=DefinitionParser.arg_sep))
         self.expression << Group(
-                            # E -> U
-                            (self.unary) ^
+            # E -> U
+            (self.unary) ^
 
-                            # E -> U [ D ]
-                            (self.unary + self.lb_lit.suppress() + self.definition + self.rb_lit.suppress() ) ^ 
+            # E -> U [ D ]
+            (self.unary + self.lb_lit.suppress() + self.definition + self.rb_lit.suppress() ) ^ 
 
-                            # E -> U ( U ) | U ( U [ E ] )
-                            (self.unary + self.lp_lit + self.unary + Optional(self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) + self.rp_lit ) ^
+            # E -> U ( U ) | U ( U [ E ] )
+            (self.unary + self.lp_lit + self.unary + Optional(self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) + self.rp_lit ) ^
 
-                            # E -> U B
-                            (self.unary + self.binary) ^
-                            
-                            # E -> U B E
-                            (self.unary + self.binary + self.expression) ^
+            # E -> U B
+            (self.unary + self.binary) ^
+            
+            # E -> U B E
+            (self.unary + self.binary + self.expression) ^
 
-                            # E -> B E
-                            (self.binary + self.expression) ^
+            # E -> B E
+            (self.binary + self.expression) ^
 
-                            # E -> B [ E ]
-                            (self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
-                            
-                            # E -> B [ E ; E ] 
-                            (self.binary + self.lb_lit.suppress() + self.expression + self.part_sep_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
-                            
-                            # E -> [ E ] B
-                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary) ^
-                            
-                            # E -> [ E ] B [ E ]
-                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
-                            
-                            # E -> [ E ] B E
-                            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.expression ) ^
-                            
-                            # E -> 'B
-                            (self.prime_lit + self.binary) ^
+            # E -> B [ E ]
+            (self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
+            
+            # E -> B [ E ; E ] 
+            (self.binary + self.lb_lit.suppress() + self.expression + self.part_sep_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
+            
+            # E -> [ E ] B
+            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary) ^
+            
+            # E -> [ E ] B [ E ]
+            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
+            
+            # E -> [ E ] B E
+            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.expression ) ^
+            
+            # E -> 'B
+            (self.prime_lit + self.binary) ^
 
-                            # E -> B'
-                            (self.binary + self.prime_lit)
-                           )
+            # E -> B'
+            (self.binary + self.prime_lit)
+        )
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
@@ -142,89 +144,7 @@ class DefinitionParser:
         return s in cls._deep_cases
     
     @classmethod
-    def _parse_expr(cls, l):
-        is_binary = cls._is_binary
-        is_unary = cls._is_unary
-        _str = cls._str
-        if len(l) == 1:
-            # unary
-            # later here should be a lookup to find out if we already know this machine
-            if type(l[0]) == list:
-                return cls._parse_expr(l[0])
-            else:
-                if is_unary(l[0]):
-                    return Machine(Monoid(l[0]))
-                else:
-                    raise ParserException("Only lower case strings or deep cases or filled binaries can be at unary position(" + str(l[0]) + ")")
-        
-        elif len(l) == 2:
-            
-            if type(l[0]) in _str:
-                if is_unary(l[0]):
-                    # unary with one partition
-                    m = Machine(Monoid(l[0]))
-                    m.base.partitions.append([])
-                    m.base.partitions[1].append(cls._parse_expr(l[1]))
-                    return m
-                elif is_binary(l[0]):
-                    # binary with right partition filled - prefix 
-                    m = Machine(Monoid(l[0]))
-                    m.base.partitions.append([])
-                    m.base.partitions.append([])
-                    if type(l[1]) == list and len(l[1]) > 1:
-                        raise ParserException("Binary primitives have to have one property per argument")
-                    m.base.partitions[2].append(cls._parse_expr(l[1]))
-                    
-                    return m
-            elif type(l[1]) in _str:
-                if is_binary(l[1]):
-                    # binary with left partition filled - infix
-                    m = Machine(Monoid(l[1]))
-                    m.base.partitions.append([])
-                    if type(l[0]) == list and len(l[0]) > 1:
-                        raise ParserException("Binary primitives have to have one property per argument")
-                    m.base.partitions[1].append(cls._parse_expr(l[0]))
-                    m.base.partitions.append([])
-                    return m
-
-        elif len(l) == 3:
-            # binary with two partitions
-            later = None
-            m = None
-            if type(l[0]) in _str:
-                if is_binary(l[0]):
-                    m = Machine(Monoid(l[0]))
-                    later = l[1], l[2]
-                else:
-                    raise ParserException("not uppercase string at binary position")
-            elif type(l[1]) in _str:
-                if is_binary(l[1]):
-                    m = Machine(Monoid(l[1]))
-                    later = l[0], l[2]
-                else:
-                    raise ParserException("not uppercase string at binary position")
-            else:
-                raise ParserException("not uppercase string at any possible binary position")
-            
-            m.base.partitions.append([cls._parse_expr(later[0])])
-            m.base.partitions.append([cls._parse_expr(later[1])])
-            return m
-        
-        elif len(l) == 4:
-            # U ( U ) rule
-            if is_unary(l[0]) and l[1] == "(" and is_unary(l[2]) and l[3] == ")":
-                m = Machine(Monoid(l[2]))
-                m.base.partitions.append([])
-                m.base.partitions[1].append(Machine(Monoid(l[0])))
-                return m
-            else:
-                pe = ParserException("there shouldn't be 4 nodes in a tree only if 2 of them are parentheses")
-                logging.debug(str(pe))
-                logging.debug(str(l))
-                raise pe
-
-    @classmethod
-    def __parse_expr_v2(cls, expr):
+    def __parse_expr(cls, expr):
         """
         creates machines from a parse node and its children
         there should be one handler for every rule
@@ -240,7 +160,7 @@ class DefinitionParser:
               is_tree(expr[1])):
             m = Machine(Monoid(expr[0]))
             for _property in expr[1]:
-                m.append(1, cls.__parse_expr_v2(_property))
+                m.append(1, cls.__parse_expr(_property))
             return m
 
         # E -> U ( U ) | U ( U [ E ] )
@@ -263,7 +183,7 @@ class DefinitionParser:
               is_tree(expr[2])):
             m = Machine(Monoid(expr[1]))
             m.append(1, Machine(Monoid(expr[0])))
-            m.append(2, cls.__parse_expr_v2(expr[2]))
+            m.append(2, cls.__parse_expr(expr[2]))
             return m
 
         # E -> U B
@@ -289,8 +209,8 @@ class DefinitionParser:
               is_tree(expr[1]) and
               is_tree(expr[2])):
             m = Machine(Monoid(expr[0]))
-            m.append(1, cls.__parse_expr_v2(expr[1]))
-            m.append(2, cls.__parse_expr_v2(expr[2]))
+            m.append(1, cls.__parse_expr(expr[1]))
+            m.append(2, cls.__parse_expr(expr[2]))
             return m
 
         # E -> [ E ] B [ E ]
@@ -300,8 +220,8 @@ class DefinitionParser:
               is_binary(expr[1]) and
               is_tree(expr[2])):
             m = Machine(Monoid(expr[1]))
-            m.append(1, cls.__parse_expr_v2(expr[0]))
-            m.append(2, cls.__parse_expr_v2(expr[2]))
+            m.append(1, cls.__parse_expr(expr[0]))
+            m.append(2, cls.__parse_expr(expr[2]))
             return m
 
         # E -> B [ E ]
@@ -310,7 +230,7 @@ class DefinitionParser:
             is_binary(expr[0]) and
             is_tree(expr[1])):
             m = Machine(Monoid(expr[0]))
-            m.append(2, cls.__parse_expr_v2(expr[1]))
+            m.append(2, cls.__parse_expr(expr[1]))
             return m
 
         # E -> [ E ] B
@@ -319,7 +239,7 @@ class DefinitionParser:
             is_tree(expr[0]) and
             is_binary(expr[1])):
             m = Machine(Monoid(expr[1]))
-            m.append(1, cls.__parse_expr_v2(expr[0]))
+            m.append(1, cls.__parse_expr(expr[0]))
             m.base.partitions.append([])
             return m
 
@@ -329,7 +249,7 @@ class DefinitionParser:
             is_binary(expr[0]) and
             is_tree(expr[1])):
             m = Machine(Monoid(expr[0]))
-            m.append(2, cls.__parse_expr_v2(expr[1]))
+            m.append(2, cls.__parse_expr(expr[1]))
             return m
 
         # E -> 'B
@@ -359,7 +279,7 @@ class DefinitionParser:
         machine = Machine(Monoid(parsed[1][2]))
         machine.base.partitions.append([])
         for d in parsed[2]:
-            machine.append(1, DefinitionParser.__parse_expr_v2(d))
+            machine.append(1, DefinitionParser.__parse_expr(d))
         return (machine, tuple(parsed[1]))
 
 def read(f):
@@ -386,7 +306,4 @@ if __name__ == "__main__":
       print m.to_dot(True)
     else:
       print dp.parse(pstr)
-    #print dp.parse("1 a1bra1zat N expression facies mina: HAS mouth[open], ISA dog,   [a]HAS[b]")
-    #m = dp.parse_into_machines("1 a1bra1zat N expression facies mina: HAS[mouth[open]], ISA dog,   [a]HAS[b]")
-    #m = dp.parse_into_machines("1 a1bra1zat N expression facies mina: HAS[mouth[ACC]], ISA dog,   [a]HAS[b]")
-    #print m.to_dot(True)
+
