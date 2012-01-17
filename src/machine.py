@@ -33,6 +33,7 @@ class Machine:
         return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])
         
     def append(self, which_partition, what):
+        raise DeprecationWarning("use append_if_not_there() instead")
         self.base.append(which_partition, what)
 
     def append_if_not_there(self, what, which_partition=1):
