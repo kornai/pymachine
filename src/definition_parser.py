@@ -9,6 +9,7 @@ import string
 
 from machine import Machine
 from monoid import Monoid
+from constants import deep_cases
 
 import sys
 class ParserException(Exception):
@@ -16,11 +17,6 @@ class ParserException(Exception):
 
 class DefinitionParser:
     _str = set([str, unicode])
-    _deep_cases = [ "NOM" , "ACC" , "DAT" , "INS" , "OBL"
-                    , "SUB", "SUE", "DEL"         # ON
-                    , "ILL", "INE", "ELA"         # IN
-                    , "ALL", "ADE", "ABL"         # AT
-                    ]
 
     lb = "["
     rb = "]"
@@ -52,7 +48,7 @@ class DefinitionParser:
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
         
         self.deep_cases = reduce(lambda a, b: a | b,
-            (Literal(dc) for dc in DefinitionParser._deep_cases))
+            (Literal(dc) for dc in deep_cases))
         
         self.unary = Combine(Optional("-") + Word(string.lowercase + "_") +
                              Optional(Word(nums))) | self.deep_cases
@@ -132,16 +128,16 @@ class DefinitionParser:
     
     @classmethod
     def _is_binary(cls, s):
-        return type(s) in cls._str and s.isupper() and not s in cls._deep_cases
+        return type(s) in cls._str and s.isupper() and not s in deep_cases
     
     @classmethod
     def _is_unary(cls, s):
         # TODO unaries can contain hyphens
-        return type(s) in cls._str and s.islower() or s in cls._deep_cases
+        return type(s) in cls._str and s.islower() or s in deep_cases
     
     @classmethod
     def _is_deep_case(cls, s):
-        return s in cls._deep_cases
+        return s in deep_cases
     
     @classmethod
     def __parse_expr(cls, expr):
