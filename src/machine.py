@@ -1,3 +1,4 @@
+import logging
 from monoid import Monoid
 from control import Control
 
@@ -33,7 +34,7 @@ class Machine:
         return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])
         
     def append(self, which_partition, what):
-        raise DeprecationWarning("use append_if_not_there() instead")
+        logging.warning("use append_if_not_there() instead")
         self.base.append(which_partition, what)
 
     def append_if_not_there(self, what, which_partition=1):
@@ -85,11 +86,4 @@ class Machine:
                         results.append((self, part_i + 1))
                 results += m.search(what=what, empty=empty)
         return results
-
-    def expand(self):
-        """Expands an empty machine, ie. fills it partitions according to its
-        definition. For an already expanded machine, this method is a no-op."""
-        # I don't think this is enough; we should have a list of already copied
-        # / instantiated machines?
-        pass
 
