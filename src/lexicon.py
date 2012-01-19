@@ -12,6 +12,7 @@ class Lexicon:
         # static will store only one machine per printname (key),
         # while active can store more
         self.static = {}
+        # TODO: map: {active_machine : is it expanded?}
         self.active = {}
 
     def __add_active_machine(self, m):
@@ -69,6 +70,7 @@ class Lexicon:
             # we skipped 0th partition so index has to be corrected
             part_index = i + 1
 
+            # FIXME: copy to active
             for anything in partition:
                 machine.append_if_not_there(anything, part_index)
 
@@ -97,4 +99,14 @@ class Lexicon:
                 self.expand(m)
                 activated.append(m)
         return activated
+
+    def expanded(self):
+        """Returns the list of expanded machines."""
+        # TODO: implement
+        pass
+
+    def unexpanded(self):
+        """Returns the list of unexpanded machines."""
+        # TODO: implement
+        pass
 

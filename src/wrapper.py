@@ -3,6 +3,7 @@ import ConfigParser
 
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
+from spreading_activation import SpreadingActivation
 
 config_filename = "machine.cfg"
 
@@ -50,10 +51,13 @@ class Wrapper:
         #ie.infer(machine)
 
     def run(self, sentence):
+        """Parses a sentence, runs the spreading activation and returns the
+        messages that have to be sent to the active plugins."""
         sp = SentenceParser()
+        sa = SpreadingActivation(self.lexicon)
         machines = sp.parse(sentence)
         self.lexicon.add_active(machines)
-        # TODO integrate with SpreadingActivation, needs assistense of ndavid
+        return sa.activation_loop()
 
 if __name__ == "__main__":
     pass 

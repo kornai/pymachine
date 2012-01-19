@@ -4,16 +4,17 @@ class SpreadingActivation(object):
     def __init__(self, lexicon):
         self.lexicon = lexicon
 
-    def activation_loop(self, sources):
+    def activation_loop(self):
         """Implements the algorithm. It goes as follows:
         @arg Expand all unexpanded words
         @arg Link along linkers (deep cases)
         @arg Check the lexicon to see if new words are activated by the ones
              already in the graph; if yes, add them to the graph. Repeat until
              no new words are found.
+        @return Messages to be sent to active plugins.
         The algorithm stops when ... I don't know."""
         # TODO: NPs/ linkers to be contended
-        unexpanded = list(sources)
+        unexpanded = list(self.lexicon.unexpanded())
         expanded = []
         linking = {}  # {linker: [machines that have the linker on a partition]}
 
@@ -21,17 +22,16 @@ class SpreadingActivation(object):
         while len(unexpanded) > 0:
             # Step 1
             for machine in unexpanded:
-                machine.expand()
+                self.lexicon.expand(machine)
                 for partition in machine.base.partitions[1:]:
                     for submachine in partition:
                         if submachine in self.lexicon.deep_cases:
                             linking[submachine] = linking.get(submachine, []) + [machine]
-            # TODO: activate Elvira here?
+            # XXX: activate Elvira here?
             expanded += unexpanded
-            unexpanded = []
 
             # Step 2
-            # TODO: What if there are more than 2 of the same linker?
+            # XXX: What if there are more than 2 of the same linker?
             linker_to_remove = []
             for linker, machines in linking.iteritems():
                 if len(machines) > 1:
@@ -41,9 +41,10 @@ class SpreadingActivation(object):
                 del linking[linker]
 
             # Step 3
-            unexpanded = self.lexicon.activate(expanded)
+            self.lexicon.activate(expanded)
+            unexpanded = list(self.lexicon.unexpanded())
 
-        # TODO: activate Elvira here?
+       # TODO: return messages to active plugins
 
     def _link(self, linker, machines):
         """Links the machines along @p linker."""
