@@ -4,6 +4,7 @@ import ConfigParser
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
 from spreading_activation import SpreadingActivation
+from definition_parser import read
 
 config_filename = "machine.cfg"
 
@@ -32,7 +33,6 @@ class Wrapper:
         #self.__read_constructions()
 
     def __read_definitions(self):
-        from definition_parser import read
         definitions = read(file(self.def_fn))
         self.lexicon.add_static(definitions.itervalues())
 
@@ -57,7 +57,11 @@ class Wrapper:
         sa = SpreadingActivation(self.lexicon)
         machines = sp.parse(sentence)
         self.lexicon.add_active(machines)
-        return sa.activation_loop()
+
+        # results is a list of (url, data) tuples
+        results = sa.activation_loop()
+
+        return results
 
 if __name__ == "__main__":
     pass 
