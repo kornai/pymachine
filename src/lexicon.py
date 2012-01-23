@@ -15,13 +15,13 @@ class Lexicon:
         # TODO: map: {active_machine : is it expanded?}
         self.active = {}
 
-    def __add_active_machine(self, m):
+    def __add_active_machine(self, m, expanded=False):
         """Helper method for add_active()"""
         printname = str(m)
         if printname in self.active:
-            self.active[printname].add(m)
+            self.active[printname][m] = expanded
         else:
-            self.active[printname] = set([m])
+            self.active[printname] = {m: expanded}
 
     def add_active(self, what):
         """
@@ -74,6 +74,9 @@ class Lexicon:
             for anything in partition:
                 machine.append_if_not_there(anything, part_index)
 
+        # change expand status in active store
+        self.active[printname][machine] = True
+
     def activate(self):
         """Finds and returns the machines that should be activated by the
         machines already active. These machines are automatically added
@@ -100,13 +103,25 @@ class Lexicon:
                 activated.append(m)
         return activated
 
-    def expanded(self):
+    def expanded(self, m):
         """Returns the list of expanded machines."""
-        # TODO: implement
-        pass
+        printname = str(m)
+        try:
+            return self.active[printname][m]
+        except KeyError:
+            logging.error("""asking whether a machine is expanded about a
+                          non-active machine""")
+            logging.debug("This machine is: " + str(m))
+            return None
 
-    def unexpanded(self):
+    def unexpanded(self, m):
         """Returns the list of unexpanded machines."""
-        # TODO: implement
-        pass
+        printname = str(m)
+        try:
+            return not self.active[printname][m]
+        except KeyError:
+            logging.error("""asking whether a machine is unexpanded about a
+                          non-active machine""")
+            logging.debug("This machine is: " + str(m))
+            return None
 
