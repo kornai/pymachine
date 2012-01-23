@@ -8,8 +8,8 @@ later control should be an FST
 """
 
 class Control:
-    def __init__(self):
-        pass
+    def __init__(self, machine=None):
+        self.set_machine(machine)
 
     def __hash__(self):
         pass
@@ -24,13 +24,19 @@ class Control:
         if not isinstance(other, Control):
             raise Exception("Control can be compared only with other Control")
 
+    def set_machine(self, machine):
+        """Sets the machine the control controls."""
+        if not isinstance(machine, Machine) and machine is not None:
+            raise TypeError("machine should be a Machine instance")
+        self.machine = machine
+
 class PosControl(Control):
     import re
     noun_pattern = re.compile("^N(OUN|P)")
     case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
 
-    def __init__(self, pos):
-        Control.__init__(self)
+    def __init__(self, pos, machine=None):
+        Control.__init__(self, machine)
         self.pos = pos
 
     def __hash__(self):
@@ -75,10 +81,41 @@ class PosControl(Control):
             return None
 
 class FstControl(PosControl):
-    def __init__(self, pos):
-        Control.__init__(self)
+    def __init__(self, pos, machine=None):
+        Control.__init__(self, machine)
         self.pos = pos
 
     def is_a(self, other):
         return PosControl.is_a(other)
+
+class PluginControl(Control):
+    """Control for plugin machines."""
+    def __init__(self, plugin_url, machine=None):
+        Control.__init__(self, machine)
+        self.plugin_url = plugin_url
+
+    # TODO: implement is_a, etc.
+
+    def message(self):
+        """Compiles a message to the plugin the machine is representing. If the
+        data is not yet ready (there is required argument not yet filled), this
+        method returns @c None."""
+        pass
+
+class ElviraPluginControl(PluginControl):
+    """Plugin control for the Elvira plugin."""
+    def __init__(self, machine=None):
+        PluginControl.__init__(self, 'Elvira', machine)
+
+    def message(self):
+        if self.machine is not None:
+            prt = self.machine.base.partition[1]
+            before, after = None, None
+            for m in prt:
+                if str(m) == 'before_AT':
+                    before = m.base.partitions[2][0]
+                elif str(m) == 'after_AT':
+                    after = m.base.partitions[2][0]
+            if before is not None and after is not None:
+                return (self.plugin_url, [before, after])
 

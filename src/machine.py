@@ -5,10 +5,7 @@ from control import Control
 class Machine:
     def __init__(self, base, control=None):
         
-        # control will be an FST representation later
-        if not isinstance(control, Control) and control is not None:
-            raise TypeError("control should be a Control instance")
-        self.control = control
+        self.set_control(control)
         
         # base is a monoid
         if not isinstance(base, Monoid):
@@ -29,6 +26,14 @@ class Machine:
     
     def __hash__(self):
         return hash(id(self))
+
+    def set_control(self, control):
+        """Sets the control."""
+        # control will be an FST representation later
+        if not isinstance(control, Control) and control is not None:
+            raise TypeError("control should be a Control instance")
+        self.control = control
+        control.set_machine(self)
 
     def allNames(self):
         return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])

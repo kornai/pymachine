@@ -1,3 +1,4 @@
+from control import PluginControl
 
 class SpreadingActivation(object):
     """Implements spreading activation (surprise surprise)."""
@@ -44,7 +45,12 @@ class SpreadingActivation(object):
             self.lexicon.activate(expanded)
             unexpanded = list(self.lexicon.unexpanded())
 
-       # TODO: return messages to active plugins
+        # TODO: return messages to active plugins
+        ret = []
+        for m in self.lexicon.expanded():
+            if isinstance(m.control, PluginControl):
+                ret.append(m.control.message())
+        return ret
 
     def _link(self, linker, machines):
         """Links the machines along @p linker."""
