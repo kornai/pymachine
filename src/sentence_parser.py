@@ -12,7 +12,7 @@ class SentenceParser:
     def create_machines_from_chunk(self, chunk):
         """
         builds up a structure of machines that represents the whole chunk
-        TODO:
+        HACK:
             - right now we only handle 1-length chunks so this method will
               be implemented later
             - return list or Machine instance?
