@@ -1,0 +1,5 @@
+20000 vonat N train # #: tb
+20001 tb N public_transportation # #: tb
+20002 menetrend N schedule # #: tb, mikor
+20010 megy V go # #: [NOM] before_AT [DEL], [NOM] after_AT [SUBL]
+20020 mikor W when # #: mikor
