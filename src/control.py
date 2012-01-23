@@ -7,6 +7,8 @@ now it's implemented to use only strings as pos tags
 later control should be an FST
 """
 
+import machine
+
 class Control:
     def __init__(self, machine=None):
         self.set_machine(machine)
@@ -26,7 +28,7 @@ class Control:
 
     def set_machine(self, machine):
         """Sets the machine the control controls."""
-        if not isinstance(machine, Machine) and machine is not None:
+        if not isinstance(machine, machine.Machine) and machine is not None:
             raise TypeError("machine should be a Machine instance")
         self.machine = machine
 

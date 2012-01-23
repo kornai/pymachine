@@ -1,6 +1,6 @@
 import logging
 from monoid import Monoid
-from control import Control
+import control
 
 class Machine:
     def __init__(self, base, control=None):
@@ -30,7 +30,7 @@ class Machine:
     def set_control(self, control):
         """Sets the control."""
         # control will be an FST representation later
-        if not isinstance(control, Control) and control is not None:
+        if not isinstance(control, control.Control) and control is not None:
             raise TypeError("control should be a Control instance")
         self.control = control
         control.set_machine(self)
