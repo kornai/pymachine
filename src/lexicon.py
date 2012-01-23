@@ -3,6 +3,7 @@ import logging
 from constants import deep_cases
 from machine import Machine
 from monoid import Monoid
+from control import ElviraPluginControl
 
 class Lexicon:
     """THE machine repository."""
@@ -14,6 +15,20 @@ class Lexicon:
         self.static = {}
         # TODO: map: {active_machine : is it expanded?}
         self.active = {}
+        self.create_elvira_machine()
+
+    def create_elvira_machine(self):
+        return
+        logging.warning("""Elvira machine is created right
+                        now at init of Lexicon, HACKHACKHACK""")
+        # HACK
+        elvira_control = ElviraPluginControl()
+        elvira_machine = Machine(elvira_control)
+        elvira_machine.append_if_not_there("before_AT")
+        elvira_machine.append_if_not_there("after_AT")
+        elvira_machine.append_if_not_there("vonat")
+        elvira_machine.append_if_not_there("menetrend")
+        self.static["elvira"].add(elvira_machine)
 
     def __add_active_machine(self, m, expanded=False):
         """Helper method for add_active()"""
