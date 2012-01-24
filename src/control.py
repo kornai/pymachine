@@ -7,9 +7,9 @@ now it's implemented to use only strings as pos tags
 later control should be an FST
 """
 
-import machine
+import machine as mach
 
-class Control:
+class Control(object):
     def __init__(self, machine=None):
         self.set_machine(machine)
 
@@ -28,7 +28,7 @@ class Control:
 
     def set_machine(self, machine):
         """Sets the machine the control controls."""
-        if not isinstance(machine, machine.Machine) and machine is not None:
+        if not isinstance(machine, mach.Machine) and machine is not None:
             raise TypeError("machine should be a Machine instance")
         self.machine = machine
 
@@ -99,6 +99,7 @@ class PluginControl(Control):
     # TODO: implement is_a, etc.
 
     def message(self):
+        #TODO: rename
         """Compiles a message to the plugin the machine is representing. If the
         data is not yet ready (there is required argument not yet filled), this
         method returns @c None."""
@@ -107,16 +108,16 @@ class PluginControl(Control):
 class ElviraPluginControl(PluginControl):
     """Plugin control for the Elvira plugin."""
     def __init__(self, machine=None):
-        PluginControl.__init__(self, 'Elvira', machine)
+        PluginControl.__init__(self, 'plugin.Elvira', machine)
 
     def message(self):
         if self.machine is not None:
-            prt = self.machine.base.partition[1]
+            prt = self.machine.base.partitions[1]
             before, after = None, None
             for m in prt:
-                if str(m) == 'before_AT':
+                if str(m) == 'BEFORE_AT':
                     before = m.base.partitions[2][0]
-                elif str(m) == 'after_AT':
+                elif str(m) == 'AFTER_AT':
                     after = m.base.partitions[2][0]
             if before is not None and after is not None:
                 return (self.plugin_url, [before, after])
