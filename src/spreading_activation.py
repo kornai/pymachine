@@ -1,4 +1,5 @@
 from control import PluginControl
+import logging
 
 class SpreadingActivation(object):
     """Implements spreading activation (surprise surprise)."""
@@ -15,21 +16,25 @@ class SpreadingActivation(object):
         @return Messages to be sent to active plugins.
         The algorithm stops when ... I don't know."""
         # TODO: NPs/ linkers to be contended
-        unexpanded = list(self.lexicon.unexpanded())
-        expanded = []
-        linking = {}  # {linker: [machines that have the linker on a partition]}
+        last_active = len(self.lexicon.active)
+        unexpanded = list(self.lexicon.get_unexpanded())
+        linking = {}  # {linker: set([machines that have the linker on a partition])}
 
         # This condition will not work w/ the full lexicon, obviously.
         while len(unexpanded) > 0:
+            dbg_str = ', '.join(k + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
+            logging.debug('LOOP:' + str(last_active) + ' ' + dbg_str)
             # Step 1
             for machine in unexpanded:
+                logging.debug('Uzenet ' + str(machine))
                 self.lexicon.expand(machine)
                 for partition in machine.base.partitions[1:]:
                     for submachine in partition:
                         if submachine in self.lexicon.deep_cases:
-                            linking[submachine] = linking.get(submachine, []) + [machine]
+                            s = linking.get(submachine, set())
+                            s.add(machine)
+                            linking[submachine] = s
             # XXX: activate Elvira here?
-            expanded += unexpanded
 
             # Step 2
             # XXX: What if there are more than 2 of the same linker?
@@ -42,20 +47,29 @@ class SpreadingActivation(object):
                 del linking[linker]
 
             # Step 3
-            self.lexicon.activate(expanded)
-            unexpanded = list(self.lexicon.unexpanded())
+            self.lexicon.activate()
+            unexpanded = list(self.lexicon.get_unexpanded())
+            if len(self.lexicon.active) == last_active:
+                break
+            else:
+                last_active = len(self.lexicon.active)
 
         # TODO: return messages to active plugins
         ret = []
-        for m in self.lexicon.expanded():
+        for m in self.lexicon.get_expanded():
             if isinstance(m.control, PluginControl):
-                ret.append(m.control.message())
+                msg = ret.append(m.control.message())
+                if msg is not None:
+                    ret.append(msg)
+        logging.debug('Returning...')
         return ret
 
     def _link(self, linker, machines):
         """Links the machines along @p linker."""
+        print "Linking " + ','.join(str(m) for m in machines) + " along " + str(linker)
         for machine in machines:
             for partition in machine.base.find(linker):
+#                logging.debug('Partition ' + ','.join(partition))
                 machine.remove(linker, partition)
                 for to_add in machines:
                     if to_add != machine:
