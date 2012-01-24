@@ -1,6 +1,6 @@
 import logging
 
-class Monoid:
+class Monoid(object):
     """
     Our monoid class
     """
@@ -15,6 +15,9 @@ class Monoid:
     
     def __str__(self):
         return self.partitions[0]
+
+    def __repr__(self):
+        return self.partitions[0]
     
     def __eq__(self, other):
         return (self.partitions == other.partitions and
@@ -25,11 +28,14 @@ class Monoid:
     def append(self, which_partition, what):
         if len(self.partitions) > which_partition:
             from machine import Machine
-            if isinstance(what, Machine):
+            if isinstance(what, Machine) or isinstance(what, str):
                 self.partitions[which_partition].append(what)
             else:
-                raise TypeError("Only machines can be added to partitions")
+                # FIXME clean up this shit
+                raise TypeError("Only machines and strings can be added to partitions")
         else:
+            # FIXME don't do while
+            logging.warning("FIXME")
             while len(self.partitions) <= which_partition:
                 self.partitions.append([])
             self.partitions[which_partition].append(what)
@@ -46,5 +52,5 @@ class Monoid:
 
     def find(self, what):
         """Returns the list of partitions on which @p what is found."""
-        return [p for p in self.partitions if what in p]
+        return [i for i, p in enumerate(self.partitions) if what in p]
 
