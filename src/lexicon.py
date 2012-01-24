@@ -1,4 +1,6 @@
 import logging
+from itertools import chain
+import copy
 
 from constants import deep_cases
 from machine import Machine
@@ -18,17 +20,16 @@ class Lexicon:
         self.create_elvira_machine()
 
     def create_elvira_machine(self):
-        return
         logging.warning("""Elvira machine is created right
                         now at init of Lexicon, HACKHACKHACK""")
         # HACK
         elvira_control = ElviraPluginControl()
-        elvira_machine = Machine(elvira_control)
-        elvira_machine.append_if_not_there("before_AT")
-        elvira_machine.append_if_not_there("after_AT")
+        elvira_machine = Machine(Monoid("elvira"), elvira_control)
+        elvira_machine.append_if_not_there("BEFORE_AT")
+        elvira_machine.append_if_not_there("AFTER_AT")
         elvira_machine.append_if_not_there("vonat")
         elvira_machine.append_if_not_there("menetrend")
-        self.static["elvira"].add(elvira_machine)
+        self.static["elvira"] = elvira_machine
 
     def __add_active_machine(self, m, expanded=False):
         """Helper method for add_active()"""
@@ -75,20 +76,44 @@ class Lexicon:
         if (printname not in self.active or
                 machine not in self.active[printname]):
             raise Exception("""only active machines can be expanded
-                            right now""")
+                            right now, but {0} is not active""".format(
+                            printname))
         if printname not in self.static:
-            logging.warning("""expanding a machine that is not in knowledge
-                            base ie. Lexicon.static""")
+            logging.warning("""expanding a machine ({0}) that is not in
+                            knowledge base ie. Lexicon.static""".format(
+                            printname))
+            self.active[printname][machine] = True
             return
         
-        for i, partition in self.static[printname].base.partitions[1:]:
+        logging.debug("Expanding machine: " + str(machine))
+        for i, part in enumerate(self.static[printname].base.partitions[1:]):
+            logging.debug(part)
             # we skipped 0th partition so index has to be corrected
             part_index = i + 1
 
             # FIXME: copy to active
-            for anything in partition:
-                machine.append_if_not_there(anything, part_index)
+            for anything in part:
+                #logging.debug(anything)
+                #logging.debug(type(anything))
+                machine_to_append = None
+                if isinstance(anything, Machine):
+                    machine_to_append = anything
+                    # FIXME: the machine from the active set, copy, etc.
+                else:
+                    if anything in self.active:
+                        # FIXME: [0] is a hack, fix it
+                        machine_to_append = self.active[anything].keys()[0]
+                    else:
+                        machine_to_append = Machine(Monoid(anything))
+                
+                machine.append_if_not_there(machine_to_append, part_index)
+                
+                pn = str(machine_to_append)
+                if pn not in self.active:
+                    self.active[pn] = {}
+                    self.active[pn][machine_to_append] = False
 
+        logging.debug(repr(self.active[printname].keys()[0].base.partitions))
         # change expand status in active store
         self.active[printname][machine] = True
 
@@ -103,23 +128,22 @@ class Lexicon:
         activated = []
         
         for printname, static_machine in self.static.iteritems():
-            to_activate = True
-            for partition in static_machine.base.partitions[1:]:
-                for machine in partition:
-                    if str(machine) not in self.active:
-                        to_activate = False
-                        break
-                if not to_activate:
+            if printname in self.active:
+                continue
+            has_machine = False
+            for machine in chain(*static_machine.base.partitions[1:]):
+                has_machine = True
+                if str(machine) not in self.active:
                     break
-            if to_activate:
-                m = Machine(Monoid(printname))
-                self.add_active(m)
-                self.expand(m)
-                activated.append(m)
+            else:
+                if has_machine:
+                    m = Machine(Monoid(printname), copy.copy(static_machine.control))
+                    self.add_active(m)
+                    activated.append(m)
         return activated
 
-    def expanded(self, m):
-        """Returns the list of expanded machines."""
+    def is_expanded(self, m):
+        """Returns whether m is expanded or not"""
         printname = str(m)
         try:
             return self.active[printname][m]
@@ -129,14 +153,17 @@ class Lexicon:
             logging.debug("This machine is: " + str(m))
             return None
 
-    def unexpanded(self, m):
-        """Returns the list of unexpanded machines."""
-        printname = str(m)
-        try:
-            return not self.active[printname][m]
-        except KeyError:
-            logging.error("""asking whether a machine is unexpanded about a
-                          non-active machine""")
-            logging.debug("This machine is: " + str(m))
-            return None
+    def get_expanded(self, inverse=False):
+        """Returns the list of expanded machines."""
+        logging.debug('get_expanded(' + str(inverse) + ')')
+        result = []
+        for pn, machines in self.active.iteritems():
+            for machine in machines:
+                # if inverse: return unexpandeds
+                if inverse ^ machines[machine]:
+                    result.append(machine)
+        logging.debug("RESULT: " + ','.join(str(m) for m in result))
+        return result
 
+    def get_unexpanded(self):
+        return self.get_expanded(True)
