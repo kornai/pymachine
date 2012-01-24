@@ -1,8 +1,8 @@
 import logging
 from monoid import Monoid
-import control
+import control as ctrl
 
-class Machine:
+class Machine(object):
     def __init__(self, base, control=None):
         
         self.set_control(control)
@@ -18,22 +18,28 @@ class Machine:
         """
         return unicode(self.base)
 
+    def __repr__(self):
+        return repr(self.base)
+
     def __unicode__(self):
         return unicode(self.base)
     
     def __eq__(self, other):
-        return self.control == other.control and self.base == other.base
+        # HACK this is only printname matching
+        return str(self) == str(other)
     
     def __hash__(self):
-        return hash(id(self))
+        # HACK
+        return hash(str(self))
 
     def set_control(self, control):
         """Sets the control."""
         # control will be an FST representation later
-        if not isinstance(control, control.Control) and control is not None:
+        if not isinstance(control, ctrl.Control) and control is not None:
             raise TypeError("control should be a Control instance")
         self.control = control
-        control.set_machine(self)
+        if control is not None:
+            control.set_machine(self)
 
     def allNames(self):
         return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])
