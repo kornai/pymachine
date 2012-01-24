@@ -107,11 +107,10 @@ class DefinitionParser:
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
 
         # S -> W : D | W : D % _
-        self.sen = (self.id + self.word + self.def_sep_lit.suppress() + self.definition + Optional(self.comment_sep_lit + self.dontcare).suppress()) + LineEnd()
+        self.sen = (self.id + self.word + self.def_sep_lit.suppress() + Optional(self.definition) + Optional(self.comment_sep_lit + self.dontcare).suppress()) + LineEnd()
     
     def parse(self, s):
         return self.sen.parseString(s).asList()
-        
     
     @classmethod
     def __flatten__(cls, _l):
@@ -272,10 +271,12 @@ class DefinitionParser:
         parsed = self.parse(s)
         #parsed = DefinitionParser.__flatten__(parsed)
         
-        machine = Machine(Monoid(parsed[1][2]))
-        machine.base.partitions.append([])
-        for d in parsed[2]:
-            machine.append(1, DefinitionParser.__parse_expr(d))
+        # HACK
+        # printname is now set to hungarian
+        machine = Machine(Monoid(parsed[1][0]))
+        if len(parsed) > 2:
+            for d in parsed[2]:
+                machine.append_if_not_there(DefinitionParser.__parse_expr(d), 1)
         return (machine, tuple(parsed[1]))
 
 def read(f):
