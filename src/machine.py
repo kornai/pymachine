@@ -99,6 +99,8 @@ class Machine(object):
         return results
 
     def to_full_str(self):
+        """A more complete __str__. Returns the print name,
+        as well as the print names of the machines on every partition."""
         ret = str(self.base.partitions[0]) + ': '
         for p in self.base.partitions[1:]:
             ret += '[' + ','.join(str(m) for m in p) + '] '
