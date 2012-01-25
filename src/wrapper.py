@@ -1,4 +1,3 @@
-import os
 import ConfigParser
 
 from sentence_parser import SentenceParser
@@ -17,11 +16,7 @@ class Wrapper:
         self.__read_files()
 
     def __read_config(self):
-        try:
-            machinepath = os.environ['MACHINEPATH']
-        except KeyError:
-            raise RuntimeError('MACHINEPATH environment variable not set!')
-        config = ConfigParser.SafeConfigParser({'machinepath':machinepath})
+        config = ConfigParser.SafeConfigParser()
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_fn = items["definitions"]
