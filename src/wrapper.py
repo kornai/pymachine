@@ -55,6 +55,7 @@ class Wrapper:
 
         # results is a list of (url, data) tuples
         results = sa.activation_loop()
+        self.lexicon.clear_active()
 
         return results
 
