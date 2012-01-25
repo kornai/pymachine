@@ -66,7 +66,7 @@ class SpreadingActivation(object):
 
     def _link(self, linker, machines):
         """Links the machines along @p linker."""
-        print "Linking " + ','.join(str(m) for m in machines) + " along " + str(linker)
+        logging.debug("Linking " + ','.join(str(m) for m in machines) + " along " + str(linker))
         for machine in machines:
             for partition in machine.base.find(linker):
 #                logging.debug('Partition ' + ','.join(partition))
