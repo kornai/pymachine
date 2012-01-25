@@ -98,3 +98,11 @@ class Machine(object):
                 results += m.search(what=what, empty=empty)
         return results
 
+    def to_full_str(self):
+        ret = str(self.base.partitions[0]) + ': '
+        for p in self.base.partitions[1:]:
+            ret += '[' + ','.join(str(m) for m in p) + '] '
+        return ret
+
+
+
