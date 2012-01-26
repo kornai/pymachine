@@ -93,8 +93,6 @@ class Lexicon:
 
             # FIXME: copy to active
             for anything in part:
-                #logging.debug(anything)
-                #logging.debug(type(anything))
                 machine_to_append = None
                 if isinstance(anything, Machine):
                     machine_to_append = anything
@@ -113,7 +111,6 @@ class Lexicon:
                     self.active[pn] = {}
                     self.active[pn][machine_to_append] = False
 
-        logging.debug(repr(self.active[printname].keys()[0].base.partitions))
         # change expand status in active store
         self.active[printname][machine] = True
 
@@ -155,14 +152,12 @@ class Lexicon:
 
     def get_expanded(self, inverse=False):
         """Returns the list of expanded machines."""
-        logging.debug('get_expanded(' + str(inverse) + ')')
         result = []
         for pn, machines in self.active.iteritems():
             for machine in machines:
                 # if inverse: return unexpandeds
                 if inverse ^ machines[machine]:
                     result.append(machine)
-        logging.debug("RESULT: " + ','.join(str(m) for m in result))
         return result
 
     def get_unexpanded(self):
