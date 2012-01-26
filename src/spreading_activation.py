@@ -58,10 +58,10 @@ class SpreadingActivation(object):
         ret = []
         for m in self.lexicon.get_expanded():
             if isinstance(m.control, PluginControl):
-                msg = ret.append(m.control.message())
+                msg = m.control.message()
                 if msg is not None:
                     ret.append(msg)
-        logging.debug('Returning...')
+        logging.debug('Returning ' + str(ret))
         return ret
 
     def _link(self, linker, machines):
