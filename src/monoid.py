@@ -13,12 +13,6 @@ class Monoid(object):
         self.unit = None
         self.distinguished_partition = None
     
-    def __str__(self):
-        return self.partitions[0]
-
-    def __repr__(self):
-        return self.partitions[0]
-    
     def __eq__(self, other):
         return (self.partitions == other.partitions and
                 self.operations == other.operations and

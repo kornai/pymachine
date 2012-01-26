@@ -11,26 +11,24 @@ class Machine(object):
         if not isinstance(base, Monoid):
             raise TypeError("base should be a Monoid instance")
         self.base = base
-    
-    def __str__(self):
-        """
-        Returns machine's "printname"
-        """
-        return unicode(self.base)
 
-    def __repr__(self):
-        return repr(self.base)
+    def __str__(self):
+        return self.printname().encode("utf-8")
 
     def __unicode__(self):
-        return unicode(self.base)
+        return self.base.partitions[0]
     
+    def printname(self):
+        return self.base.partitions[0]
+
     def __eq__(self, other):
         # HACK this is only printname matching
-        return str(self) == str(other)
+        #return self.printname() == other.printname()
+        return self.printname() == str(other)
     
     def __hash__(self):
         # HACK
-        return hash(str(self))
+        return hash(self.printname())
 
     def set_control(self, control):
         """Sets the control."""

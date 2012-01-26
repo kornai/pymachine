@@ -81,7 +81,7 @@ class Lexicon:
         if printname not in self.static:
             logging.warning("""expanding a machine ({0}) that is not in
                             knowledge base ie. Lexicon.static""".format(
-                            printname))
+                            repr(printname)))
             self.active[printname][machine] = True
             return
         
