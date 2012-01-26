@@ -26,7 +26,6 @@ class SpreadingActivation(object):
             logging.debug('LOOP:' + str(last_active) + ' ' + dbg_str)
             # Step 1
             for machine in unexpanded:
-                logging.debug('Uzenet ' + str(machine))
                 self.lexicon.expand(machine)
                 for partition in machine.base.partitions[1:]:
                     for submachine in partition:
@@ -66,10 +65,9 @@ class SpreadingActivation(object):
 
     def _link(self, linker, machines):
         """Links the machines along @p linker."""
-        logging.debug("Linking " + ','.join(str(m) for m in machines) + " along " + str(linker))
+        #logging.debug("Linking " + ','.join(str(m) for m in machines) + " along " + str(linker))
         for machine in machines:
             for partition in machine.base.find(linker):
-#                logging.debug('Partition ' + ','.join(partition))
                 machine.remove(linker, partition)
                 for to_add in machines:
                     if to_add != machine:
