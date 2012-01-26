@@ -94,13 +94,18 @@ class Lexicon:
             # FIXME: copy to active
             for anything in part:
                 machine_to_append = None
-                if isinstance(anything, Machine):
-                    machine_to_append = anything
-                    # FIXME: the machine from the active set, copy, etc.
+
+                if str(anything) in self.active:
+                    # FIXME: [0] is a hack, fix it
+                    machine_to_append = self.active[anything].keys()[0]
                 else:
-                    if anything in self.active:
-                        # FIXME: [0] is a hack, fix it
-                        machine_to_append = self.active[anything].keys()[0]
+                    if isinstance(anything, Machine):
+                        # FIXME: The deep copy must be a manual, recursive one,
+                        # creating a new machine only if self.active + the set
+                        # of machines created during the recursion itself do
+                        # not contain the (name) of the new machine -- in other
+                        # words, proper unification.
+                        machine_to_append = copy.deepcopy(anything)
                     else:
                         machine_to_append = Machine(Monoid(anything))
                 
@@ -162,3 +167,7 @@ class Lexicon:
 
     def get_unexpanded(self):
         return self.get_expanded(True)
+
+    def clear_active(self):
+        self.active = {}
+

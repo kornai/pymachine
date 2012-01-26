@@ -112,13 +112,18 @@ class ElviraPluginControl(PluginControl):
 
     def message(self):
         if self.machine is not None:
+            from constants import deep_cases
             prt = self.machine.base.partitions[1]
             before, after = None, None
             for m in prt:
                 if str(m) == 'BEFORE_AT':
                     before = m.base.partitions[2][0]
+                    if before in deep_cases:
+                        before = None
                 elif str(m) == 'AFTER_AT':
                     after = m.base.partitions[2][0]
+                    if after in deep_cases:
+                        after = None
             if before is not None and after is not None:
                 return (self.plugin_url, [before, after])
 
