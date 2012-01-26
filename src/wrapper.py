@@ -48,14 +48,19 @@ class Wrapper:
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
         messages that have to be sent to the active plugins."""
-        sp = SentenceParser()
-        sa = SpreadingActivation(self.lexicon)
-        machines = sp.parse(sentence)
-        self.lexicon.add_active(machines)
+        try:
+            sp = SentenceParser()
+            sa = SpreadingActivation(self.lexicon)
+            machines = sp.parse(sentence)
+            self.lexicon.add_active(machines)
 
-        # results is a list of (url, data) tuples
-        results = sa.activation_loop()
-        self.lexicon.clear_active()
+            # results is a list of (url, data) tuples
+            results = sa.activation_loop()
+            self.lexicon.clear_active()
+        except Exception, e:
+            import traceback
+            traceback.print_exc(e)
+            raise(e)
 
         return results
 
