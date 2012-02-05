@@ -119,6 +119,37 @@ class Lexicon:
         # change expand status in active store
         self.active[printname][machine] = True
 
+    def unify_recursively(self, static_machine, stop=None):
+        """Returns the active machine that corresponds to @p static_machine. It
+        recursively unifies all machines in all partitions of @p static_machine
+        with machines in the active set. @p static_machine may be either a
+        machine or a string.
+        @param stop a collection of the machines already copied"""
+        # If static_machine is a string, we don't have much to do
+        if isinstance(static_machine, str):
+            if anything in self.active:
+                # FIXME: [0] is a hack, fix it 
+                return self.active[static_machine].keys()[0]
+            else:
+                return Machine(Monoid(static_machine))
+        # If it's a machine, we create the corresponding active one
+        else if isinstance(static_machine, Machine):
+            if str(static_machine) in self.active:
+                active_machine = self.active[static_machine].keys()[0]
+            else:
+                active_machine = Machine(Monoid(static_machine))
+                active_control = copy.deepcopy(static_machine.control)
+                active_machine.set_control(active_control)
+
+            # Now we have to walk through the tree recursively
+            for i, part in enumerate(static_machine.base.partitions[1:]):
+                part_index = i + 1
+                for ss_machine in part:
+
+
+        else:
+            raise TypeError('static_machine must be a Machine or a str')
+
     def activate(self):
         """Finds and returns the machines that should be activated by the
         machines already active. These machines are automatically added
