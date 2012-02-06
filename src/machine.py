@@ -104,12 +104,14 @@ class Machine(object):
             ret += '[' + ','.join(str(m) for m in p) + '] '
         return ret
 
-    def to_debug_str(self):
+    @staticmethod
+    def to_debug_str(machine):
         """An even more detailed __str__, complete with object ids and
         recursive."""
-        self.__to_debug_str(self, 0)
+        Machine.__to_debug_str(machine, 0)
 
-    def __to_debug_str(self, machine, depth, lines=None, stop=None):
+    @staticmethod
+    def __to_debug_str(machine, depth, lines=None, stop=None):
         """Recursive helper method for to_debug_str.
         @param depth the depth of the recursion.
         @param stop the machines already visited (to detect cycles)."""
@@ -122,11 +124,11 @@ class Machine(object):
             if machine in stop:
                 lines.append('{0:>{1}}:{2}'.format(str(machine), 2 * depth, id(machine)))
             else:
-                stop.add(self)
-                lines.append('{0:>{1}}:{2}'.format(str(self), 2 * depth, id(self)))
+                stop.add(machine)
+                lines.append('{0:>{1}}:{2}'.format(str(machine), 2 * depth, id(machine)))
                 for part in machine.base.partitions[1:]:
                     for m in part:
-                        self.__to_debug_str(m, depth + 1, lines, stop)
+                        Machine.__to_debug_str(m, depth + 1, lines, stop)
         else:
             lines.append('{0:>{1}}'.format(str(machine), depth))
 
