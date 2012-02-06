@@ -97,12 +97,39 @@ class Machine(object):
         return results
 
     def to_full_str(self):
-        """A more complete __str__. Returns the print name,
+        """A more detailed __str__. Returns the print name,
         as well as the print names of the machines on every partition."""
         ret = str(self.base.partitions[0]) + ': '
         for p in self.base.partitions[1:]:
             ret += '[' + ','.join(str(m) for m in p) + '] '
         return ret
 
+    def to_debug_str(self):
+        """An even more detailed __str__, complete with object ids and
+        recursive."""
+        self.__to_debug_str(self, 0)
 
+    def __to_debug_str(self, machine, depth, lines=None, stop=None):
+        """Recursive helper method for to_debug_str.
+        @param depth the depth of the recursion.
+        @param stop the machines already visited (to detect cycles)."""
+        if stop is None:
+            stop = set()
+        if lines is None:
+            lines = []
+
+        if isinstance(machine, Machine):
+            if machine in stop:
+                lines.append('{0:>{1}}:{2}'.format(str(machine), 2 * depth, id(machine)))
+            else:
+                stop.add(self)
+                lines.append('{0:>{1}}:{2}'.format(str(self), 2 * depth, id(self)))
+                for part in machine.base.partitions[1:]:
+                    for m in part:
+                        self.__to_debug_str(m, depth + 1, lines, stop)
+        else:
+            lines.append('{0:>{1}}'.format(str(machine), depth))
+
+        if depth == 0:
+            return "\n".join(lines)
 
