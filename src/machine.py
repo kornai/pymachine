@@ -108,7 +108,7 @@ class Machine(object):
     def to_debug_str(machine):
         """An even more detailed __str__, complete with object ids and
         recursive."""
-        Machine.__to_debug_str(machine, 0)
+        return Machine.__to_debug_str(machine, 0)
 
     @staticmethod
     def __to_debug_str(machine, depth, lines=None, stop=None):
@@ -122,15 +122,18 @@ class Machine(object):
 
         if isinstance(machine, Machine):
             if machine in stop:
-                lines.append('{0:>{1}}:{2}'.format(str(machine), 2 * depth, id(machine)))
+                lines.append('{0:>{1}}:{2}'.format(
+                    str(machine), 2 * depth + len(str(machine)), id(machine)))
             else:
                 stop.add(machine)
-                lines.append('{0:>{1}}:{2}'.format(str(machine), 2 * depth, id(machine)))
+                lines.append('{0:>{1}}:{2}'.format(
+                    str(machine), 2 * depth + len(str(machine)), id(machine)))
                 for part in machine.base.partitions[1:]:
                     for m in part:
                         Machine.__to_debug_str(m, depth + 1, lines, stop)
         else:
-            lines.append('{0:>{1}}'.format(str(machine), depth))
+            lines.append('{0:>{1}}'.format(
+                    str(machine), 2 * depth + len(str(machine))))
 
         if depth == 0:
             return "\n".join(lines)
