@@ -24,12 +24,19 @@ class SpreadingActivation(object):
         while len(unexpanded) > 0:
             dbg_str = ', '.join(k + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
             logging.debug('LOOP:' + str(last_active) + ' ' + dbg_str)
+#            logging.debug('ACTIVE')
+#            from machine import Machine
+#            for ac in self.lexicon.active.values():
+#                for m in ac:
+#                    logging.debug(Machine.to_debug_str(m))
             # Step 1
             for machine in unexpanded:
                 self.lexicon.expand(machine)
                 for partition in machine.base.partitions[1:]:
                     for submachine in partition:
-                        if submachine in self.lexicon.deep_cases:
+                        if self.lexicon.is_deep_case(submachine):
+                            # XXX: This only works if strs and machines are
+                            # cross-hashed
                             s = linking.get(submachine, set())
                             s.add(machine)
                             linking[submachine] = s
@@ -65,7 +72,7 @@ class SpreadingActivation(object):
 
     def _link(self, linker, machines):
         """Links the machines along @p linker."""
-        #logging.debug("Linking " + ','.join(str(m) for m in machines) + " along " + str(linker))
+        logging.debug("Linking " + ','.join(str(m) for m in machines) + " along " + str(linker))
         for machine in machines:
             for partition in machine.base.find(linker):
                 machine.remove(linker, partition)

@@ -125,5 +125,7 @@ class ElviraPluginControl(PluginControl):
                     if after in deep_cases:
                         after = None
             if before is not None and after is not None:
+                import logging
+                logging.debug('Elvira message: {0} -> {1}'.format(before, after))
                 return (self.plugin_url, [before, after])
 

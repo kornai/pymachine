@@ -19,6 +19,11 @@ class Lexicon:
         self.active = {}
         self.create_elvira_machine()
 
+    def is_deep_case(self, machine):
+        """Returns @c True, if @p machine (which can be a string as well) is
+        a deep case."""
+        return str(machine) in self.deep_cases
+
     def create_elvira_machine(self):
         logging.warning("""Elvira machine is created right
                         now at init of Lexicon, HACKHACKHACK""")
@@ -86,36 +91,7 @@ class Lexicon:
             self.active[printname][machine] = True
             return
         
-        logging.debug("Expanding machine: " + str(machine))
-        for i, part in enumerate(self.static[printname].base.partitions[1:]):
-            logging.debug(part)
-            # we skipped 0th partition so index has to be corrected
-            part_index = i + 1
-
-            # FIXME: copy to active
-            for anything in part:
-                machine_to_append = None
-
-                if str(anything) in self.active:
-                    # FIXME: [0] is a hack, fix it
-                    machine_to_append = self.active[anything].keys()[0]
-                else:
-                    if isinstance(anything, Machine):
-                        # FIXME: The deep copy must be a manual, recursive one,
-                        # creating a new machine only if self.active + the set
-                        # of machines created during the recursion itself do
-                        # not contain the (name) of the new machine -- in other
-                        # words, proper unification.
-                        machine_to_append = copy.deepcopy(anything)
-                    else:
-                        machine_to_append = Machine(Monoid(anything))
-                
-                machine.append_if_not_there(machine_to_append, part_index)
-                
-                pn = str(machine_to_append)
-                if pn not in self.active:
-                    self.active[pn] = {}
-                    self.active[pn][machine_to_append] = False
+        machine = self.unify_recursively(self.static[printname])
 
         # change expand status in active store
         self.active[printname][machine] = True
@@ -127,6 +103,7 @@ class Lexicon:
         machine or a string.
         @param stop the set of machines already unified."""
         if stop is None:
+            logging.debug("unify_recursively: " + Machine.to_debug_str(static_machine))
             stop = set()
 
         # If we have already unified this machine: just return
@@ -139,7 +116,7 @@ class Lexicon:
                 return self.active[static_machine].keys()[0]
             else:
                 # Linkers are handled as strings.
-                if static_machine in self.deep_cases:
+                if self.is_deep_case(static_machine):
                     return static_machine
                 else:
                     active_machine = Machine(Monoid(static_machine))
@@ -148,6 +125,9 @@ class Lexicon:
         # If it's a machine, we create the corresponding active one
         elif isinstance(static_machine, Machine):
             static_name = str(static_machine)
+            if self.is_deep_case(static_machine):
+                return Machine(Monoid(static_name))
+
             if static_name in self.active:
                 active_machine = self.active[static_name].keys()[0]
             else:
