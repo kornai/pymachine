@@ -19,11 +19,6 @@ class Lexicon:
         self.active = {}
         self.create_elvira_machine()
 
-    def is_deep_case(self, machine):
-        """Returns @c True, if @p machine (which can be a string as well) is
-        a deep case."""
-        return str(machine) in self.deep_cases
-
     def create_elvira_machine(self):
         logging.warning("""Elvira machine is created right
                         now at init of Lexicon, HACKHACKHACK""")
@@ -199,4 +194,9 @@ class Lexicon:
 
     def clear_active(self):
         self.active = {}
+
+    def is_deep_case(self, machine):
+        """Returns @c True, if @p machine (which can be a string as well) is
+        a deep case."""
+        return str(machine) in self.deep_cases
 

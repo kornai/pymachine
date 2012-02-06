@@ -60,7 +60,7 @@ class SpreadingActivation(object):
             else:
                 last_active = len(self.lexicon.active)
 
-        # TODO: return messages to active plugins
+        # Return messages to active plugins
         ret = []
         for m in self.lexicon.get_expanded():
             if isinstance(m.control, PluginControl):
