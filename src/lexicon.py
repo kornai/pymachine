@@ -35,7 +35,8 @@ class Lexicon:
         """Helper method for add_active()"""
         printname = str(m)
         if printname in self.active:
-            self.active[printname][m] = expanded
+            already_expanded = self.active[printname].get(m, False)
+            self.active[printname][m] = expanded | already_expanded
         else:
             self.active[printname] = {m: expanded}
 
@@ -119,34 +120,35 @@ class Lexicon:
         # change expand status in active store
         self.active[printname][machine] = True
 
-    def unify_recursively(self, static_machine, stop=None):
+    def unify_recursively(self, static_machine):
         """Returns the active machine that corresponds to @p static_machine. It
         recursively unifies all machines in all partitions of @p static_machine
         with machines in the active set. @p static_machine may be either a
-        machine or a string.
-        @param stop a collection of the machines already copied"""
+        machine or a string."""
         # If static_machine is a string, we don't have much to do
         if isinstance(static_machine, str):
-            if anything in self.active:
+            if static_machine in self.active:
                 # FIXME: [0] is a hack, fix it 
                 return self.active[static_machine].keys()[0]
             else:
                 return Machine(Monoid(static_machine))
         # If it's a machine, we create the corresponding active one
-        else if isinstance(static_machine, Machine):
+        elif isinstance(static_machine, Machine):
             if str(static_machine) in self.active:
                 active_machine = self.active[static_machine].keys()[0]
             else:
                 active_machine = Machine(Monoid(static_machine))
                 active_control = copy.deepcopy(static_machine.control)
                 active_machine.set_control(active_control)
+                self.__add_active_machine(active_machine)
 
             # Now we have to walk through the tree recursively
             for i, part in enumerate(static_machine.base.partitions[1:]):
                 part_index = i + 1
                 for ss_machine in part:
-
-
+                    as_machine = self.unify_recursively(ss_machine)
+                    active_machine.append_if_not_there(as_machine, part_index)
+            return active_machine
         else:
             raise TypeError('static_machine must be a Machine or a str')
 
