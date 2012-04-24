@@ -39,12 +39,15 @@ class SentenceParser:
         """
         machines = []
         for token_or_chunk in sentence:
+            # chunk or token?
             if len(token_or_chunk) == 2:
+                # chunk
                 chunk, case = token_or_chunk
                 m = self.create_machines_from_chunk(chunk)
                 m.append_if_not_there(case)
                 machines.append(m)
             else:
+                # token
                 token = token_or_chunk
                 surface, stem, analysis = token
                 machines.append(Machine(Monoid(stem), Control(analysis)))
