@@ -1,3 +1,5 @@
+import logging
+
 from machine import Machine
 from monoid import Monoid
 from control import PosControl as Control
@@ -18,8 +20,14 @@ class SentenceParser:
             - return list or Machine instance?
         """
         if len(chunk) > 1:
-            raise Exception("""SentenceParser.create_machines_from_chunk()
-                            is now implemented for only 1-length chunks""")
+            # TODO
+            # 1. create POS string with numbers/ids
+            # 2. Run FST on POS string to add parentheses
+            # 3. Run another FST to add definition-syntax-like machine
+            #    transformations
+            # 4. Run the previously created transformations
+            logging.error("Not implemented yet.")
+            return
         else:
             only_token = chunk[0]
             surface, stem, analysis = only_token
