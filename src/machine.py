@@ -12,14 +12,10 @@ class Machine(object):
             raise TypeError("base should be a Monoid instance")
         self.base = base
 
-    def __str__(self):
-        return self.printname().encode("utf-8")
+        self._is_child_of = []
 
-    def __unicode__(self):
-        return self.base.partitions[0]
-    
-    def printname(self):
-        return self.base.partitions[0]
+    def __str__(self):
+        return self.printname()
 
     def __eq__(self, other):
         # HACK this is only printname matching
@@ -29,6 +25,9 @@ class Machine(object):
     def __hash__(self):
         # HACK
         return hash(self.printname())
+
+    def printname(self):
+        return self.base.partitions[0]
 
     def set_control(self, control):
         """Sets the control."""
@@ -57,6 +56,21 @@ class Machine(object):
         is @c None, @p what is removed from all partitions on which it is
         found."""
         self.base.remove(what, which_partition)
+
+    def search(self, what=None, empty=False):
+        results = []
+        for part_i, part in enumerate(self.base.partitions[1:]):
+            if empty:
+                if len(part) == 0:
+                    results.append((self, part_i + 1))
+            for m in part:
+                if what is not None:
+                    if m.base.partitions[0] == what:
+                        results.append((self, part_i + 1))
+                results += m.search(what=what, empty=empty)
+        return results
+
+    """from now, only print and draw methots"""
     
     def to_dot(self, toplevel=False):
         s = u"subgraph"
@@ -82,19 +96,6 @@ class Machine(object):
         s += "}\n"
         
         return s
-
-    def search(self, what=None, empty=False):
-        results = []
-        for part_i, part in enumerate(self.base.partitions[1:]):
-            if empty:
-                if len(part) == 0:
-                    results.append((self, part_i + 1))
-            for m in part:
-                if what is not None:
-                    if m.base.partitions[0] == what:
-                        results.append((self, part_i + 1))
-                results += m.search(what=what, empty=empty)
-        return results
 
     def to_full_str(self):
         """A more detailed __str__. Returns the print name,
