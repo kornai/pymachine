@@ -33,6 +33,7 @@ class DefinitionParser:
 
     def __init__(self):
         self.init_parser()
+        self.lexicon = Lexicon()
     
     def init_parser(self):
         self.id = Word(nums)
@@ -112,19 +113,6 @@ class DefinitionParser:
     
     def parse(self, s):
         return self.sen.parseString(s).asList()
-    
-    @classmethod
-    def __flatten__(cls, _l):
-        _str = cls._str
-        result = None
-        if type(_l) == list:
-            if len(_l) == 1 and type(_l[0]) == list and len(_l[0]) == 1 and type(_l[0][0]) in _str:
-                result = DefinitionParser.__flatten__(_l[0])
-            else:
-                result = [DefinitionParser.__flatten__(e) for e in _l]
-        else:
-            result = _l
-        return result
     
     @classmethod
     def _is_binary(cls, s):
@@ -270,7 +258,6 @@ class DefinitionParser:
     
     def parse_into_machines(self, s):
         parsed = self.parse(s)
-        #parsed = DefinitionParser.__flatten__(parsed)
         
         # HACK
         # printname is now set to hungarian
@@ -281,7 +268,6 @@ class DefinitionParser:
         return (machine, tuple(parsed[1]))
 
 def read(f):
-    l = Lexicon()
     dp = DefinitionParser()
     for line in f:
         l = line.strip()
@@ -290,8 +276,7 @@ def read(f):
         if l.startswith("#"):
             continue
         m, t = dp.parse_into_machines(line.strip())
-        l.add_static([m])
-    return l
+    return dp.lexicon
 
 if __name__ == "__main__":
     dp = DefinitionParser()
