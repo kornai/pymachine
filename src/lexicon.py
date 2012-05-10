@@ -25,10 +25,10 @@ class Lexicon:
         # HACK
         elvira_control = ElviraPluginControl()
         elvira_machine = Machine(Monoid("elvira"), elvira_control)
-        elvira_machine.append_if_not_there("BEFORE_AT")
-        elvira_machine.append_if_not_there("AFTER_AT")
-        elvira_machine.append_if_not_there("vonat")
-        elvira_machine.append_if_not_there("menetrend")
+        elvira_machine.append("BEFORE_AT")
+        elvira_machine.append("AFTER_AT")
+        elvira_machine.append("vonat")
+        elvira_machine.append("menetrend")
         self.static["elvira"] = elvira_machine
 
     def __add_active_machine(self, m, expanded=False):
@@ -54,15 +54,18 @@ class Lexicon:
             logging.error("""Calling Lexicon.add_active() with an incompatible
                           type""")
 
-    def add_static(self, machines):
+    def add_static(self, what):
         """
         adds machines to static collection
         typically called once to add whole background knowledge
         which is the input of the definition parser
         """
-        for m in machines:
-            printname = str(m)
-            self.static[printname] = m
+        if isinstance(what, Machine):
+            self.static[what.printname()] = what
+        elif isinstance(what, list):
+            for m in what:
+                printname = str(m)
+                self.static[printname] = m
 
     def expand(self, machine):
         """
