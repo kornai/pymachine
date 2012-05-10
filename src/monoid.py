@@ -5,9 +5,11 @@ class Monoid(object):
     Our monoid class
     """
     
-    def __init__(self, name):
+    def __init__(self, name, part_num=1):
         self.partitions = []
         self.partitions.append(name)
+        for _ in xrange(part_num):
+            self.partitions.append([])
         
         self.operations = None
         self.unit = None
@@ -28,12 +30,7 @@ class Monoid(object):
                 # FIXME clean up this shit
                 raise TypeError("Only machines and strings can be added to partitions")
         else:
-            # FIXME don't do while
-            logging.warning("FIXME")
-            while len(self.partitions) <= which_partition:
-                self.partitions.append([])
-            self.partitions[which_partition].append(what)
-            #raise IndexError("That partition does not exist")
+            raise IndexError("That partition does not exist")
 
     def remove(self, what, which_partition=None):
         """Removes @p what from the specified partition."""
