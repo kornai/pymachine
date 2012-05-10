@@ -1,17 +1,18 @@
 import logging
+import sys
+import string
+
 try:
     from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
 except ImportError:
-    import sys
     logging.critical("PyParsing have to be installed on the computer")
     sys.exit(-1)
-import string
 
 from machine import Machine
 from monoid import Monoid
 from constants import deep_cases
+from lexicon import Lexicon
 
-import sys
 class ParserException(Exception):
     pass
 
@@ -280,8 +281,7 @@ class DefinitionParser:
         return (machine, tuple(parsed[1]))
 
 def read(f):
-    from langtools.utils import accents
-    d = {}
+    l = Lexicon()
     dp = DefinitionParser()
     for line in f:
         l = line.strip()
@@ -290,10 +290,8 @@ def read(f):
         if l.startswith("#"):
             continue
         m, t = dp.parse_into_machines(line.strip())
-        tl = list(t)
-        tl[0] = accents.proszeky_to_utf(tl[0].encode("utf-8"))
-        d[tuple(tl)] = m
-    return d
+        l.add_static([m])
+    return l
 
 if __name__ == "__main__":
     dp = DefinitionParser()
