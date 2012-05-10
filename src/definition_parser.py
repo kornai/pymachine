@@ -3,6 +3,7 @@ import sys
 import string
 
 try:
+    import pyparsing
     from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
 except ImportError:
     logging.critical("PyParsing have to be installed on the computer")
@@ -49,7 +50,6 @@ class DefinitionParser:
         return s in deep_cases
     
     def init_parser(self):
-        self.id = Word(nums)
         self.lb_lit = Literal(DefinitionParser.lb)
         self.rb_lit = Literal(DefinitionParser.rb)
         self.lp_lit = Literal(DefinitionParser.lp)
@@ -119,10 +119,11 @@ class DefinitionParser:
         )
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
+        self.defid = Word(nums)
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
 
         # S -> W : D | W : D % _
-        self.sen = (self.id + self.word + self.def_sep_lit.suppress() + Optional(self.definition) + Optional(self.comment_sep_lit + self.dontcare).suppress()) + LineEnd()
+        self.sen = (self.defid + self.word + self.def_sep_lit.suppress() + Optional(self.definition) + Optional(self.comment_sep_lit + self.dontcare).suppress()) + LineEnd()
     
     def parse(self, s):
         return self.sen.parseString(s).asList()
@@ -274,7 +275,7 @@ class DefinitionParser:
         parsed = self.parse(s)
         
         # HACK printname is now set to english
-        machine = self.get_machine(parsed[1][1])
+        machine = self.get_machine(parsed[1][3])
         if len(parsed) > 2:
             for d in parsed[2]:
                 machine.append(self.__parse_expr(d, machine), 1)
@@ -283,18 +284,28 @@ def read(f):
     dp = DefinitionParser()
     for line in f:
         l = line.strip()
+        logging.info("Parsing: {0}".format(l))
         if len(l) == 0:
             continue
         if l.startswith("#"):
             continue
-        dp.parse_into_machines(line.strip())
+        try:
+            dp.parse_into_machines(l)
+            print l
+            print "Parsing ok"
+        except pyparsing.ParseException, pe:
+            print l
+            print "Error: ", str(pe)
+
     return dp.lexicon
 
 if __name__ == "__main__":
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-g":
-      dp.parse_into_machines(pstr)
+        dp.parse_into_machines(pstr)
+    elif sys.argv[1] == "-f":
+        lexicon = read(file(sys.argv[2]))
     else:
-      print dp.parse(pstr)
+        print dp.parse(pstr)
 
