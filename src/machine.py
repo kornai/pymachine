@@ -12,7 +12,7 @@ class Machine(object):
             raise TypeError("base should be a Monoid instance")
         self.base = base
 
-        self._is_child_of = []
+        self._child_of = set()
 
     def __str__(self):
         return self.printname()
@@ -41,21 +41,27 @@ class Machine(object):
     def allNames(self):
         return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])
         
-    def append(self, which_partition, what):
-        logging.warning("use append_if_not_there() instead")
-        self.base.append(which_partition, what)
-
     def append_if_not_there(self, what, which_partition=1):
         if len(self.base.partitions) > which_partition:
             if what in self.base.partitions[which_partition]:
                 return
         self.base.append(which_partition, what)
+        if isinstance(what, Machine):
+            what.set_child_of(self, 1)
+
+    def set_child_of(self, whose, part):
+        self._child_of.add((whose, part))
+
+    def del_child_of(self, whose, part):
+        self._child_of.remove((whose, part))
 
     def remove(self, what, which_partition=None):
         """Removes @p what from the specified partition. If @p which_partition
         is @c None, @p what is removed from all partitions on which it is
         found."""
         self.base.remove(what, which_partition)
+        if isinstance(what, Machine):
+            what.del_child_of(self, which_partition)
 
     def search(self, what=None, empty=False):
         results = []
