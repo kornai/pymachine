@@ -26,8 +26,9 @@ class Monoid(object):
             from machine import Machine
             if isinstance(what, Machine) or isinstance(what, str):
                 self.partitions[which_partition].append(what)
+            elif what is None:
+                pass
             else:
-                # FIXME clean up this shit
                 raise TypeError("Only machines and strings can be added to partitions")
         else:
             raise IndexError("That partition does not exist")
