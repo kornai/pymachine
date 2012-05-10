@@ -34,6 +34,19 @@ class DefinitionParser:
     def __init__(self):
         self.init_parser()
         self.lexicon = Lexicon()
+
+    @classmethod
+    def _is_binary(cls, s):
+        return type(s) in cls._str and s.isupper() and not s in deep_cases
+    
+    @classmethod
+    def _is_unary(cls, s):
+        # TODO unaries can contain hyphens
+        return type(s) in cls._str and s.islower() or s in deep_cases
+    
+    @classmethod
+    def _is_deep_case(cls, s):
+        return s in deep_cases
     
     def init_parser(self):
         self.id = Word(nums)
@@ -113,26 +126,27 @@ class DefinitionParser:
     
     def parse(self, s):
         return self.sen.parseString(s).asList()
+
+    def get_machine(self, printname):
+        if printname not in self.lexicon.static:
+            part_num = 0
+            if DefinitionParser._is_unary(printname):
+                part_num = 1
+            elif DefinitionParser._is_binary(printname):
+                part_num = 2
+            if part_num == 0:
+                raise ValueError("get_machine() is called with an invalid printname argument")
+            self.lexicon.add_static(Machine(Monoid(printname, part_num)))
+        return self.lexicon.static[printname]
     
-    @classmethod
-    def _is_binary(cls, s):
-        return type(s) in cls._str and s.isupper() and not s in deep_cases
-    
-    @classmethod
-    def _is_unary(cls, s):
-        # TODO unaries can contain hyphens
-        return type(s) in cls._str and s.islower() or s in deep_cases
-    
-    @classmethod
-    def _is_deep_case(cls, s):
-        return s in deep_cases
-    
-    @classmethod
-    def __parse_expr(cls, expr):
+    def __parse_expr(self, expr, parent):
         """
         creates machines from a parse node and its children
         there should be one handler for every rule
         """
+        # name shortening for classmethods
+        cls = DefinitionParser
+
         is_binary = cls._is_binary
         is_unary = cls._is_unary
         is_tree = lambda r: type(r) == list
@@ -142,9 +156,9 @@ class DefinitionParser:
         if (len(expr) == 2 and
               is_unary(expr[0]) and
               is_tree(expr[1])):
-            m = Machine(Monoid(expr[0]))
+            m = self.get_machine(expr[0])
             for _property in expr[1]:
-                m.append(1, cls.__parse_expr(_property))
+                m.append(1, self.__parse_expr(_property, m))
             return m
 
         # E -> U ( U ) | U ( U [ E ] )
@@ -154,10 +168,9 @@ class DefinitionParser:
               expr[1] == cls.lp and
               is_unary(expr[2]) and
               expr[3] == cls.rp):
-            m = Machine(Monoid(expr[2]))
-            m.append(1, Machine(Monoid(expr[0])))
+            m = self.get_machine(expr[2])
+            m.append(1, self.get_machine(expr[0]))
             return m
-        # ???
 
         # E -> U B E
         # ['unary', 'BINARY', ['unary']]
@@ -165,9 +178,9 @@ class DefinitionParser:
               is_unary(expr[0]) and
               is_binary(expr[1]) and
               is_tree(expr[2])):
-            m = Machine(Monoid(expr[1]))
-            m.append(1, Machine(Monoid(expr[0])))
-            m.append(2, cls.__parse_expr(expr[2]))
+            m = self.get_machine(expr[1])
+            m.append(1, self.get_machine(expr[0]))
+            m.append(2, self.__parse_expr(expr[2], m))
             return m
 
         # E -> U B
@@ -175,16 +188,15 @@ class DefinitionParser:
         if (len(expr) == 2 and
               is_unary(expr[0]) and
               is_binary(expr[1])):
-            m = Machine(Monoid(expr[1]))
-            m.append(1, Machine(Monoid(expr[0])))
-            m.base.partitions.append([])
+            m = self.get_machine(expr[1])
+            m.append(1, self.get_machine(expr[0]))
             return m
 
         # E -> U
         # ['unary']
         if (len(expr) == 1 and
               is_unary(expr[0])):
-            return Machine(Monoid(expr[0]))
+            return self.get_machine(expr[0])
 
         # E -> B [ E ; E ] 
         # ['BINARY', ['unary'], ['unary']]
@@ -192,9 +204,9 @@ class DefinitionParser:
               is_binary(expr[0]) and
               is_tree(expr[1]) and
               is_tree(expr[2])):
-            m = Machine(Monoid(expr[0]))
-            m.append(1, cls.__parse_expr(expr[1]))
-            m.append(2, cls.__parse_expr(expr[2]))
+            m = self.get_machine(expr[0])
+            m.append(1, self.__parse_expr(expr[1], m))
+            m.append(2, self.__parse_expr(expr[2], m))
             return m
 
         # E -> [ E ] B [ E ]
@@ -203,9 +215,9 @@ class DefinitionParser:
               is_tree(expr[0]) and
               is_binary(expr[1]) and
               is_tree(expr[2])):
-            m = Machine(Monoid(expr[1]))
-            m.append(1, cls.__parse_expr(expr[0]))
-            m.append(2, cls.__parse_expr(expr[2]))
+            m = self.get_machine(expr[1])
+            m.append(1, self.__parse_expr(expr[0], m))
+            m.append(2, self.__parse_expr(expr[2], m))
             return m
 
         # E -> B [ E ]
@@ -213,8 +225,8 @@ class DefinitionParser:
         if (len(expr) == 2 and
             is_binary(expr[0]) and
             is_tree(expr[1])):
-            m = Machine(Monoid(expr[0]))
-            m.append(2, cls.__parse_expr(expr[1]))
+            m = self.get_machine(expr[0])
+            m.append(2, self.__parse_expr(expr[1], m))
             return m
 
         # E -> [ E ] B
@@ -222,9 +234,8 @@ class DefinitionParser:
         if (len(expr) == 2 and
             is_tree(expr[0]) and
             is_binary(expr[1])):
-            m = Machine(Monoid(expr[1]))
-            m.append(1, cls.__parse_expr(expr[0]))
-            m.base.partitions.append([])
+            m = self.get_machine(expr[1])
+            m.append(1, self.__parse_expr(expr[0], m))
             return m
 
         # E -> B E
@@ -232,8 +243,8 @@ class DefinitionParser:
         if (len(expr) == 2 and
             is_binary(expr[0]) and
             is_tree(expr[1])):
-            m = Machine(Monoid(expr[0]))
-            m.append(2, cls.__parse_expr(expr[1]))
+            m = self.get_machine(expr[0])
+            m.append(2, self.__parse_expr(expr[1], m))
             return m
 
         # E -> 'B
@@ -241,15 +252,18 @@ class DefinitionParser:
         if (len(expr) == 2 and
             expr[0] == cls.prime and
             is_binary(expr[1])):
-            raise NotImplementedError()
+            m = self.get_machine(expr[1])
+            m.append(parent, 2)
+            return None
 
         # E -> B'
         # ['BINARY', "'"]
         if (len(expr) == 2 and
             is_binary(expr[0]) and
             expr[1] == cls.prime):
-            raise NotImplementedError()
-
+            m = self.get_machine(expr[0])
+            m.append(parent, 1)
+            return None
         
         pe = ParserException("Unknown expression in definition")
         logging.debug(str(pe))
@@ -259,13 +273,11 @@ class DefinitionParser:
     def parse_into_machines(self, s):
         parsed = self.parse(s)
         
-        # HACK
-        # printname is now set to hungarian
-        machine = Machine(Monoid(parsed[1][0]))
+        # HACK printname is now set to english
+        machine = self.get_machine(parsed[1][1])
         if len(parsed) > 2:
             for d in parsed[2]:
-                machine.append_if_not_there(DefinitionParser.__parse_expr(d), 1)
-        return (machine, tuple(parsed[1]))
+                machine.append(self.__parse_expr(d, machine), 1)
 
 def read(f):
     dp = DefinitionParser()
@@ -275,15 +287,14 @@ def read(f):
             continue
         if l.startswith("#"):
             continue
-        m, t = dp.parse_into_machines(line.strip())
+        dp.parse_into_machines(line.strip())
     return dp.lexicon
 
 if __name__ == "__main__":
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-g":
-      m, _ = dp.parse_into_machines(pstr)
-      print m.to_dot(True)
+      dp.parse_into_machines(pstr)
     else:
       print dp.parse(pstr)
 
