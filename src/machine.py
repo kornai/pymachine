@@ -41,13 +41,18 @@ class Machine(object):
     def allNames(self):
         return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])
         
-    def append_if_not_there(self, what, which_partition=1):
+    def append(self, what, which_partition=1):
         if len(self.base.partitions) > which_partition:
             if what in self.base.partitions[which_partition]:
                 return
         self.base.append(which_partition, what)
         if isinstance(what, Machine):
             what.set_child_of(self, 1)
+
+    def append_if_not_there(self, *args):
+        logging.warning("""old append_if_not_there() is now append(),
+                           use that instead""")
+        self.append(*args)
 
     def set_child_of(self, whose, part):
         self._child_of.add((whose, part))
