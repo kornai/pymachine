@@ -137,6 +137,7 @@ class DefinitionParser:
                 part_num = 2
             if part_num == 0:
                 raise ValueError("get_machine() is called with an invalid printname argument")
+            logging.debug("Creating machine {0} with {1} partitions".format(printname, part_num))
             self.lexicon.add_static(Machine(Monoid(printname, part_num)))
         return self.lexicon.static[printname]
     
@@ -145,6 +146,9 @@ class DefinitionParser:
         creates machines from a parse node and its children
         there should be one handler for every rule
         """
+
+        logging.debug("Parsing expression: {0}".format(expr))
+
         # name shortening for classmethods
         cls = DefinitionParser
 
@@ -159,7 +163,7 @@ class DefinitionParser:
               is_tree(expr[1])):
             m = self.get_machine(expr[0])
             for _property in expr[1]:
-                m.append(1, self.__parse_expr(_property, m))
+                m.append(self.__parse_expr(_property, m), 1)
             return m
 
         # E -> U ( U ) | U ( U [ E ] )
@@ -170,7 +174,7 @@ class DefinitionParser:
               is_unary(expr[2]) and
               expr[3] == cls.rp):
             m = self.get_machine(expr[2])
-            m.append(1, self.get_machine(expr[0]))
+            m.append(self.get_machine(expr[0]), 1)
             return m
 
         # E -> U B E
@@ -180,8 +184,8 @@ class DefinitionParser:
               is_binary(expr[1]) and
               is_tree(expr[2])):
             m = self.get_machine(expr[1])
-            m.append(1, self.get_machine(expr[0]))
-            m.append(2, self.__parse_expr(expr[2], m))
+            m.append(self.get_machine(expr[0]), 1)
+            m.append(self.__parse_expr(expr[2], m), 2)
             return m
 
         # E -> U B
@@ -190,7 +194,7 @@ class DefinitionParser:
               is_unary(expr[0]) and
               is_binary(expr[1])):
             m = self.get_machine(expr[1])
-            m.append(1, self.get_machine(expr[0]))
+            m.append(self.get_machine(expr[0]), 1)
             return m
 
         # E -> U
@@ -206,19 +210,20 @@ class DefinitionParser:
               is_tree(expr[1]) and
               is_tree(expr[2])):
             m = self.get_machine(expr[0])
-            m.append(1, self.__parse_expr(expr[1], m))
-            m.append(2, self.__parse_expr(expr[2], m))
+            m.append(self.__parse_expr(expr[1], m), 1)
+            m.append(self.__parse_expr(expr[2], m), 2)
             return m
 
         # E -> [ E ] B [ E ]
+        # E -> [ E ] B E # TODO test whether this is working too?
         # [['unary'], 'BINARY', ['unary']]
         if (len(expr) == 3 and
               is_tree(expr[0]) and
               is_binary(expr[1]) and
               is_tree(expr[2])):
             m = self.get_machine(expr[1])
-            m.append(1, self.__parse_expr(expr[0], m))
-            m.append(2, self.__parse_expr(expr[2], m))
+            m.append(self.__parse_expr(expr[0], m), 1)
+            m.append(self.__parse_expr(expr[2], m), 2)
             return m
 
         # E -> B [ E ]
@@ -227,7 +232,7 @@ class DefinitionParser:
             is_binary(expr[0]) and
             is_tree(expr[1])):
             m = self.get_machine(expr[0])
-            m.append(2, self.__parse_expr(expr[1], m))
+            m.append(self.__parse_expr(expr[1], m), 2)
             return m
 
         # E -> [ E ] B
@@ -236,7 +241,7 @@ class DefinitionParser:
             is_tree(expr[0]) and
             is_binary(expr[1])):
             m = self.get_machine(expr[1])
-            m.append(1, self.__parse_expr(expr[0], m))
+            m.append(self.__parse_expr(expr[0], m), 1)
             return m
 
         # E -> B E
@@ -245,7 +250,7 @@ class DefinitionParser:
             is_binary(expr[0]) and
             is_tree(expr[1])):
             m = self.get_machine(expr[0])
-            m.append(2, self.__parse_expr(expr[1], m))
+            m.append(self.__parse_expr(expr[1], m), 2)
             return m
 
         # E -> 'B
@@ -300,6 +305,7 @@ def read(f):
     return dp.lexicon
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-g":
