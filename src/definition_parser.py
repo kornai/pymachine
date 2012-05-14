@@ -12,7 +12,6 @@ except ImportError:
 from machine import Machine
 from monoid import Monoid
 from constants import deep_cases
-from lexicon import Lexicon
 
 class ParserException(Exception):
     pass
@@ -34,7 +33,6 @@ class DefinitionParser:
 
     def __init__(self):
         self.init_parser()
-        self.lexicon = Lexicon()
 
     @classmethod
     def _is_binary(cls, s):
@@ -48,7 +46,7 @@ class DefinitionParser:
     @classmethod
     def _is_deep_case(cls, s):
         return s in deep_cases
-    
+
     def init_parser(self):
         self.lb_lit = Literal(DefinitionParser.lb)
         self.rb_lit = Literal(DefinitionParser.rb)
@@ -72,50 +70,63 @@ class DefinitionParser:
         
         # main expression
         self.expression = Forward()
+        self.binexpr = Forward()
+        self.unexpr = Forward()
+        self.argexpr = Forward()
         
         # "enumerable expression"
         # D -> E | E, D
         self.definition = Group(delimitedList(self.expression,
             delim=DefinitionParser.arg_sep))
+
         self.expression << Group(
-            # E -> U
-            (self.unary) ^
+            # E -> UE
+            (self.unexpr) ^
 
-            # E -> U [ D ]
-            (self.unary + self.lb_lit.suppress() + self.definition + self.rb_lit.suppress() ) ^ 
+            # E -> BE
+            (self.binexpr) ^
 
-            # E -> U ( U ) | U ( U [ E ] )
-            (self.unary + self.lp_lit + self.unary + Optional(self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) + self.rp_lit ) ^
+            # E -> U ( BE )
+            (self.unexpr + self.lp_lit + self.binexpr + self.rp_lit)
+        )
 
-            # E -> U B
-            (self.unary + self.binary) ^
-            
-            # E -> U B E
-            (self.unary + self.binary + self.expression) ^
+        self.binexpr << Group(
+            # BE -> A B A
+            (self.argexpr + self.binary + self.argexpr) ^
 
-            # E -> B E
-            (self.binary + self.expression) ^
+            # BE -> A B
+            (self.argexpr + self.binary) ^
 
-            # E -> B [ E ]
-            (self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
-            
-            # E -> B [ E ; E ] 
-            (self.binary + self.lb_lit.suppress() + self.expression + self.part_sep_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
-            
-            # E -> [ E ] B
-            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary) ^
-            
-            # E -> [ E ] B [ E ]
-            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.lb_lit.suppress() + self.expression + self.rb_lit.suppress()) ^
-            
-            # E -> [ E ] B E
-            (self.lb_lit.suppress() + self.expression + self.rb_lit.suppress() + self.binary + self.expression ) ^
-            
-            # E -> 'B
+            # BE -> B A
+            (self.binary + self.argexpr) ^
+
+            # BE -> B [ E; E ]
+            (self.binary + self.lb_lit + self.expression + self.part_sep_lit + self.expression + self.rb_lit) ^
+
+            # BE -> 'B
             (self.prime_lit + self.binary) ^
 
-            # E -> B'
+            # BE -> B'
             (self.binary + self.prime_lit)
+        )
+
+        self.unexpr << Group(
+            # UE -> U
+            (self.unary) ^
+
+            # UE -> U [ D ]
+            (self.unary + self.lb_lit + self.definition + self.rb_lit) ^
+
+            # UE -> U ( U )
+            (self.unary + self.lp_lit + self.unary + self.rp_lit)
+        )
+
+        self.argexpr << Group(
+            # A -> UE
+            (self.unexpr) ^
+
+            # A -> [ D ]
+            (self.lb_lit + self.definition + self.rb_lit)
         )
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
@@ -128,19 +139,6 @@ class DefinitionParser:
     def parse(self, s):
         return self.sen.parseString(s).asList()
 
-    def get_machine(self, printname):
-        if printname not in self.lexicon.static:
-            part_num = 0
-            if DefinitionParser._is_unary(printname):
-                part_num = 1
-            elif DefinitionParser._is_binary(printname):
-                part_num = 2
-            if part_num == 0:
-                raise ValueError("get_machine() is called with an invalid printname argument")
-            logging.debug("Creating machine {0} with {1} partitions".format(printname, part_num))
-            self.lexicon.add_static(Machine(Monoid(printname, part_num)))
-        return self.lexicon.static[printname]
-    
     def __parse_expr(self, expr, parent):
         """
         creates machines from a parse node and its children
@@ -156,134 +154,123 @@ class DefinitionParser:
         is_unary = cls._is_unary
         is_tree = lambda r: type(r) == list
 
-        # E -> U [ D ]
-        # ['unary', [['unary'], ['unary']]]
-        if (len(expr) == 2 and
-              is_unary(expr[0]) and
-              is_tree(expr[1])):
-            m = self.get_machine(expr[0])
-            for _property in expr[1]:
-                m.append(self.__parse_expr(_property, m), 1)
-            return m
+        if (len(expr) == 1):
+            # E -> UE | BE
+            # A -> UE
+            if (is_tree(expr[0])):
+                return self.__parse_expr(expr[0], parent)
 
-        # E -> U ( U ) | U ( U [ E ] )
-        # ['unary', '(', 'unary', ')']
-        if (len(expr) == 4 and
-              is_unary(expr[0]) and
-              expr[1] == cls.lp and
-              is_unary(expr[2]) and
-              expr[3] == cls.rp):
-            m = self.get_machine(expr[2])
-            m.append(self.get_machine(expr[0]), 1)
-            return m
+            # UE -> U
+            if (is_unary(expr[0])):
+                return Machine(Monoid(expr[0], 1))
 
-        # E -> U B E
-        # ['unary', 'BINARY', ['unary']]
-        if (len(expr) == 3 and
-              is_unary(expr[0]) and
-              is_binary(expr[1]) and
-              is_tree(expr[2])):
-            m = self.get_machine(expr[1])
-            m.append(self.get_machine(expr[0]), 1)
-            m.append(self.__parse_expr(expr[2], m), 2)
-            return m
+        if (len(expr) == 2):
+            # BE -> A B
+            if (is_tree(expr[0]) and
+                    is_binary(expr[1])):
+                m = Machine(Monoid(expr[1], 2))
+                m.append(self.__parse_expr(expr[0], m), 1)
+                return m
 
-        # E -> U B
-        # ['unary', 'BINARY']
-        if (len(expr) == 2 and
-              is_unary(expr[0]) and
-              is_binary(expr[1])):
-            m = self.get_machine(expr[1])
-            m.append(self.get_machine(expr[0]), 1)
-            return m
+            # BE -> B A
+            if (is_binary(expr[0]) and
+                    is_tree(expr[1])):
+                m = Machine(Monoid(expr[0], 2))
+                m.append(self.__parse_expr(expr[1], m), 2)
+                return m
 
-        # E -> U
-        # ['unary']
-        if (len(expr) == 1 and
-              is_unary(expr[0])):
-            return self.get_machine(expr[0])
+            # BE -> 'B
+            if (expr[0] == "'" and
+                    is_binary(expr[1])):
+                m = Machine(Monoid(expr[1], 2))
+                m.append(parent, 2)
+                # nothing to append to any partitions
+                return None
 
-        # E -> B [ E ; E ] 
-        # ['BINARY', ['unary'], ['unary']]
-        if (len(expr) == 3 and
-              is_binary(expr[0]) and
-              is_tree(expr[1]) and
-              is_tree(expr[2])):
-            m = self.get_machine(expr[0])
-            m.append(self.__parse_expr(expr[1], m), 1)
-            m.append(self.__parse_expr(expr[2], m), 2)
-            return m
+            # BE -> B'
+            if (is_binary(expr[0]) and
+                    expr[1] == "'"):
+                m = Machine(Monoid(expr[0], 2))
+                m.append(parent, 1)
+                # nothing to append to any partitions
+                return None
 
-        # E -> [ E ] B [ E ]
-        # E -> [ E ] B E # TODO test whether this is working too?
-        # [['unary'], 'BINARY', ['unary']]
-        if (len(expr) == 3 and
-              is_tree(expr[0]) and
-              is_binary(expr[1]) and
-              is_tree(expr[2])):
-            m = self.get_machine(expr[1])
-            m.append(self.__parse_expr(expr[0], m), 1)
-            m.append(self.__parse_expr(expr[2], m), 2)
-            return m
+        if (len(expr) == 3):
+            # UB -> A B A
+            if (is_tree(expr[0]) and
+                    is_binary(expr[1]) and
+                    is_tree(expr[2])):
+                m = Machine(Monoid(expr[1], 2))
+                m.append(self.__parse_expr(expr[0], m), 1)
+                m.append(self.__parse_expr(expr[2], m), 2)
+                return m
 
-        # E -> B [ E ]
-        # ['BINARY', ['unary']]
-        if (len(expr) == 2 and
-            is_binary(expr[0]) and
-            is_tree(expr[1])):
-            m = self.get_machine(expr[0])
-            m.append(self.__parse_expr(expr[1], m), 2)
-            return m
-
-        # E -> [ E ] B
-        # [['unary'], 'BINARY']
-        if (len(expr) == 2 and
-            is_tree(expr[0]) and
-            is_binary(expr[1])):
-            m = self.get_machine(expr[1])
-            m.append(self.__parse_expr(expr[0], m), 1)
-            return m
-
-        # E -> B E
-        # ['BINARY', ['unary']]
-        if (len(expr) == 2 and
-            is_binary(expr[0]) and
-            is_tree(expr[1])):
-            m = self.get_machine(expr[0])
-            m.append(self.__parse_expr(expr[1], m), 2)
-            return m
-
-        # E -> 'B
-        # ["'", 'BINARY']
-        if (len(expr) == 2 and
-            expr[0] == cls.prime and
-            is_binary(expr[1])):
-            m = self.get_machine(expr[1])
-            m.append(parent, 2)
-            return None
-
-        # E -> B'
-        # ['BINARY', "'"]
-        if (len(expr) == 2 and
-            is_binary(expr[0]) and
-            expr[1] == cls.prime):
-            m = self.get_machine(expr[0])
-            m.append(parent, 1)
-            return None
+            # A -> [ D ]
+            if (expr[0] == "[" and
+                    is_tree(expr[1]) and
+                    expr[2] == "]"):
+                return list(self.__parse_definition(expr[1], parent))
         
+        if (len(expr) == 4):
+            # E -> U ( BE )
+            if (is_unary(expr[0]) and
+                    expr[1] == "(" and
+                    is_tree(expr[2]) and
+                    expr[3] == ")"):
+                m = self.__parse_expr(expr[2], parent)
+                m.append(Machine(Monoid(expr[1], 1)), 0)
+                return m
+
+            # UE -> U [ D ]
+            if (is_unary(expr[0]) and
+                    expr[1] == "[" and
+                    is_tree(expr[2]) and
+                    expr[3] == "]"):
+                m = Machine(Monoid(expr[0], 1))
+                for parsed_expr in self.__parse_definition(expr[2], m):
+                    m.append(parsed_expr, 1)
+                return m
+
+            # UE -> U ( U )
+            if (is_unary(expr[0]) and
+                    expr[1] == "(" and
+                    is_unary(expr[2]) and
+                    expr[3] == ")"):
+                m = Machine(Monoid(expr[2], 1))
+                m.append(Machine(Monoid(expr[0], 1)), 1)
+                return m
+
+        if (len(expr) == 6):
+            # BE -> B [E; E]
+            if (is_binary(expr[0]) and
+                    expr[1] == "[" and
+                    is_tree(expr[2]) and
+                    expr[3] == ";" and
+                    is_tree(expr[4]) and
+                    expr[5] == "]"):
+                m = Machine(Monoid(expr[0], 2))
+                m.append(self.__parse_expr(expr[2], m), 1)
+                m.append(self.__parse_expr(expr[4], m), 2)
+                return m
+
         pe = ParserException("Unknown expression in definition")
         logging.debug(str(pe))
         logging.debug(expr)
         raise pe
+
+    def __parse_definition(self, definition, parent):
+        for d in definition:
+            yield self.__parse_expr(d, parent)
     
     def parse_into_machines(self, s):
         parsed = self.parse(s)
         
         # HACK printname is now set to english
-        machine = self.get_machine(parsed[1][3])
+        machine = Machine(Monoid(parsed[1][2], 1))
         if len(parsed) > 2:
-            for d in parsed[2]:
-                machine.append(self.__parse_expr(d, machine), 1)
+            for parsed_expr in self.__parse_definition(parsed[2], machine):
+                machine.append(parsed_expr, 1)
+        return machine
 
 def read(f):
     dp = DefinitionParser()
