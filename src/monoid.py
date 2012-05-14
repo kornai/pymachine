@@ -23,14 +23,16 @@ class Monoid(object):
                 self.unit == other.unit and
                 self.distinguished_partition == other.distinguished_partition)
 
-    def append(self, which_partition, what):
+    def append(self, what, which_partition):
         if len(self.partitions) > which_partition:
             from machine import Machine
             if isinstance(what, Machine) or isinstance(what, str):
                 self.partitions[which_partition].append(what)
             elif what is None:
                 pass
-            else:
+            elif isinstance(what, list):
+                for what_ in what:
+                    self.append(what_, which_partition)
                 raise TypeError("Only machines and strings can be added to partitions")
         else:
             raise IndexError("That partition does not exist")

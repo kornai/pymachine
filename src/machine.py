@@ -47,7 +47,7 @@ class Machine(object):
         if len(self.base.partitions) > which_partition:
             if what in self.base.partitions[which_partition]:
                 return
-        self.base.append(which_partition, what)
+        self.base.append(what, which_partition)
         if isinstance(what, Machine):
             what.set_child_of(self, 1)
 
