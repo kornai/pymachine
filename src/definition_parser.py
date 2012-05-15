@@ -87,7 +87,7 @@ class DefinitionParser:
             (self.binexpr) ^
 
             # E -> U ( BE )
-            (self.unexpr + self.lp_lit + self.binexpr + self.rp_lit)
+            (self.unary + self.lp_lit + self.binexpr + self.rp_lit)
         )
 
         self.binexpr << Group(
@@ -220,7 +220,11 @@ class DefinitionParser:
                     is_tree(expr[2]) and
                     expr[3] == ")"):
                 m = self.__parse_expr(expr[2], parent)
-                m.append(Machine(Monoid(expr[1], 1)), 0)
+
+                # if BE was an expression with an apostrophe, then
+                # return of __parse_expr() is None
+                if m is not None:
+                    m.append(Machine(Monoid(expr[1], 1)), 0)
                 return m
 
             # UE -> U [ D ]
