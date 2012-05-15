@@ -33,6 +33,7 @@ class Monoid(object):
             elif isinstance(what, list):
                 for what_ in what:
                     self.append(what_, which_partition)
+            else:
                 raise TypeError("Only machines and strings can be added to partitions")
         else:
             raise IndexError("That partition does not exist")
