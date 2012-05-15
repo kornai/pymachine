@@ -91,14 +91,14 @@ class DefinitionParser:
         )
 
         self.binexpr << Group(
-            # BE -> A B A
-            (self.argexpr + self.binary + self.argexpr) ^
-
             # BE -> A B
             (self.argexpr + self.binary) ^
 
             # BE -> B A
             (self.binary + self.argexpr) ^
+
+            # BE -> A B A
+            (self.argexpr + self.binary + self.argexpr) ^
 
             # BE -> B [ E; E ]
             (self.binary + self.lb_lit + self.expression + self.part_sep_lit + self.expression + self.rb_lit) ^
@@ -139,7 +139,7 @@ class DefinitionParser:
     def parse(self, s):
         return self.sen.parseString(s).asList()
 
-    def __parse_expr(self, expr, parent):
+    def __parse_expr(self, expr, parent, root):
         """
         creates machines from a parse node and its children
         there should be one handler for every rule
@@ -158,7 +158,7 @@ class DefinitionParser:
             # E -> UE | BE
             # A -> UE
             if (is_tree(expr[0])):
-                return self.__parse_expr(expr[0], parent)
+                return self.__parse_expr(expr[0], parent, root)
 
             # UE -> U
             if (is_unary(expr[0])):
@@ -169,16 +169,16 @@ class DefinitionParser:
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = Machine(Monoid(expr[1], 2))
-                m.append(self.__parse_expr(expr[0], m), 1)
-                m.append(parent, 2)
+                m.append(self.__parse_expr(expr[0], m, root), 1)
+                m.append(root, 2)
                 return m
 
             # BE -> B A
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = Machine(Monoid(expr[0], 2))
-                m.append(self.__parse_expr(expr[1], m), 2)
-                m.append(parent, 1)
+                m.append(self.__parse_expr(expr[1], m, root), 2)
+                m.append(root, 1)
                 return m
 
             # BE -> 'B
@@ -203,15 +203,15 @@ class DefinitionParser:
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
                 m = Machine(Monoid(expr[1], 2))
-                m.append(self.__parse_expr(expr[0], m), 1)
-                m.append(self.__parse_expr(expr[2], m), 2)
+                m.append(self.__parse_expr(expr[0], m, root), 1)
+                m.append(self.__parse_expr(expr[2], m, root), 2)
                 return m
 
             # A -> [ D ]
             if (expr[0] == "[" and
                     is_tree(expr[1]) and
                     expr[2] == "]"):
-                return list(self.__parse_definition(expr[1], parent))
+                return list(self.__parse_definition(expr[1], parent, root))
         
         if (len(expr) == 4):
             # E -> U ( BE )
@@ -219,7 +219,7 @@ class DefinitionParser:
                     expr[1] == "(" and
                     is_tree(expr[2]) and
                     expr[3] == ")"):
-                m = self.__parse_expr(expr[2], parent)
+                m = self.__parse_expr(expr[2], parent, root)
 
                 # if BE was an expression with an apostrophe, then
                 # return of __parse_expr() is None
@@ -233,7 +233,7 @@ class DefinitionParser:
                     is_tree(expr[2]) and
                     expr[3] == "]"):
                 m = Machine(Monoid(expr[0], 1))
-                for parsed_expr in self.__parse_definition(expr[2], m):
+                for parsed_expr in self.__parse_definition(expr[2], m, root):
                     m.append(parsed_expr, 1)
                 return m
 
@@ -255,8 +255,8 @@ class DefinitionParser:
                     is_tree(expr[4]) and
                     expr[5] == "]"):
                 m = Machine(Monoid(expr[0], 2))
-                m.append(self.__parse_expr(expr[2], m), 1)
-                m.append(self.__parse_expr(expr[4], m), 2)
+                m.append(self.__parse_expr(expr[2], m, root), 1)
+                m.append(self.__parse_expr(expr[4], m, root), 2)
                 return m
 
         pe = ParserException("Unknown expression in definition")
@@ -264,9 +264,9 @@ class DefinitionParser:
         logging.debug(expr)
         raise pe
 
-    def __parse_definition(self, definition, parent):
+    def __parse_definition(self, definition, parent, root):
         for d in definition:
-            yield self.__parse_expr(d, parent)
+            yield self.__parse_expr(d, parent, root)
     
     def parse_into_machines(self, s):
         parsed = self.parse(s)
@@ -274,7 +274,7 @@ class DefinitionParser:
         # HACK printname is now set to english
         machine = Machine(Monoid(parsed[1][2], 1))
         if len(parsed) > 2:
-            for parsed_expr in self.__parse_definition(parsed[2], machine):
+            for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 1)
         return machine
 
