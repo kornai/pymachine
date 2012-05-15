@@ -170,6 +170,7 @@ class DefinitionParser:
                     is_binary(expr[1])):
                 m = Machine(Monoid(expr[1], 2))
                 m.append(self.__parse_expr(expr[0], m), 1)
+                m.append(parent, 2)
                 return m
 
             # BE -> B A
@@ -177,6 +178,7 @@ class DefinitionParser:
                     is_tree(expr[1])):
                 m = Machine(Monoid(expr[0], 2))
                 m.append(self.__parse_expr(expr[1], m), 2)
+                m.append(parent, 1)
                 return m
 
             # BE -> 'B
