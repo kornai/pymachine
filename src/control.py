@@ -7,7 +7,11 @@ now it's implemented to use only strings as pos tags
 later control should be an FST
 """
 
+import re
+import logging
+
 import machine as mach
+from constants import deep_cases
 
 class Control(object):
     def __init__(self, machine=None):
@@ -33,7 +37,6 @@ class Control(object):
         self.machine = machine
 
 class PosControl(Control):
-    import re
     noun_pattern = re.compile("^N(OUN|P)")
     case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
 
@@ -51,11 +54,8 @@ class PosControl(Control):
         return self.pos < other.pos
 
     def is_a(self, other):
+        """now only checks if self is a "type" of @other
         """
-        now only checks if self is a "type" of @other
-
-        """
-        import re
 
         # first call super.is_a
         Control.is_a(self, other)
@@ -68,8 +68,7 @@ class PosControl(Control):
             return False
 
     def get_case(self):
-        """
-        returns self's case if self.case_pattern has a match
+        """returns self's case if self.case_pattern has a match
         None otherwise
         """
         if PosControl.noun_pattern.search(self.pos) is not None:
@@ -112,7 +111,6 @@ class ElviraPluginControl(PluginControl):
 
     def message(self):
         if self.machine is not None:
-            from constants import deep_cases
             prt = self.machine.base.partitions[1]
             before, after = None, None
             for m in prt:
@@ -125,7 +123,6 @@ class ElviraPluginControl(PluginControl):
                     if after in deep_cases:
                         after = None
             if before is not None and after is not None:
-                import logging
                 logging.debug('Elvira message: {0} -> {1}'.format(before, after))
                 return (self.plugin_url, [before, after])
 
