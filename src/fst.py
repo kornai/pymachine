@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 
 class FSA:
     def __init__(self, input_alphabet=None):
@@ -10,6 +11,7 @@ class FSA:
         self.init_states = set()
         self.final_states = set()
         self.transitions = defaultdict(dict)
+        self.active_states = None
 
     def add_state(self, state, is_init=False, is_final=False):
         self.states.add(state)
@@ -50,8 +52,39 @@ class FSA:
             raise ValueError("transition string has to be in alphabet")
         self.transitions[input_state][string] = output_state
 
-    def read(self):
-        pass
+    def check_states(self):
+        if len(self.states) == 0:
+            raise Exception("FSA has no states")
+        if len(self.init_states) == 0:
+            raise Exception("No init states in the FSA")
+        if len(self.final_states) == 0:
+            raise Exception("No final/acceptor states in the FSA")
+
+    def init_active_states(self):
+        self.active_states = set(self.init_states)
+
+    def read_symbol(self, string):
+        if string not in self.input_alphabet:
+            raise ValueError("""FSA cannot read a symbol that is not in its
+                             alphabet""")
+        self.check_states()
+        if self.active_states is None:
+            self.init_active_states()
+        new_active_states = set() 
+        for active_state in self.active_states:
+            if string in self.transitions[active_state]:
+                new_active_states.add(self.transitions[active_state][string])
+        self.active_states = new_active_states
+
+    def read_word(self, word):
+        for symbol in word:
+            self.read_symbol(symbol)
+
+    def read(self, what):
+        if isinstance(what, str):
+            return self.read_symbol(what)
+        elif isinstance(what, list):
+            return self.read_word(what)
 
 class FST(FSA):
     def __init__(self, output_alphabet=None):
@@ -77,6 +110,9 @@ class FST(FSA):
         self.transitions[input_state][input_string] = (output_state,
                                                        output_string)
 
-    def read(self):
-        pass
+    def read_symbol(self, string):
+        # TODO
+        # deterministic or non-deterministic?
+        # output is a print, a function call or what?
+        raise Exception("FST.read_symbol() has to be implemented.")
 
