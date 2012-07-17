@@ -63,6 +63,9 @@ class FSA:
     def init_active_states(self):
         self.active_states = set(self.init_states)
 
+    def in_final(self):
+        return len(self.active_states | self.final_states) > 0
+
     def read_symbol(self, string):
         if string not in self.input_alphabet:
             raise ValueError("""FSA cannot read a symbol that is not in its
