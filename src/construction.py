@@ -1,3 +1,5 @@
+import logging
+
 from fst import FSA
 
 class Construction(object):
@@ -9,6 +11,8 @@ class Construction(object):
         self.control = control
 
     def check(self, seq):
+        logging.debug("""Checking {0} construction for matching with
+                      {1} machines""".format(self.name, seq))
         for machine in seq:
             self.control.read_symbol(machine.control)
 
@@ -23,6 +27,7 @@ class Construction(object):
             return None
 
     def act(self, seq):
+        logging.debug("""Construction matched, running action""")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
         pass
@@ -42,16 +47,35 @@ class AppendConstruction(Construction):
 class TheConstruction(Construction):
     def __init__(self):
         control = FSA()
-        control.set_input_alphabet(set(["the", "NOUN"]))
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition(self, "the", "0", "1")
-        control.add_transition(self, "NOUN", "1", "2")
+        control.add_transition(self, "^the$", "0", "1")
+        control.add_transition(self, "^NOUN.*", "1", "2")
 
         Construction.__init__(self, "TheConstruction", control)
 
     def act(self, seq):
-        seq[1].control.append("<DET>")
-        return [seq[1]]
+        logging.debug("""TheConstruction matched, running action""")
+        seq[1].control += "<DET>"
+        return seq[1]
+
+class DummyNPConstruction(Construction):
+    def __init__(self):
+        control = FSA()
+        control.add_state("0", is_init=True, is_final=False)
+        control.add_state("1", is_init=False, is_final=True)
+        control.add_transition(self, "^ADJ.*", "0", "0")
+        control.add_transition(self, "^NOUN.*", "0", "1")
+
+        Construction.__init__(self, "DummyNPConstruction", control)
+
+    def act(self, seq):
+        logging.debug("""DummyNPConstruction matched, running action""")
+        noun = seq[-1]
+        adjs = seq[:-1]
+        for adj in adjs:
+            noun.append(adj)
+        return noun
+
 
