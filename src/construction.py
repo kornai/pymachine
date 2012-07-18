@@ -80,15 +80,3 @@ class DummyNPConstruction(Construction):
             noun.append(adj)
         return noun
 
-
-class ConstructionRunner(object):
-    """ConstructionRunner takes a sentence (as a sequence of machines),
-    a collection of constructions, and tries to match those constructions
-    over a sequence of machines, which can be shorter than the whole sentence.
-    Loop ends only when there is no construction that can be matched.
-    """
-    def __init__(self, constructions):
-        self.constructions = constructions
-
-    def run(self, seq):
-        pass
