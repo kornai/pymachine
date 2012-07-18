@@ -45,6 +45,7 @@ class AppendConstruction(Construction):
         self.append_to_left = append_to_left
 
 class TheConstruction(Construction):
+    """NOUN<DET> -> The NOUN"""
     def __init__(self):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
@@ -61,6 +62,7 @@ class TheConstruction(Construction):
         return seq[1]
 
 class DummyNPConstruction(Construction):
+    """NP construction. NP -> Adj* NOUN"""
     def __init__(self):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
@@ -79,3 +81,14 @@ class DummyNPConstruction(Construction):
         return noun
 
 
+class ConstructionRunner(object):
+    """ConstructionRunner takes a sentence (as a sequence of machines),
+    a collection of constructions, and tries to match those constructions
+    over a sequence of machines, which can be shorter than the whole sentence.
+    Loop ends only when there is no construction that can be matched.
+    """
+    def __init__(self, constructions):
+        self.constructions = constructions
+
+    def run(self, seq):
+        pass
