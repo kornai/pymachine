@@ -5,33 +5,7 @@ from monoid import Monoid
 from control import PosControl as Control
 
 class SentenceParser:
-    """
-    This class will create machines from analyzed and chunked text
-    """
-    def __init__(self):
-        pass
-
-    def create_machines_from_chunk(self, chunk):
-        """
-        builds up a structure of machines that represents the whole chunk
-        HACK:
-            - right now we only handle 1-length chunks so this method will
-              be implemented later
-            - return list or Machine instance?
-        """
-        if len(chunk) > 1:
-            # TODO
-            # 1. create POS string with numbers/ids
-            # 2. Run FST on POS string to add parentheses
-            # 3. Run another FST to add definition-syntax-like machine
-            #    transformations
-            # 4. Run the previously created transformations
-            logging.error("Not implemented yet.")
-            return
-        else:
-            only_token = chunk[0]
-            surface, stem, analysis = only_token
-            return Machine(Monoid(stem), Control(analysis))
+    """This class will create machines from analyzed and chunked text"""
 
     def parse(self, sentence):
         """
@@ -51,9 +25,9 @@ class SentenceParser:
             if len(token_or_chunk) == 2:
                 # chunk
                 chunk, case = token_or_chunk
-                m = self.create_machines_from_chunk(chunk)
-                m.append_if_not_there(case)
-                machines.append(m)
+                for token in chunk:
+                    surface, stem, analysis = token
+                    machines.append(Machine(Monoid(stem), Control(analysis)))
             else:
                 # token
                 token = token_or_chunk
