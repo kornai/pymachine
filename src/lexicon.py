@@ -6,6 +6,7 @@ from constants import deep_cases
 from machine import Machine
 from monoid import Monoid
 from control import ElviraPluginControl
+from construction import Construction
 
 class Lexicon:
     """THE machine repository."""
@@ -17,6 +18,8 @@ class Lexicon:
         self.static = {}
         # TODO: map: {active_machine : is it expanded?}
         self.active = {}
+        # Constructions
+        self.constructions = []
         self.create_elvira_machine()
 
     def create_elvira_machine(self):
@@ -66,6 +69,16 @@ class Lexicon:
             for m in what:
                 printname = str(m)
                 self.static[printname] = m
+
+    def add_construction(self, what):
+        """
+        Adds construction(s) to the lexicon.
+        """
+        if isinstance(what, Construction):
+            self.constructions.append(what)
+        else:
+            for c in what:
+                self.constructions.append(c)
 
     def expand(self, machine):
         """
