@@ -1,6 +1,9 @@
 import logging
 
 from fst import FSA
+from machine import Machine
+from monoid import Monoid
+from control import PosControl
 
 class Construction(object):
     def __init__(self, name, control):
@@ -80,3 +83,22 @@ class DummyNPConstruction(Construction):
             noun.append(adj)
         return noun
 
+def test():
+    a = Machine(Monoid("a"))
+    a.control = PosControl("DET")
+    kek = Machine(Monoid("kek"))
+    kek.control = PosControl("ADJ")
+    kockat = Machine(Monoid("kockat"))
+    kockat.control = PosControl("NOUN<CAS<ACC>>")
+
+    npc = DummyNPConstruction()
+    thec = TheConstruction()
+
+    res = npc.run([kek, kockat])
+    print res
+    res = thec.run([a, res])
+    print res
+
+
+if __name__ == "__main__":
+    test()
