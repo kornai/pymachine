@@ -61,8 +61,8 @@ class TheConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition(self, "^the$", "0", "1")
-        control.add_transition(self, "^NOUN.*", "1", "2")
+        control.add_transition("^the$", "0", "1")
+        control.add_transition("^NOUN.*", "1", "2")
 
         Construction.__init__(self, "TheConstruction", control)
 
@@ -79,8 +79,8 @@ class DummyNPConstruction(Construction):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=True)
-        control.add_transition(self, "^ADJ.*", "0", "0")
-        control.add_transition(self, "^NOUN.*", "0", "1")
+        control.add_transition("^ADJ.*", "0", "0")
+        control.add_transition("^NOUN.*", "0", "1")
 
         Construction.__init__(self, "DummyNPConstruction", control)
 
