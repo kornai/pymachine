@@ -1,4 +1,5 @@
 import ConfigParser
+import sys
 
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
@@ -64,8 +65,12 @@ class Wrapper:
 
         return results
 
-def main():
-    pass
+def test():
+    w = Wrapper(config_filename)
+    w.run([([("a", "DET"),
+             ("kek", "ADJ"),
+             ("kockat", "NOUN<CAS<ACC>>")
+            ], "ACC")])
 
 if __name__ == "__main__":
-    main() 
+    test() 
