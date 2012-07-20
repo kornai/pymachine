@@ -17,7 +17,7 @@ class Construction(object):
         logging.debug("""Checking {0} construction for matching with
                       {1} machines""".format(self.name, seq))
         for machine in seq:
-            self.control.read_symbol(machine.control)
+            self.control.read_symbol(str(machine.control))
 
     def run(self, seq):
         # read the sequence first, and give it to the control
@@ -70,7 +70,7 @@ class TheConstruction(Construction):
         logging.debug("""Construction matched, running last check""")
         self.last_check(seq)
         logging.debug("""TheConstruction matched, running action""")
-        seq[1].control += "<DET>"
+        seq[1].control.pos += "<DET>"
         return [seq[1]]
 
 class DummyNPConstruction(Construction):
@@ -103,9 +103,10 @@ def test():
     thec = TheConstruction()
 
     res = npc.run([kek, kockat])
-    print res
-    res = thec.run([a, res])
-    print res
+    res = thec.run([a] + res)
+    print res[0]
+    print res[0].control
+    print res[0].base.partitions[1][0]
 
 
 if __name__ == "__main__":
