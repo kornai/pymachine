@@ -53,33 +53,39 @@ class PosControl(Control):
     def __cmp__(self, other):
         return self.pos < other.pos
 
-    def is_a(self, other):
-        """now only checks if self is a "type" of @other
-        """
+    def __str__(self):
+        return self.pos
 
-        # first call super.is_a
-        Control.is_a(self, other)
-
-        # check if "is_a" with a dumb regexp
-        is_a_pattern = re.compile(other.pos)
-        if is_a_pattern.search(self.pos) is not None:
-            return True
-        else:
-            return False
-
-    def get_case(self):
-        """returns self's case if self.case_pattern has a match
-        None otherwise
-        """
-        if PosControl.noun_pattern.search(self.pos) is not None:
-            s = PosControl.case_pattern.search(self.pos)
-            if s is not None:
-                return s.groups()[1]
-            else:
-                # if NOUN/NP has no case, it should be a NOM
-                return "NOM"
-        else:
-            return None
+    # next two methods are commented out. I think they won't be
+    # needed anymore. If someone sees this code commented after a while,
+    # please remove them. Now is 2012.07.20.
+    #def is_a(self, other):
+        #"""now only checks if self is a "type" of @other
+        #"""
+        #
+        ## first call super.is_a
+        #Control.is_a(self, other)
+        #
+        ## check if "is_a" with a dumb regexp
+        #is_a_pattern = re.compile(other.pos)
+        #if is_a_pattern.search(self.pos) is not None:
+            #return True
+        #else:
+            #return False
+    #
+    #def get_case(self):
+        #"""returns self's case if self.case_pattern has a match
+        #None otherwise
+        #"""
+        #if PosControl.noun_pattern.search(self.pos) is not None:
+            #s = PosControl.case_pattern.search(self.pos)
+            #if s is not None:
+                #return s.groups()[1]
+            #else:
+                ## if NOUN/NP has no case, it should be a NOM
+                #return "NOM"
+        #else:
+            #return None
 
 class FstControl(PosControl):
     def __init__(self, pos, machine=None):
