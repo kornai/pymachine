@@ -68,7 +68,7 @@ class TheConstruction(Construction):
         self.last_check(seq)
         logging.debug("""TheConstruction matched, running action""")
         seq[1].control += "<DET>"
-        return seq[1]
+        return [seq[1]]
 
 class DummyNPConstruction(Construction):
     """NP construction. NP -> Adj* NOUN"""
@@ -89,7 +89,7 @@ class DummyNPConstruction(Construction):
         adjs = seq[:-1]
         for adj in adjs:
             noun.append(adj)
-        return noun
+        return [noun]
 
 def test():
     a = Machine(Monoid("a"))
