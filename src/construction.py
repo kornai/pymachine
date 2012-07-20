@@ -29,11 +29,15 @@ class Construction(object):
         else:
             return None
 
+    def last_check(self, seq):
+        """last_check() is called after construction is activated by the
+        spreading activation. Can be used for order checking for example"""
+        return True
+
     def act(self, seq):
         logging.debug("""Construction matched, running action""")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
-        pass
 
 class AppendConstruction(Construction):
     def __init__(self, name, control, act_from_left=True, append_to_left=True):
@@ -60,6 +64,8 @@ class TheConstruction(Construction):
         Construction.__init__(self, "TheConstruction", control)
 
     def act(self, seq):
+        logging.debug("""Construction matched, running last check""")
+        self.last_check(seq)
         logging.debug("""TheConstruction matched, running action""")
         seq[1].control += "<DET>"
         return seq[1]
@@ -76,6 +82,8 @@ class DummyNPConstruction(Construction):
         Construction.__init__(self, "DummyNPConstruction", control)
 
     def act(self, seq):
+        logging.debug("""Construction matched, running last check""")
+        self.last_check(seq)
         logging.debug("""DummyNPConstruction matched, running action""")
         noun = seq[-1]
         adjs = seq[:-1]
