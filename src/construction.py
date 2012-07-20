@@ -35,6 +35,9 @@ class Construction(object):
         return True
 
     def act(self, seq):
+        """
+        @return a sequence of machines, or @c None, if last_check() failed.
+        """
         logging.debug("""Construction matched, running action""")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
