@@ -95,12 +95,9 @@ class DummyNPConstruction(Construction):
         return [noun]
 
 def test():
-    a = Machine(Monoid("a"))
-    a.control = PosControl("DET")
-    kek = Machine(Monoid("kek"))
-    kek.control = PosControl("ADJ")
-    kockat = Machine(Monoid("kockat"))
-    kockat.control = PosControl("NOUN<CAS<ACC>>")
+    a = Machine(Monoid("a"), PosControl("DET"))
+    kek = Machine(Monoid("kek"), PosControl("ADJ"))
+    kockat = Machine(Monoid("kockat"), PosControl("NOUN<CAS<ACC>>"))
 
     npc = DummyNPConstruction()
     thec = TheConstruction()
