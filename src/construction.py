@@ -54,6 +54,12 @@ class AppendConstruction(Construction):
         # order traverse, on which machine do we want to append the other one
         self.append_to_left = append_to_left
 
+class VerbConstruction(Construction):
+    """A default construction for verbs. It reads definitions, discovers
+    cases, and builds a control from it. After that, the act() will do the
+    linking process, eg. link the verb with other words, object, subject, etc.
+    """
+
 class TheConstruction(Construction):
     """NOUN<DET> -> The NOUN"""
     def __init__(self):
