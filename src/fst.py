@@ -76,10 +76,10 @@ class FSA:
                         new_active_states.add(
                             self.transitions[active_state][trans_pattern])
 
-                    else:
-                        if string in self.transitions[active_state]:
-                            new_active_states.add(
-                                self.transitions[active_state][string])
+            else:
+                if string in self.transitions[active_state]:
+                    new_active_states.add(
+                        self.transitions[active_state][string])
         self.active_states = new_active_states
 
     def read_word(self, word):
