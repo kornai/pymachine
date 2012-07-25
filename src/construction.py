@@ -1,9 +1,12 @@
 import logging
+from collections import defaultdict
+from itertools import permutations
 
 from fst import FSA
 from machine import Machine
 from monoid import Monoid
 from control import PosControl
+from constants import deep_cases
 
 class Construction(object):
     def __init__(self, name, control):
@@ -59,6 +62,52 @@ class VerbConstruction(Construction):
     cases, and builds a control from it. After that, the act() will do the
     linking process, eg. link the verb with other words, object, subject, etc.
     """
+    def __init__(self, name, machine):
+        self.name = name
+        self.machine = machine
+        self.case_locations = self.discover_cases()
+        self.generate_control()
+
+    def generate_control(self):
+        cases = self.case_locations.keys()
+        
+        # this will be a hypercube
+        control = FSA()
+
+        # zero state is for verb
+        control.add_state("0", is_init=True, is_final=False)
+
+        # inside states for the cube, except the last, accepting state
+        for i in xrange(1, pow(2, len(cases))):
+            control.add_state(str(i), is_init=False, is_final=False)
+
+        # last node of the hypercube
+        control.add_state(int(pow(2, len(cases)),
+                              is_init=False, is_final=True))
+
+        # count every transition as an increase in number of state
+        for path in permutations(cases):
+            actual_state = 1
+            for case in path:
+                increase = pow(2, cases.index(case))
+                new_state = actual_state + increase
+                control.add_transition("CAS<{0}>".format(case),
+                                       str(actual_state), str(new_state))
+                actual_state = new_state
+
+    def discover_cases(self, machine=None, d=None):
+        if machine is None:
+            machine = self.machine
+        if d is None:
+            d = defaultdict(list)
+
+        for pi, p in enumerate(machine.base.partitions[1:]):
+            pi += 1
+            for part_machine in p:
+                pn = part_machine.printname()
+                if pn in deep_cases:
+                    d[pn].append((machine, pi))
+        return d
 
 class TheConstruction(Construction):
     """NOUN<DET> -> The NOUN"""
