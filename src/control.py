@@ -1,13 +1,6 @@
-"""
-Control class works as the control part of the machine
-control does syntax-related things
+"""Control class works as the control part of the machine
+control does syntax-related things"""
 
-TODO
-now it's implemented to use only strings as pos tags
-later control should be an FST
-"""
-
-import re
 import logging
 
 import machine as mach
