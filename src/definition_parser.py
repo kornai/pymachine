@@ -6,7 +6,7 @@ try:
     import pyparsing
     from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList 
 except ImportError:
-    logging.critical("PyParsing have to be installed on the computer")
+    logging.critical("PyParsing has to be installed on the computer")
     sys.exit(-1)
 
 from machine import Machine
@@ -271,8 +271,8 @@ class DefinitionParser:
     def parse_into_machines(self, s):
         parsed = self.parse(s)
         
-        # HACK printname is now set to english
-        machine = Machine(Monoid(parsed[1][2], 1))
+        # HACK printname is now set to hungarian
+        machine = Machine(Monoid(parsed[1][0], 1))
         if len(parsed) > 2:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 1)
