@@ -33,9 +33,6 @@ class Control(object):
         self.machine = machine
 
 class PosControl(Control):
-    noun_pattern = re.compile("^N(OUN|P)")
-    case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
-
     def __init__(self, pos, machine=None):
         Control.__init__(self, machine)
         self.pos = pos
