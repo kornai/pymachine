@@ -18,11 +18,13 @@ class Machine(object):
         return self.printname()
 
     def __eq__(self, other):
+        logging.error("Machine.__eq__() called.")
         # HACK this is only printname matching
         #return self.printname() == other.printname()
         return self.printname() == str(other)
     
     def __hash__(self):
+        logging.error("Machine.__hash__() called.")
         # HACK
         return hash(self.printname())
 
