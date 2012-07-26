@@ -4,7 +4,8 @@ import sys
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
 from spreading_activation import SpreadingActivation
-from definition_parser import read
+from definition_parser import read as read_defs
+from construction import VerbConstruction
 
 config_filename = "machine.cfg"
 
@@ -15,26 +16,29 @@ class Wrapper:
 
         self.lexicon = Lexicon()
         self.__read_files()
+        self.__add_constructions()
 
     def __read_config(self):
         config = ConfigParser.SafeConfigParser()
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_fn = items["definitions"]
-        #self.con_fn = items["constructions"]
         #self.inference_rules = items["inference_rules"]
 
     def __read_files(self):
         self.__read_definitions()
-        #self.__read_constructions()
 
     def __read_definitions(self):
-        definitions = read(file(self.def_fn))
+        definitions = read_defs(file(self.def_fn))
         self.lexicon.add_static(definitions.itervalues())
 
-    #def __read_constructions(self):
-       #from constructions import read_constructions
-       #self.constructions = read_constructions(file(self.con_fn), self.definitions)
+    def __add_constructions(self):
+        # TODO this should be created automatically, maybe from knowing,
+        # that "megy" is actually a verb, there is a POS in the definitions
+        megy_construction = VerbConstruction("megy", self.lexicon.static[
+            "megy"])
+        del self.lexicon.static["megy"]
+        self.lexicon.add_construction(megy_construction)
 
     #def __run_infer(self, machine):
         #"""
