@@ -1,5 +1,6 @@
 import logging
 from itertools import chain
+from collections import Iterable
 import copy
 
 from constants import deep_cases
@@ -44,11 +45,9 @@ class Lexicon:
             self.active[printname] = {m: expanded}
 
     def add_active(self, what):
-        """
-        adds machines to active collection
-        typically called to add a sentence being worked with
-        """
-        if isinstance(what, list):
+        """adds machines to active collection
+        typically called to add a sentence being worked with"""
+        if isinstance(what, Iterable):
             for m in what:
                 self.__add_active_machine(m)
         elif isinstance(what, Machine):
@@ -58,37 +57,31 @@ class Lexicon:
                           type""")
 
     def add_static(self, what):
-        """
-        adds machines to static collection
+        """adds machines to static collection
         typically called once to add whole background knowledge
-        which is the input of the definition parser
-        """
+        which is the input of the definition parser"""
         if isinstance(what, Machine):
             self.static[what.printname()] = what
-        elif isinstance(what, list):
+        elif isinstance(what, Iterable):
             for m in what:
                 printname = str(m)
                 self.static[printname] = m
 
     def add_construction(self, what):
-        """
-        Adds construction(s) to the lexicon.
-        """
+        """Adds construction(s) to the lexicon."""
         if isinstance(what, Construction):
             self.constructions.append(what)
-        else:
+        elif isinstance(what, Iterable):
             for c in what:
                 self.constructions.append(c)
 
     def expand(self, machine):
-        """
-        expanding a machine
+        """expanding a machine
         if machine is not active, we raise an exception
         if machine is active but not in knowledge base, we warn the user,
         and do nothing
         if everything is okay, everything from every partition of the
-        static machine is copied to the active one
-        """
+        static machine is copied to the active one"""
         printname = str(machine)
         if (printname not in self.active or
                 machine not in self.active[printname]):
