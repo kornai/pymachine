@@ -1,6 +1,8 @@
 import logging
+import re
 from collections import defaultdict
 from itertools import permutations
+from copy import deepcopy as copy
 
 from fst import FSA
 from machine import Machine
@@ -67,6 +69,7 @@ class VerbConstruction(Construction):
         self.machine = machine
         self.case_locations = self.discover_cases()
         self.generate_control()
+        self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
 
     def generate_control(self):
         cases = self.case_locations.keys()
@@ -84,6 +87,9 @@ class VerbConstruction(Construction):
         # last node of the hypercube
         control.add_state(int(pow(2, len(cases)),
                               is_init=False, is_final=True))
+
+        # first transition
+        control.add_transition("^VERB.*", "0", "1")
 
         # count every transition as an increase in number of state
         for path in permutations(cases):
@@ -103,11 +109,48 @@ class VerbConstruction(Construction):
 
         for pi, p in enumerate(machine.base.partitions[1:]):
             pi += 1
-            for part_machine in p:
+            to_remove = None
+            for mi, part_machine in enumerate(p):
                 pn = part_machine.printname()
                 if pn in deep_cases:
                     d[pn].append((machine, pi))
+                    to_remove = mi
+
+            if to_remove is not None:
+                p = p[:to_remove] + p[to_remove+1:]
+                machine.base.partitions[pi] = p
         return d
+
+    def act(self, seq):
+        # get case for every machine, and put them to right places
+
+        result = []
+
+        # put a clear machine into self.machine while verb_machine will be
+        # the old self.machine, and the references in self.case_locations
+        # will point at good locations in verb_machine
+        clear_machine = copy(self.machine)
+        verb_machine = self.machine
+        self.machine = clear_machine
+        result.append(verb_machine)
+
+        for m in seq:
+            if m.printname() == self.machine.printname():
+                # this is the verb machine
+                pass
+            else:
+                matcher = self.case_pattern.match(m.control.pos)
+                if matcher is not None:
+                    case = matcher.group(2)
+                    if case not in self.case_locations:
+                        raise Exception("""Got a NOUN with a useless case""")
+
+                    for m_to, m_p_i in self.case_locations[case]:
+                        m_to[m_p_i].append(m)
+                else:
+                    raise Exception("""Every machine at this point of the code
+                                    has to match a case pattern""")
+
 
 class TheConstruction(Construction):
     """NOUN<DET> -> The NOUN"""
