@@ -19,12 +19,16 @@ class Construction(object):
         self.control = control
 
     def check(self, seq):
-        logging.debug("""Checking {0} construction for matching with
-                      {1} machines""".format(self.name, seq))
+        logging.debug((u"Checking {0} construction for matching with " +
+                      u"{1} machines").format(self.name,
+                      u" ".join(unicode(m) for m in seq)).encode("utf-8"))
+        self.control.reset()
         for machine in seq:
             self.control.read_symbol(str(machine.control))
+        return self.control.in_final()
 
     def run(self, seq):
+        """Shorthand for if check: act."""
         # read the sequence first, and give it to the control
         self.check(seq)
 
@@ -68,8 +72,10 @@ class VerbConstruction(Construction):
         self.name = name
         self.machine = machine
         self.case_locations = self.discover_cases()
-        self.generate_control()
+        control = self.generate_control()
+        print control.active_states
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
+        Construction.__init__(self, name, control)
 
     def generate_control(self):
         cases = self.case_locations.keys()
@@ -85,8 +91,8 @@ class VerbConstruction(Construction):
             control.add_state(str(i), is_init=False, is_final=False)
 
         # last node of the hypercube
-        control.add_state(int(pow(2, len(cases)),
-                              is_init=False, is_final=True))
+        control.add_state(str(int(pow(2, len(cases)))),
+                              is_init=False, is_final=True)
 
         # first transition
         control.add_transition("^VERB.*", "0", "1")
@@ -97,9 +103,14 @@ class VerbConstruction(Construction):
             for case in path:
                 increase = pow(2, cases.index(case))
                 new_state = actual_state + increase
-                control.add_transition("CAS<{0}>".format(case),
-                                       str(actual_state), str(new_state))
+                if case == "NOM":
+                    control.add_transition("NOUN(?!.*CAS)".format(case),
+                                           str(actual_state), str(new_state))
+                else:
+                    control.add_transition("CAS<{0}>".format(case),
+                                           str(actual_state), str(new_state))
                 actual_state = new_state
+        return control
 
     def discover_cases(self, machine=None, d=None):
         if machine is None:
@@ -116,9 +127,13 @@ class VerbConstruction(Construction):
                     d[pn].append((machine, pi))
                     to_remove = mi
 
+                # recursive call
+                d.update(self.discover_cases(part_machine))
+
             if to_remove is not None:
                 p = p[:to_remove] + p[to_remove+1:]
                 machine.base.partitions[pi] = p
+
         return d
 
     def act(self, seq):
