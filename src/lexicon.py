@@ -24,8 +24,8 @@ class Lexicon:
         self.create_elvira_machine()
 
     def create_elvira_machine(self):
-        logging.warning("""Elvira machine is created right
-                        now at init of Lexicon, HACKHACKHACK""")
+        logging.warning("Elvira machine is created right " +
+                        "now at init of Lexicon, HACKHACKHACK")
         # HACK
         elvira_control = ElviraPluginControl()
         elvira_machine = Machine(Monoid("elvira"), elvira_control)
@@ -37,7 +37,7 @@ class Lexicon:
 
     def __add_active_machine(self, m, expanded=False):
         """Helper method for add_active()"""
-        printname = str(m)
+        printname = m.printname()
         if printname in self.active:
             already_expanded = self.active[printname].get(m, False)
             self.active[printname][m] = expanded | already_expanded
@@ -64,8 +64,7 @@ class Lexicon:
             self.static[what.printname()] = what
         elif isinstance(what, Iterable):
             for m in what:
-                printname = str(m)
-                self.static[printname] = m
+                self.add_static(m)
 
     def add_construction(self, what):
         """Adds construction(s) to the lexicon."""
@@ -82,7 +81,7 @@ class Lexicon:
         and do nothing
         if everything is okay, everything from every partition of the
         static machine is copied to the active one"""
-        printname = str(machine)
+        printname = machine.printname()
         if (printname not in self.active or
                 machine not in self.active[printname]):
             raise Exception("""only active machines can be expanded
@@ -111,8 +110,9 @@ class Lexicon:
             stop = set()
 
         # If we have already unified this machine: just return
-        if str(static_machine) in stop:
-            return self.active[str(static_machine)].keys()[0]
+        static_printname = static_machine.printname()
+        if static_printname in stop:
+            return self.active[static_printname].keys()[0]
         # If static_machine is a string, we don't have much to do
         if isinstance(static_machine, str):
             if static_machine in self.active:
@@ -128,7 +128,7 @@ class Lexicon:
                     return active_machine
         # If it's a machine, we create the corresponding active one
         elif isinstance(static_machine, Machine):
-            static_name = str(static_machine)
+            static_name = static_machine.printname()
             if self.is_deep_case(static_machine):
                 return Machine(Monoid(static_name))
 
@@ -179,13 +179,13 @@ class Lexicon:
 
     def is_expanded(self, m):
         """Returns whether m is expanded or not"""
-        printname = str(m)
+        printname = m.printname()
         try:
             return self.active[printname][m]
         except KeyError:
             logging.error("""asking whether a machine is expanded about a
                           non-active machine""")
-            logging.debug("This machine is: " + str(m))
+            logging.debug("This machine is: " + m.printname())
             return None
 
     def get_expanded(self, inverse=False):
@@ -207,5 +207,5 @@ class Lexicon:
     def is_deep_case(self, machine):
         """Returns @c True, if @p machine (which can be a string as well) is
         a deep case."""
-        return str(machine) in self.deep_cases
+        return machine.printname() in self.deep_cases
 
