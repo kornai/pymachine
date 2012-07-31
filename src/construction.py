@@ -74,7 +74,6 @@ class VerbConstruction(Construction):
         self.machine = machine
         self.case_locations = self.discover_cases()
         control = self.generate_control()
-        print control.active_states
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
 
@@ -147,7 +146,6 @@ class VerbConstruction(Construction):
         # put a clear machine into self.machine while verb_machine will be
         # the old self.machine, and the references in self.case_locations
         # will point at good locations in verb_machine
-        print Machine.to_lisp_str(self.machine).encode("utf-8")
         clear_machine = copy(self.machine)
         verb_machine = self.machine
         self.machine = clear_machine
@@ -159,13 +157,13 @@ class VerbConstruction(Construction):
                 pass
             else:
                 matcher = self.case_pattern.match(m.control.pos)
-                if matcher is not None:
-                    case = matcher.group(2)
+                if matcher is not None or re.match("^NOUN", m.control.pos):
+                    case = (matcher.group(2) if matcher is not None else "NOM")
                     if case not in self.case_locations:
                         raise Exception("""Got a NOUN with a useless case""")
 
                     for m_to, m_p_i in self.case_locations[case]:
-                        m_to[m_p_i].append(m)
+                        m_to.append(m, m_p_i)
                 else:
                     raise Exception("""Every machine at this point of the code
                                     has to match a case pattern""")
