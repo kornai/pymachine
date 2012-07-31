@@ -17,16 +17,38 @@ class Machine(object):
     def __str__(self):
         return self.printname()
 
+    def __unicode__(self):
+        return self.printname()
+
+    def __repr__(self):
+        return self.printname()
+
     def __eq__(self, other):
-        logging.error("Machine.__eq__() called.")
         # HACK this is only printname matching
         #return self.printname() == other.printname()
         return self.printname() == str(other)
     
     def __hash__(self):
-        logging.error("Machine.__hash__() called.")
         # HACK
         return hash(self.printname())
+
+#    def __deepcopy__(self, memo):
+#        """
+#        It might happen that during the copy operation, self.base has not yet
+#        been copied when the memo dictionary is invoked, in which case
+#        printname() fails. To avoid such problems, we had to implement the
+#        __deepcopy__ method.
+#        """
+#        print "MEMO", memo
+#        import copy
+#        new_base = copy.deepcopy(self.base, memo)
+#        new_control = copy.deepcopy(self.control, memo)
+#        new_child_of = copy.deepcopy(self._child_of)
+#
+#        new_machine = Machine(new_base, new_control)
+#        new_machine._child_of = new_child_of
+#        memo[self.__hash__()] = new_machine
+#        return new_machine
 
     def printname(self):
         return self.base.partitions[0]
