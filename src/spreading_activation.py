@@ -24,8 +24,8 @@ class SpreadingActivation(object):
 
         # This condition will not work w/ the full lexicon, obviously.
         while len(unexpanded) > 0:
-            dbg_str = ', '.join(k + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
-            logging.debug('LOOP:' + str(last_active) + ' ' + dbg_str)
+            dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
+            logging.debug("\n\nLOOP:" + str(last_active) + ' ' + dbg_str + "\n\n")
 #            logging.debug('ACTIVE')
 #            from machine import Machine
 #            for ac in self.lexicon.active.values():
@@ -33,10 +33,13 @@ class SpreadingActivation(object):
 #                    logging.debug(Machine.to_debug_str(m))
             # Step 1: expansion
             for machine in unexpanded:
+                logging.debug("EXPANDING: " + unicode(machine).encode('utf-8'))
+
                 self.lexicon.expand(machine)
                 for partition in machine.base.partitions[1:]:
                     for submachine in partition:
                         if self.lexicon.is_deep_case(submachine):
+                            logging.debug("LINKING CUMO: " + unicode(submachine).encode('utf-8'))
                             # XXX: This only works if strs and machines are
                             # cross-hashed
                             s = linking.get(submachine, set())
@@ -46,10 +49,12 @@ class SpreadingActivation(object):
 
             # Step 2b: constructions:
             for c in self.lexicon.constructions:
+                logging.debug("CONST " + c.name)
                 accepted = []
                 # Find the sequences that match the construction
                 # TODO: combinatorial explosion alert!
-                for elems in xrange(len(sentence)):
+                for elems in xrange(min(len(sentence), 4)):
+                #for elems in xrange(len(sentence)):
                     for seq in itertools.permutations(sentence, elems + 1):
                         if c.check(seq):
                             accepted.append(seq)
@@ -59,6 +64,9 @@ class SpreadingActivation(object):
                 #       combination; maybe this step should be combination-
                 #       dependent.
                 accepted.sort(key=lambda seq: len(seq))
+                logging.debug("ACCEPTED")
+                for seq in accepted:
+                    logging.debug(u" ".join(unicode(m) for m in seq).encode('utf-8'))
 
                 # No we try to act() on these sequences. We stop at the first
                 # sequence that is accepted by act().
@@ -66,6 +74,7 @@ class SpreadingActivation(object):
                     seq = accepted[-1]
                     c_res = c.act(seq)
                     if c_res is not None:
+                        logging.debug("SUCCESS: " + u" ".join(unicode(m) for m in seq).encode("utf-8"))
                         # We remove the machines that were consumed by the
                         # construction and add the machines returned by it
                         for m in seq:
@@ -79,6 +88,7 @@ class SpreadingActivation(object):
             # Step 2: linking
             # TODO: replace w/ constructions
             # XXX: What if there are more than 2 of the same linker?
+            logging.debug("\n\nLINKING: {0}\n\n".format(linking))
             linker_to_remove = []
             for linker, machines in linking.iteritems():
                 if len(machines) > 1:
@@ -96,6 +106,7 @@ class SpreadingActivation(object):
                 last_active = len(self.lexicon.active)
 
         # Return messages to active plugins
+        logging.debug("\n\nENDE\n\n")
         ret = []
         for m in self.lexicon.get_expanded():
             if isinstance(m.control, PluginControl):
