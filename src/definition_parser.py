@@ -279,6 +279,7 @@ class DefinitionParser:
         return machine
 
 def read(f):
+    d = {}
     dp = DefinitionParser()
     for line in f:
         l = line.strip()
@@ -288,14 +289,15 @@ def read(f):
         if l.startswith("#"):
             continue
         try:
-            dp.parse_into_machines(l)
+            m = dp.parse_into_machines(l)
+            d[m.printname()] = m
             print l
             print "Parsing ok"
         except pyparsing.ParseException, pe:
             print l
             print "Error: ", str(pe)
 
-    return dp.lexicon
+    return d
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
