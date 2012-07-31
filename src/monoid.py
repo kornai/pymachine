@@ -11,7 +11,7 @@ class Monoid(object):
         for _ in xrange(part_num):
             self.partitions.append([])
 
-        logging.debug("{0} created with {1} partitions".format(name, len(self.partitions[1:])))
+        logging.debug(u"{0} created with {1} partitions".format(name, len(self.partitions[1:])))
         
         self.operations = None
         self.unit = None
