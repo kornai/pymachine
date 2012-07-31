@@ -4,7 +4,8 @@ from collections import defaultdict
 from itertools import permutations
 from copy import deepcopy as copy
 
-from fst import FSA
+from fst import FSA, PrintnameTransition
+from fst import PosControlTransition as PosTransition
 from machine import Machine
 from monoid import Monoid
 from control import PosControl
@@ -24,7 +25,7 @@ class Construction(object):
                       u" ".join(unicode(m) for m in seq)).encode("utf-8"))
         self.control.reset()
         for machine in seq:
-            self.control.read_symbol(str(machine.control))
+            self.control.read(machine)
         return self.control.in_final()
 
     def run(self, seq):
@@ -95,7 +96,7 @@ class VerbConstruction(Construction):
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition("^VERB.*", "0", "1")
+        control.add_transition(PosTransition("^VERB.*"), "0", "1")
 
         # count every transition as an increase in number of state
         for path in permutations(cases):
@@ -104,11 +105,13 @@ class VerbConstruction(Construction):
                 increase = pow(2, cases.index(case))
                 new_state = actual_state + increase
                 if case == "NOM":
-                    control.add_transition("NOUN(?!.*CAS)".format(case),
-                                           str(actual_state), str(new_state))
+                    control.add_transition(PosTransition(
+                        "NOUN(?!.*CAS)".format(case)),
+                        str(actual_state), str(new_state))
                 else:
-                    control.add_transition("CAS<{0}>".format(case),
-                                           str(actual_state), str(new_state))
+                    control.add_transition(
+                        PosTransition("CAS<{0}>".format(case)),
+                        str(actual_state), str(new_state))
                 actual_state = new_state
         return control
 
@@ -144,6 +147,7 @@ class VerbConstruction(Construction):
         # put a clear machine into self.machine while verb_machine will be
         # the old self.machine, and the references in self.case_locations
         # will point at good locations in verb_machine
+        print Machine.to_lisp_str(self.machine).encode("utf-8")
         clear_machine = copy(self.machine)
         verb_machine = self.machine
         self.machine = clear_machine
@@ -174,8 +178,8 @@ class TheConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition("^the$", "0", "1")
-        control.add_transition("^NOUN.*", "1", "2")
+        control.add_transition(PrintnameTransition("the", exact=True), "0", "1")
+        control.add_transition(PosTransition("^NOUN.*"), "1", "2")
 
         Construction.__init__(self, "TheConstruction", control)
 
@@ -192,8 +196,8 @@ class DummyNPConstruction(Construction):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=True)
-        control.add_transition("^ADJ.*", "0", "0")
-        control.add_transition("^NOUN.*", "0", "1")
+        control.add_transition(PosTransition("^ADJ.*"), "0", "0")
+        control.add_transition(PosTransition("^NOUN.*"), "0", "1")
 
         Construction.__init__(self, "DummyNPConstruction", control)
 
@@ -208,9 +212,14 @@ class DummyNPConstruction(Construction):
         return [noun]
 
 def test():
-    a = Machine(Monoid("a"), PosControl("DET"))
+    a = Machine(Monoid("the"), PosControl("DET"))
     kek = Machine(Monoid("kek"), PosControl("ADJ"))
     kockat = Machine(Monoid("kockat"), PosControl("NOUN<CAS<ACC>>"))
+    m = Machine(Monoid("vonat"))
+    m2 = Machine(Monoid("tb"))
+    m.append(m2)
+    m2.append(m)
+    m3 = copy(m)
 
     npc = DummyNPConstruction()
     thec = TheConstruction()
