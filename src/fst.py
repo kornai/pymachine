@@ -59,8 +59,11 @@ class FSA:
     def init_active_states(self):
         self.active_states = set(self.init_states)
 
+    def reset(self):
+        self.init_active_states()
+
     def in_final(self):
-        return len(self.active_states | self.final_states) > 0
+        return len(self.active_states & self.final_states) > 0
 
     def read_symbol(self, string):
         self.check_states()
