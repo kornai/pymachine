@@ -1,5 +1,6 @@
 import logging
 from StringIO import StringIO
+import copy
 
 from monoid import Monoid
 import control as ctrl
@@ -34,23 +35,20 @@ class Machine(object):
         # HACK
         return hash(self.printname())
 
-#    def __deepcopy__(self, memo):
-#        """
-#        It might happen that during the copy operation, self.base has not yet
-#        been copied when the memo dictionary is invoked, in which case
-#        printname() fails. To avoid such problems, we had to implement the
-#        __deepcopy__ method.
-#        """
-#        print "MEMO", memo
-#        import copy
-#        new_base = copy.deepcopy(self.base, memo)
-#        new_control = copy.deepcopy(self.control, memo)
-#        new_child_of = copy.deepcopy(self._child_of)
-#
-#        new_machine = Machine(new_base, new_control)
-#        new_machine._child_of = new_child_of
-#        memo[self.__hash__()] = new_machine
-#        return new_machine
+    def __deepcopy__(self, memo):
+        new_machine = self.__class__(Monoid("anyad"))
+        memo[id(self)] = new_machine
+        new_base = copy.deepcopy(self.base, memo)
+        new_control = copy.deepcopy(self.control, memo)
+        new_machine.base = new_base
+        new_machine.control = new_control
+
+        for part_i, part in enumerate(new_base.partitions[1:]):
+            part_i += 1
+            for m in part:
+                if isinstance(m, Machine):
+                    m.set_child_of(new_machine, part_i)
+        return new_machine
 
     def printname(self):
         return self.base.partitions[0]
@@ -75,7 +73,7 @@ class Machine(object):
                 return
         self.base.append(what, which_partition)
         if isinstance(what, Machine):
-            what.set_child_of(self, 1)
+            what.set_child_of(self, which_partition)
 
     def append_if_not_there(self, *args):
         logging.warning("""old append_if_not_there() is now append(),
