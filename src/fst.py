@@ -1,8 +1,38 @@
-from collections import defaultdict
+from collections import defaultdict, Iterable
 import logging
 import re
 
-class FSA:
+from control import PosControl
+from machine import Machine
+
+class Transition(object):
+    def __init__(self, string, exact=False):
+        if exact:
+            self.input_ = re.compile("^{0}$".format(string))
+        else:
+            self.input_ = re.compile("{0}".format(string))
+
+    def match(self, machine):
+        raise NotImplementedError()
+
+class PrintnameTransition(Transition):
+    def match(self, machine):
+        str_ = machine.printname()
+        return self.input_.search(str_) is not None
+
+class PosControlTransition(Transition):
+    def match(self, machine):
+        if not isinstance(machine.control, PosControl):
+            return False
+        str_ = str(machine.control)
+        return self.input_.search(str_) is not None
+
+class ConceptTransition(Transition):
+    def match(self, machine):
+        pass
+
+
+class FSA(object):
     def __init__(self, regex_transitions=True):
         self.states = set()
         self.input_alphabet = set()
@@ -38,15 +68,12 @@ class FSA:
         else:
             self.final_states.add(state)
 
-    def add_transition(self, string, input_state, output_state):
+    def add_transition(self, transition, input_state, output_state):
         if input_state not in self.states or output_state not in self.states:
             raise ValueError("transition states has to be in states already")
-        if self.regex_transitions:
-            input_ = re.compile(string)
-        else:
-            input_ = string
-            self.input_alphabet.add(string)
-        self.transitions[input_state][input_] = output_state
+        if not isinstance(transition, Transition):
+            raise TypeError("transition has to be of type Transition")
+        self.transitions[input_state][transition] = output_state
 
     def check_states(self):
         if len(self.states) == 0:
@@ -65,35 +92,25 @@ class FSA:
     def in_final(self):
         return len(self.active_states & self.final_states) > 0
 
-    def read_symbol(self, string):
+    def read_machine(self, machine):
         self.check_states()
         if self.active_states is None:
             self.init_active_states()
         new_active_states = set() 
         for active_state in self.active_states:
-            if self.regex_transitions:
-                for trans_pattern, out_state in (
-                        self.transitions[active_state].iteritems()):
+            for transition, out_state in (
+                self.transitions[active_state].iteritems()):
 
-                    if trans_pattern.search(string) is not None:
-                        new_active_states.add(
-                            self.transitions[active_state][trans_pattern])
-
-            else:
-                if string in self.transitions[active_state]:
-                    new_active_states.add(
-                        self.transitions[active_state][string])
+                if transition.match(machine):
+                    new_active_states.add(out_state)
         self.active_states = new_active_states
 
-    def read_word(self, word):
-        for symbol in word:
-            self.read_symbol(symbol)
-
     def read(self, what):
-        if isinstance(what, str):
-            return self.read_symbol(what)
-        elif isinstance(what, list):
-            return self.read_word(what)
+        if isinstance(what, Machine):
+            self.read_machine(what)
+        elif isinstance(what, Iterable):
+            for what_ in what:
+                self.read(what_)
 
 class FST(FSA):
     def __init__(self, output_alphabet=None):
