@@ -12,6 +12,10 @@ except ImportError:
 from machine import Machine
 from monoid import Monoid
 from constants import deep_cases
+from control import ConceptControl
+
+def create_machine(name, partitions):
+    return Machine(Monoid(name, partitions), ConceptControl())
 
 class ParserException(Exception):
     pass
@@ -162,13 +166,13 @@ class DefinitionParser:
 
             # UE -> U
             if (is_unary(expr[0])):
-                return Machine(Monoid(expr[0], 1))
+                return create_machine(expr[0], 1)
 
         if (len(expr) == 2):
             # BE -> A B
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
-                m = Machine(Monoid(expr[1], 2))
+                m = create_machine(expr[1], 2)
                 m.append(self.__parse_expr(expr[0], m, root), 1)
                 m.append(root, 2)
                 return m
@@ -176,7 +180,7 @@ class DefinitionParser:
             # BE -> B A
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
-                m = Machine(Monoid(expr[0], 2))
+                m = create_machine(expr[0], 2)
                 m.append(self.__parse_expr(expr[1], m, root), 2)
                 m.append(root, 1)
                 return m
@@ -184,7 +188,7 @@ class DefinitionParser:
             # BE -> 'B
             if (expr[0] == "'" and
                     is_binary(expr[1])):
-                m = Machine(Monoid(expr[1], 2))
+                m = create_machine(expr[1], 2)
                 m.append(parent, 2)
                 # nothing to append to any partitions
                 return None
@@ -192,7 +196,7 @@ class DefinitionParser:
             # BE -> B'
             if (is_binary(expr[0]) and
                     expr[1] == "'"):
-                m = Machine(Monoid(expr[0], 2))
+                m = create_machine(expr[0], 2)
                 m.append(parent, 1)
                 # nothing to append to any partitions
                 return None
@@ -202,7 +206,7 @@ class DefinitionParser:
             if (is_tree(expr[0]) and
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
-                m = Machine(Monoid(expr[1], 2))
+                m = create_machine(expr[1], 2)
                 m.append(self.__parse_expr(expr[0], m, root), 1)
                 m.append(self.__parse_expr(expr[2], m, root), 2)
                 return m
@@ -224,7 +228,7 @@ class DefinitionParser:
                 # if BE was an expression with an apostrophe, then
                 # return of __parse_expr() is None
                 if m is not None:
-                    m.append(Machine(Monoid(expr[1], 1)), 0)
+                    m.append(create_machine(expr[1], 1), 0)
                 return m
 
             # UE -> U [ D ]
@@ -232,7 +236,7 @@ class DefinitionParser:
                     expr[1] == "[" and
                     is_tree(expr[2]) and
                     expr[3] == "]"):
-                m = Machine(Monoid(expr[0], 1))
+                m = create_machine(expr[0], 1)
                 for parsed_expr in self.__parse_definition(expr[2], m, root):
                     m.append(parsed_expr, 1)
                 return m
@@ -242,8 +246,8 @@ class DefinitionParser:
                     expr[1] == "(" and
                     is_unary(expr[2]) and
                     expr[3] == ")"):
-                m = Machine(Monoid(expr[2], 1))
-                m.append(Machine(Monoid(expr[0], 1)), 1)
+                m = create_machine(expr[2], 1)
+                m.append(create_machine(expr[0], 1), 1)
                 return m
 
         if (len(expr) == 6):
@@ -254,7 +258,7 @@ class DefinitionParser:
                     expr[3] == ";" and
                     is_tree(expr[4]) and
                     expr[5] == "]"):
-                m = Machine(Monoid(expr[0], 2))
+                m = create_machine(expr[0], 2)
                 m.append(self.__parse_expr(expr[2], m, root), 1)
                 m.append(self.__parse_expr(expr[4], m, root), 2)
                 return m
@@ -272,7 +276,7 @@ class DefinitionParser:
         parsed = self.parse(s)
         
         # HACK printname is now set to hungarian
-        machine = Machine(Monoid(parsed[1][0], 1))
+        machine = create_machine(parsed[1][0], 1)
         if len(parsed) > 2:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 1)
