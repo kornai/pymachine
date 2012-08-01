@@ -40,6 +40,8 @@ class Wrapper:
         del self.lexicon.static["megy"]
         self.lexicon.add_construction(megy_construction)
 
+        # TODO create shrdlu construction
+
     #def __run_infer(self, machine):
         #"""
         #run inference engine over the machines
