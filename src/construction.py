@@ -8,7 +8,7 @@ from fst import FSA, PrintnameTransition
 from fst import PosControlTransition as PosTransition
 from machine import Machine
 from monoid import Monoid
-from control import PosControl
+from control import PosControl, ElviraPluginControl
 from constants import deep_cases
 
 class Construction(object):
@@ -213,6 +213,41 @@ class DummyNPConstruction(Construction):
             noun.append(adj)
         return [noun]
 
+class ElviraConstruction(Construction):
+    def __init__(self):
+        control = FSA()
+        # TODO: to hypercube
+        control.add_state("0", is_init=True, is_final=False)
+        control.add_state("1", is_init=False, is_final=False)
+        control.add_state("2", is_init=False, is_final=False)
+        control.add_state("3", is_init=False, is_final=False)
+        control.add_state("4", is_init=False, is_final=True)
+        control.add_transition(PrintnameTransition("vonat"), "0", "1")
+        control.add_transition(PrintnameTransition("menetrend"), "1", "2")
+        control.add_transition(PrintnameTransition("BEFORE_AT"), "2", "3")
+        control.add_transition(PrintnameTransition("AFTER_AT"), "3", "4")
+
+        Construction.__init__(self, self.__class__.__name__, control)
+
+    def last_check(self, seq):
+        try:
+            if len(seq[2].base.partitions[2]) > 0 and len(seq[3].base.partitions[2]) > 0:
+                return True
+        except:
+            pass
+        return False
+
+    def act(self, seq):
+        #TODO: implement
+        if not self.last_check(seq):
+            return None
+
+        elvira_machine = Machine(Monoid("elvira"), ElviraPluginControl())
+        for m in seq:
+            elvira_machine.append(m)
+
+        return elvira_machine
+        
 def test():
     a = Machine(Monoid("the"), PosControl("DET"))
     kek = Machine(Monoid("kek"), PosControl("ADJ"))

@@ -19,7 +19,8 @@ class SpreadingActivation(object):
         # TODO: NPs/ linkers to be contended
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
-        sentence = set(unexpanded)
+        # The machines that have already taken part in constructions
+        consted = set()
         linking = {}  # {linker: set([machines that have the linker on a partition])}
 
         # This condition will not work w/ the full lexicon, obviously.
@@ -49,13 +50,16 @@ class SpreadingActivation(object):
 
             # Step 2b: constructions:
             for c in self.lexicon.constructions:
+                # The machines that can take part in constructions
+                constable = self.lexicon.active - consted
+
                 logging.debug("CONST " + c.name)
                 accepted = []
                 # Find the sequences that match the construction
                 # TODO: combinatorial explosion alert!
-                for elems in xrange(min(len(sentence), 4)):
-                #for elems in xrange(len(sentence)):
-                    for seq in itertools.permutations(sentence, elems + 1):
+                for elems in xrange(min(len(constable), 4)):
+                #for elems in xrange(len(constable)):
+                    for seq in itertools.permutations(constable, elems + 1):
                         if c.check(seq):
                             accepted.append(seq)
 
@@ -77,10 +81,7 @@ class SpreadingActivation(object):
                         logging.debug("SUCCESS: " + u" ".join(unicode(m) for m in seq).encode("utf-8"))
                         # We remove the machines that were consumed by the
                         # construction and add the machines returned by it
-                        for m in seq:
-                            sentence.remove(m)
-                        for m in c_res:
-                            sentence.add(m)
+                        consted += set(seq) - set(c_res)
                         break
                     else:
                         del accepted[-1]
