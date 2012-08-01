@@ -6,7 +6,7 @@ import copy
 from constants import deep_cases
 from machine import Machine
 from monoid import Monoid
-from control import ElviraPluginControl
+from control import ElviraPluginControl, ConceptControl
 from construction import Construction
 
 class Lexicon:
@@ -123,7 +123,7 @@ class Lexicon:
                 if self.is_deep_case(static_machine):
                     return static_machine
                 else:
-                    active_machine = Machine(Monoid(static_machine))
+                    active_machine = Machine(Monoid(static_machine), ConceptControl())
                     self.__add_active_machine(active_machine)
                     return active_machine
         # If it's a machine, we create the corresponding active one
