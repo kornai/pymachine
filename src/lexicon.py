@@ -53,8 +53,8 @@ class Lexicon:
         elif isinstance(what, Machine):
             self.__add_active_machine(what)
         else:
-            logging.error("""Calling Lexicon.add_active() with an incompatible
-                          type""")
+            logging.error("Calling Lexicon.add_active() with an incompatible" +
+                          " type")
 
     def add_static(self, what):
         """adds machines to static collection
@@ -88,8 +88,8 @@ class Lexicon:
                             right now, but {0} is not active""".format(
                             printname))
         if printname not in self.static:
-            logging.warning("""expanding a machine ({0}) that is not in
-                            knowledge base ie. Lexicon.static""".format(
+            logging.warning("expanding a machine ({0}) that is not in " + 
+                            "knowledge base ie. Lexicon.static".format(
                             repr(printname)))
             self.active[printname][machine] = True
             return
@@ -106,7 +106,8 @@ class Lexicon:
         machine or a string.
         @param stop the set of machines already unified."""
         if stop is None:
-            logging.debug("unify_recursively: " + Machine.to_debug_str(static_machine))
+            logging.debug("unify_recursively: "
+                          + Machine.to_debug_str(static_machine))
             stop = set()
 
         # If we have already unified this machine: just return
@@ -183,8 +184,8 @@ class Lexicon:
         try:
             return self.active[printname][m]
         except KeyError:
-            logging.error("""asking whether a machine is expanded about a
-                          non-active machine""")
+            logging.error("asking whether a machine is expanded about a " +
+                          "non-active machine")
             logging.debug("This machine is: " + m.printname())
             return None
 

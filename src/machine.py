@@ -76,8 +76,8 @@ class Machine(object):
             what.set_child_of(self, which_partition)
 
     def append_if_not_there(self, *args):
-        logging.warning("""old append_if_not_there() is now append(),
-                           use that instead""")
+        logging.warning("old append_if_not_there() is now append(), " +
+                        "use that instead")
         self.append(*args)
 
     def set_child_of(self, whose, part):

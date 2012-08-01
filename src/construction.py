@@ -45,10 +45,9 @@ class Construction(object):
         return True
 
     def act(self, seq):
+        """@return a sequence of machines, or @c None, if last_check() failed.
         """
-        @return a sequence of machines, or @c None, if last_check() failed.
-        """
-        logging.debug("""Construction matched, running action""")
+        logging.debug("Construction matched, running action")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
 
@@ -186,9 +185,9 @@ class TheConstruction(Construction):
         Construction.__init__(self, "TheConstruction", control)
 
     def act(self, seq):
-        logging.debug("""Construction matched, running last check""")
+        logging.debug("Construction matched, running last check")
         self.last_check(seq)
-        logging.debug("""TheConstruction matched, running action""")
+        logging.debug("TheConstruction matched, running action")
         seq[1].control.pos += "<DET>"
         return [seq[1]]
 
@@ -204,9 +203,9 @@ class DummyNPConstruction(Construction):
         Construction.__init__(self, "DummyNPConstruction", control)
 
     def act(self, seq):
-        logging.debug("""Construction matched, running last check""")
+        logging.debug("Construction matched, running last check")
         self.last_check(seq)
-        logging.debug("""DummyNPConstruction matched, running action""")
+        logging.debug("DummyNPConstruction matched, running action")
         noun = seq[-1]
         adjs = seq[:-1]
         for adj in adjs:
