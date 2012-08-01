@@ -154,7 +154,9 @@ class VerbConstruction(Construction):
         for m in seq:
             if m.printname() == self.machine.printname():
                 # this is the verb machine
-                pass
+                # copy the (referenceof) PosControl of the verb in the sentence
+                # to the control of the new machine
+                verb_machine.control = m.control
             else:
                 matcher = self.case_pattern.match(m.control.pos)
                 if matcher is not None or re.match("^NOUN", m.control.pos):
@@ -167,6 +169,8 @@ class VerbConstruction(Construction):
                 else:
                     raise Exception("""Every machine at this point of the code
                                     has to match a case pattern""")
+
+        return result
 
 
 class TheConstruction(Construction):
