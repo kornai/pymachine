@@ -130,7 +130,7 @@ class VerbConstruction(Construction):
                     to_remove = mi
 
                 # recursive call
-                d.update(self.discover_cases(part_machine))
+                d.update(self.discover_cases(part_machine, d))
 
             if to_remove is not None:
                 p = p[:to_remove] + p[to_remove+1:]
