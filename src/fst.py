@@ -2,7 +2,7 @@ from collections import defaultdict, Iterable
 import logging
 import re
 
-from control import PosControl
+from control import PosControl, ConceptControl
 from machine import Machine
 
 class Transition(object):
@@ -27,9 +27,12 @@ class PosControlTransition(Transition):
         str_ = str(machine.control)
         return self.input_.search(str_) is not None
 
-class ConceptTransition(Transition):
+class ConceptTransition(PrintnameTransition):
     def match(self, machine):
-        pass
+        if PrintnameTransition.match(self, machine):
+            return isinstance(machine.control, ConceptControl)
+        else:
+            return False
 
 
 class FSA(object):
