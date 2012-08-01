@@ -42,10 +42,9 @@ class PosControl(Control):
     def __str__(self):
         return self.pos
 
-class FstControl(PosControl):
-    def __init__(self, pos, machine=None):
-        Control.__init__(self, machine)
-        self.pos = pos
+class ConceptControl(Control):
+    """object controlling machines that were not in the sentence, but
+    in the main lexicon"""
 
 class PluginControl(Control):
     """Control for plugin machines."""
