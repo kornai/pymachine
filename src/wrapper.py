@@ -41,6 +41,8 @@ class Wrapper:
         self.lexicon.add_construction(megy_construction)
         self.lexicon.add_construction(ElviraConstruction())
 
+        # TODO create shrdlu construction
+
     #def __run_infer(self, machine):
         #"""
         #run inference engine over the machines

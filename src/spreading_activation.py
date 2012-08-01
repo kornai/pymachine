@@ -51,7 +51,7 @@ class SpreadingActivation(object):
             # Step 2b: constructions:
             for c in self.lexicon.constructions:
                 # The machines that can take part in constructions
-                constable = set([v[0] for v in self.lexicon.active.values()]) - consted
+                constable = set(v.keys()[0] for v in self.lexicon.active.values()) - consted
 
                 logging.debug("CONST " + c.name)
                 accepted = []
@@ -83,7 +83,7 @@ class SpreadingActivation(object):
                         # construction and add the machines returned by it
                         for m in c_res:
                             self.lexicon.unify_recursively(m)
-                        consted += set(seq) - set(c_res)
+                        consted |= set(seq) - set(c_res)
                         break
                     else:
                         del accepted[-1]
