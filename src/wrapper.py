@@ -5,7 +5,7 @@ from sentence_parser import SentenceParser
 from lexicon import Lexicon
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
-from construction import VerbConstruction
+from construction import VerbConstruction, ElviraConstruction
 
 config_filename = "machine.cfg"
 
@@ -39,6 +39,7 @@ class Wrapper:
             "megy"])
         del self.lexicon.static["megy"]
         self.lexicon.add_construction(megy_construction)
+        self.lexicon.add_construction(ElviraConstruction())
 
     #def __run_infer(self, machine):
         #"""

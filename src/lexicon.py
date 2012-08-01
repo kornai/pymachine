@@ -21,7 +21,7 @@ class Lexicon:
         self.active = {}
         # Constructions
         self.constructions = []
-        self.create_elvira_machine()
+#        self.create_elvira_machine()
 
     def create_elvira_machine(self):
         logging.warning("Elvira machine is created right " +
