@@ -148,7 +148,7 @@ class Lexicon:
                 part_index = i + 1
                 for ss_machine in part:
                     as_machine = self.unify_recursively(ss_machine, stop)
-                    active_machine.append_if_not_there(as_machine, part_index)
+                    active_machine.append(as_machine, part_index)
             return active_machine
         else:
             raise TypeError('static_machine must be a Machine or a str')
@@ -169,7 +169,7 @@ class Lexicon:
             has_machine = False
             for machine in chain(*static_machine.base.partitions[1:]):
                 has_machine = True
-                if str(machine) not in self.active:
+                if unicode(machine) not in self.active:
                     break
             else:
                 if has_machine:
