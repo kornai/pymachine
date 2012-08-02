@@ -202,6 +202,9 @@ class Lexicon:
     def get_unexpanded(self):
         return self.get_expanded(True)
 
+    def active_machines(self):
+        return [v.keys()[0] for v in self.active.values()]
+
     def clear_active(self):
         self.active = {}
 

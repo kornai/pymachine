@@ -19,8 +19,6 @@ class SpreadingActivation(object):
         # TODO: NPs/ linkers to be contended
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
-        # The machines that have already taken part in constructions
-        consted = set()
         linking = {}  # {linker: set([machines that have the linker on a partition])}
         plugin_found = False
 
@@ -52,15 +50,14 @@ class SpreadingActivation(object):
             # Step 2b: constructions:
             for c in self.lexicon.constructions:
                 # The machines that can take part in constructions
-                constable = set(v.keys()[0] for v in self.lexicon.active.values()) - consted
-
                 logging.debug("CONST " + c.name)
                 accepted = []
                 # Find the sequences that match the construction
                 # TODO: combinatorial explosion alert!
-                for elems in xrange(min(len(constable), 4)):
+                for elems in xrange(min(len(self.lexicon.active_machines()), 4)):
                 #for elems in xrange(len(constable)):
-                    for seq in itertools.permutations(constable, elems + 1):
+                    for seq in itertools.permutations(
+                            self.lexicon.active_machines(), elems + 1):
                         if c.check(seq):
                             accepted.append(seq)
 
@@ -84,7 +81,6 @@ class SpreadingActivation(object):
                         # construction and add the machines returned by it
                         for m in c_res:
                             self.lexicon.unify_recursively(m)
-                        consted |= set(seq) - set(c_res)
 
                         # If one of the returned machines has a PluginControl,
                         # we can stop the activation loop
