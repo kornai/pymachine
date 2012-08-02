@@ -69,11 +69,11 @@ class ElviraPluginControl(PluginControl):
             prt = self.machine.base.partitions[1]
             before, after = None, None
             for m in prt:
-                if str(m) == 'BEFORE_AT':
+                if m.printname() == 'BEFORE_AT':
                     before = m.base.partitions[2][0]
                     if before in deep_cases:
                         before = None
-                elif str(m) == 'AFTER_AT':
+                elif m.printname() == 'AFTER_AT':
                     after = m.base.partitions[2][0]
                     if after in deep_cases:
                         after = None
