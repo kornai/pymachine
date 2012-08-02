@@ -143,35 +143,6 @@ class Machine(object):
         return ret
  
     @staticmethod
-    def to_lisp_str(machine):
-        """Returns the whole machine tree as a string."""
-        s = StringIO()
-        Machine.__to_lisp_str(s, machine, 0)
-        return s.getvalue()
-
-    @staticmethod
-    def __to_lisp_str(out, machine, depth):
-        """
-        Recursive helper method for to_lisp_str().
-        @param out the (unicode) output stream.
-        @param machine the machine (or anything on a partition).
-        @param depth the depth of @p machine in the machine tree.
-        """
-        indent = u' ' * depth * 4
-        if type(machine) != Machine:
-            out.write(u"{0}{1}\n".format(indent, machine))
-            return
-
-        out.write(u"{2}({0} : {1}\n".format(machine.printname(), hash(machine),
-                                          indent))
-        for i in xrange(1, len(machine.base.partitions)):
-            out.write(u"{1}  {0}:[\n".format(i, indent))
-            for m in machine.base.partitions[i]:
-                Machine.__to_lisp_str(out, m, depth + 1)
-            out.write(u"{0}  ]\n".format(indent))
-        out.write(u"{0})\n".format(indent));
-
-    @staticmethod
     def to_debug_str(machine):
         """An even more detailed __str__, complete with object ids and
         recursive."""
