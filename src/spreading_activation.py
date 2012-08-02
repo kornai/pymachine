@@ -117,7 +117,7 @@ class SpreadingActivation(object):
         # Return messages to active plugins
         logging.debug("\n\nENDE\n\n")
         ret = []
-        for m in self.lexicon.get_expanded():
+        for m in self.lexicon.active_machines():
             if isinstance(m.control, PluginControl):
                 # TODO: rename to activate() or sth and get rid of the
                 # call to isinstance()
