@@ -74,5 +74,5 @@ class ElviraPluginControl(PluginControl):
                     after = m.base.partitions[2][0]
             if before is not None and after is not None:
                 logging.debug('Elvira message: {0} -> {1}'.format(before, after))
-                return (self.plugin_url, [before, after])
+                return (self.plugin_url, [unicode(before), unicode(after)])
 
