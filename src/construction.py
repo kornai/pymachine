@@ -75,6 +75,7 @@ class VerbConstruction(Construction):
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
+        self.activated = False
 
     def generate_control(self):
         cases = self.case_locations.keys()
@@ -137,6 +138,12 @@ class VerbConstruction(Construction):
 
         return d
 
+    def check(self, seq):
+        if self.activated:
+            return False
+        else:
+            return Construction.check(self, seq)
+
     def act(self, seq):
         # get case for every machine, and put them to right places
 
@@ -169,6 +176,7 @@ class VerbConstruction(Construction):
                     raise Exception("""Every machine at this point of the code
                                     has to match a case pattern""")
 
+        self.activated = True
         return result
 
 
