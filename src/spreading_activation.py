@@ -19,7 +19,6 @@ class SpreadingActivation(object):
         # TODO: NPs/ linkers to be contended
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
-        linking = {}  # {linker: set([machines that have the linker on a partition])}
         plugin_found = False
 
         # This condition will not work w/ the full lexicon, obviously.
@@ -36,16 +35,6 @@ class SpreadingActivation(object):
                 logging.debug("EXPANDING: " + unicode(machine).encode('utf-8'))
 
                 self.lexicon.expand(machine)
-                for partition in machine.base.partitions[1:]:
-                    for submachine in partition:
-                        if self.lexicon.is_deep_case(submachine):
-                            logging.debug("LINKING CUMO: " + unicode(submachine).encode('utf-8'))
-                            # XXX: This only works if strs and machines are
-                            # cross-hashed
-                            s = linking.get(submachine, set())
-                            s.add(machine)
-                            linking[submachine] = s
-            # XXX: activate Elvira here?
 
             # Step 2b: constructions:
             for c in self.lexicon.constructions:
@@ -92,20 +81,6 @@ class SpreadingActivation(object):
                     else:
                         del accepted[-1]
 
-
-
-            # Step 2: linking
-            # TODO: replace w/ constructions
-            # XXX: What if there are more than 2 of the same linker?
-            logging.debug("\n\nLINKING: {0}\n\n".format(linking))
-            linker_to_remove = []
-            for linker, machines in linking.iteritems():
-                if len(machines) > 1:
-                    self._link(linker, machines)
-                    linker_to_remove.append(linker)
-            for linker in linker_to_remove:
-                del linking[linker]
-
             # Step 3: activation
             self.lexicon.activate()
             unexpanded = list(self.lexicon.get_unexpanded())
@@ -126,14 +101,4 @@ class SpreadingActivation(object):
                     ret.append(msg)
         logging.debug('Returning ' + str(ret))
         return ret
-
-    def _link(self, linker, machines):
-        """Links the machines along @p linker."""
-        logging.debug("Linking " + ','.join(str(m) for m in machines) + " along " + str(linker))
-        for machine in machines:
-            for partition in machine.base.find(linker):
-                machine.remove(linker, partition)
-                for to_add in machines:
-                    if to_add != machine:
-                        machine.append_if_not_there(to_add, partition)
 
