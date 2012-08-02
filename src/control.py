@@ -4,7 +4,6 @@ control does syntax-related things"""
 import logging
 
 import machine as mach
-from constants import deep_cases
 
 class Control(object):
     def __init__(self, machine=None):
@@ -71,12 +70,8 @@ class ElviraPluginControl(PluginControl):
             for m in prt:
                 if m.printname() == 'BEFORE_AT':
                     before = m.base.partitions[2][0]
-                    if before in deep_cases:
-                        before = None
                 elif m.printname() == 'AFTER_AT':
                     after = m.base.partitions[2][0]
-                    if after in deep_cases:
-                        after = None
             if before is not None and after is not None:
                 logging.debug('Elvira message: {0} -> {1}'.format(before, after))
                 return (self.plugin_url, [before, after])

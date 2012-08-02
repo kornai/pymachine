@@ -3,7 +3,6 @@ from itertools import chain
 from collections import Iterable
 import copy
 
-from constants import deep_cases
 from machine import Machine
 from monoid import Monoid
 from control import ElviraPluginControl, ConceptControl
@@ -12,8 +11,6 @@ from construction import Construction
 class Lexicon:
     """THE machine repository."""
     def __init__(self):
-        self.deep_cases = set(deep_cases)  # Set of deep cases
-
         # static will store only one machine per printname (key),
         # while active can store more
         self.static = {}
@@ -120,18 +117,12 @@ class Lexicon:
                 # FIXME: [0] is a hack, fix it 
                 return self.active[static_machine].keys()[0]
             else:
-                # Linkers are handled as strings.
-                if self.is_deep_case(static_machine):
-                    return static_machine
-                else:
-                    active_machine = Machine(Monoid(static_machine), ConceptControl())
-                    self.__add_active_machine(active_machine)
-                    return active_machine
+                active_machine = Machine(Monoid(static_machine), ConceptControl())
+                self.__add_active_machine(active_machine)
+                return active_machine
         # If it's a machine, we create the corresponding active one
         elif isinstance(static_machine, Machine):
             static_name = static_machine.printname()
-            if self.is_deep_case(static_machine):
-                return Machine(Monoid(static_name))
 
             if static_name in self.active:
                 active_machine = self.active[static_name].keys()[0]
@@ -207,9 +198,4 @@ class Lexicon:
 
     def clear_active(self):
         self.active = {}
-
-    def is_deep_case(self, machine):
-        """Returns @c True, if @p machine (which can be a string as well) is
-        a deep case."""
-        return machine.printname() in self.deep_cases
 
