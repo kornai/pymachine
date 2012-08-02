@@ -18,18 +18,15 @@ class Machine(object):
         self._child_of = set()
 
     def __str__(self):
-        return self.printname()
+        return unicode(self).encode('utf-8')
 
     def __unicode__(self):
         return self.printname()
 
-    def __repr__(self):
-        return self.printname()
-
     def __eq__(self, other):
         # HACK this is only printname matching
-        #return self.printname() == other.printname()
-        return self.printname() == str(other)
+        return self.printname() == other.printname()
+        #return self.printname() == str(other)
     
     def __hash__(self):
         # HACK
@@ -134,14 +131,6 @@ class Machine(object):
         
         return s
 
-    def to_full_str(self):
-        """A more detailed __str__. Returns the print name,
-        as well as the print names of the machines on every partition."""
-        ret = str(self.base.partitions[0]) + ': '
-        for p in self.base.partitions[1:]:
-            ret += '[' + ','.join(str(m) for m in p) + '] '
-        return ret
- 
     @staticmethod
     def to_lisp_str(machine):
         """Returns the whole machine tree as a string."""
@@ -159,7 +148,7 @@ class Machine(object):
         """
         indent = u' ' * depth * 4
         if type(machine) != Machine:
-            out.write(u"{0}{1}\n".format(indent, machine))
+            out.write(u"{0}{1}\n".format(indent, machine.printname()))
             return
 
         out.write(u"{2}({0} : {1}\n".format(machine.printname(), hash(machine),
@@ -205,3 +194,11 @@ class Machine(object):
         if depth == 0:
             return "\n".join(lines)
 
+def test_printname():
+    m_unicode = Machine(Monoid(u"\u00c1"))
+    print unicode(m_unicode).encode("utf-8")
+    print str(m_unicode)
+
+
+if __name__ == "__main__":
+    test_printname()
