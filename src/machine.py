@@ -17,6 +17,9 @@ class Machine(object):
 
         self._child_of = set()
 
+    def __repr__(self):
+        return str(self)
+
     def __str__(self):
         return unicode(self).encode('utf-8')
 
