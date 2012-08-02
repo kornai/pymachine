@@ -246,7 +246,7 @@ class ElviraConstruction(Construction):
         for m in seq:
             elvira_machine.append(m)
 
-        return elvira_machine
+        return [elvira_machine]
         
 def test():
     a = Machine(Monoid("the"), PosControl("DET"))
