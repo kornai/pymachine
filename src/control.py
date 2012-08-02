@@ -9,15 +9,6 @@ class Control(object):
     def __init__(self, machine=None):
         self.set_machine(machine)
 
-    def __hash__(self):
-        pass
-
-    def __eq__(self, other):
-        pass
-
-    def __cmp__(self, other):
-        pass
-
     def set_machine(self, machine):
         """Sets the machine the control controls."""
         if not isinstance(machine, mach.Machine) and machine is not None:
@@ -29,17 +20,17 @@ class PosControl(Control):
         Control.__init__(self, machine)
         self.pos = pos
 
-    def __hash__(self):
-        return hash(self.pos)
-
-    def __eq__(self, other):
-        return self.pos.__eq__(other.pos)
-
-    def __cmp__(self, other):
-        return self.pos < other.pos
-
-    def __str__(self):
-        return self.pos
+    #def __hash__(self):
+        #return hash(self.pos)
+#
+    #def __eq__(self, other):
+        #return self.pos.__eq__(other.pos)
+#
+    #def __cmp__(self, other):
+        #return self.pos < other.pos
+#
+    #def __str__(self):
+        #return self.pos
 
 class ConceptControl(Control):
     """object controlling machines that were not in the sentence, but
