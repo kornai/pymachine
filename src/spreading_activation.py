@@ -22,9 +22,10 @@ class SpreadingActivation(object):
         # The machines that have already taken part in constructions
         consted = set()
         linking = {}  # {linker: set([machines that have the linker on a partition])}
+        plugin_found = False
 
         # This condition will not work w/ the full lexicon, obviously.
-        while len(unexpanded) > 0:
+        while len(unexpanded) > 0 and not plugin_found:
             dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
             logging.debug("\n\nLOOP:" + str(last_active) + ' ' + dbg_str + "\n\n")
 #            logging.debug('ACTIVE')
@@ -84,9 +85,18 @@ class SpreadingActivation(object):
                         for m in c_res:
                             self.lexicon.unify_recursively(m)
                         consted |= set(seq) - set(c_res)
+
+                        # If one of the returned machines has a PluginControl,
+                        # we can stop the activation loop
+                        for m in c_res:
+                            if isinstance(m.control, PluginControl):
+                                plugin_found = True
+                                break
                         break
                     else:
                         del accepted[-1]
+
+
 
             # Step 2: linking
             # TODO: replace w/ constructions
