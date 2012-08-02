@@ -68,14 +68,12 @@ class Machine(object):
         if len(self.base.partitions) > which_partition:
             if what in self.base.partitions[which_partition]:
                 return
+        else:
+            self.base.partitions += [[]] * (which_partition + 1 -
+                len(self.base.partitions))
         self.base.append(what, which_partition)
         if isinstance(what, Machine):
             what.set_child_of(self, which_partition)
-
-    def append_if_not_there(self, *args):
-        logging.warning("old append_if_not_there() is now append(), " +
-                        "use that instead")
-        self.append(*args)
 
     def set_child_of(self, whose, part):
         self._child_of.add((whose, part))
