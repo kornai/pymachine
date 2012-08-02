@@ -45,10 +45,9 @@ class Construction(object):
         return True
 
     def act(self, seq):
+        """@return a sequence of machines, or @c None, if last_check() failed.
         """
-        @return a sequence of machines, or @c None, if last_check() failed.
-        """
-        logging.debug("""Construction matched, running action""")
+        logging.debug("Construction matched, running action")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
 
@@ -76,6 +75,7 @@ class VerbConstruction(Construction):
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
+        self.activated = False
 
     def generate_control(self):
         cases = self.case_locations.keys()
@@ -138,6 +138,12 @@ class VerbConstruction(Construction):
 
         return d
 
+    def check(self, seq):
+        if self.activated:
+            return False
+        else:
+            return Construction.check(self, seq)
+
     def act(self, seq):
         # get case for every machine, and put them to right places
 
@@ -170,6 +176,7 @@ class VerbConstruction(Construction):
                     raise Exception("""Every machine at this point of the code
                                     has to match a case pattern""")
 
+        self.activated = True
         return result
 
 
@@ -186,9 +193,9 @@ class TheConstruction(Construction):
         Construction.__init__(self, "TheConstruction", control)
 
     def act(self, seq):
-        logging.debug("""Construction matched, running last check""")
+        logging.debug("Construction matched, running last check")
         self.last_check(seq)
-        logging.debug("""TheConstruction matched, running action""")
+        logging.debug("TheConstruction matched, running action")
         seq[1].control.pos += "<DET>"
         return [seq[1]]
 
@@ -204,9 +211,9 @@ class DummyNPConstruction(Construction):
         Construction.__init__(self, "DummyNPConstruction", control)
 
     def act(self, seq):
-        logging.debug("""Construction matched, running last check""")
+        logging.debug("Construction matched, running last check")
         self.last_check(seq)
-        logging.debug("""DummyNPConstruction matched, running action""")
+        logging.debug("DummyNPConstruction matched, running action")
         noun = seq[-1]
         adjs = seq[:-1]
         for adj in adjs:

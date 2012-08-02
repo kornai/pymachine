@@ -18,18 +18,15 @@ class Machine(object):
         self._child_of = set()
 
     def __str__(self):
-        return self.printname()
+        return unicode(self).encode('utf-8')
 
     def __unicode__(self):
         return self.printname()
 
-    def __repr__(self):
-        return self.printname()
-
     def __eq__(self, other):
         # HACK this is only printname matching
-        #return self.printname() == other.printname()
-        return self.printname() == str(other)
+        return self.printname() == other.printname()
+        #return self.printname() == str(other)
     
     def __hash__(self):
         # HACK
@@ -71,14 +68,12 @@ class Machine(object):
         if len(self.base.partitions) > which_partition:
             if what in self.base.partitions[which_partition]:
                 return
+        else:
+            self.base.partitions += [[]] * (which_partition + 1 -
+                len(self.base.partitions))
         self.base.append(what, which_partition)
         if isinstance(what, Machine):
             what.set_child_of(self, which_partition)
-
-    def append_if_not_there(self, *args):
-        logging.warning("""old append_if_not_there() is now append(),
-                           use that instead""")
-        self.append(*args)
 
     def set_child_of(self, whose, part):
         self._child_of.add((whose, part))
@@ -134,14 +129,6 @@ class Machine(object):
         
         return s
 
-    def to_full_str(self):
-        """A more detailed __str__. Returns the print name,
-        as well as the print names of the machines on every partition."""
-        ret = str(self.base.partitions[0]) + ': '
-        for p in self.base.partitions[1:]:
-            ret += '[' + ','.join(str(m) for m in p) + '] '
-        return ret
- 
     @staticmethod
     def to_debug_str(machine):
         """An even more detailed __str__, complete with object ids and
@@ -176,3 +163,11 @@ class Machine(object):
         if depth == 0:
             return "\n".join(lines)
 
+def test_printname():
+    m_unicode = Machine(Monoid(u"\u00c1"))
+    print unicode(m_unicode).encode("utf-8")
+    print str(m_unicode)
+
+
+if __name__ == "__main__":
+    test_printname()
