@@ -23,7 +23,6 @@ class Wrapper:
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_fn = items["definitions"]
-        #self.inference_rules = items["inference_rules"]
 
     def __read_files(self):
         self.__read_definitions()
@@ -42,16 +41,6 @@ class Wrapper:
         self.lexicon.add_construction(ElviraConstruction())
 
         # TODO create shrdlu construction
-
-    #def __run_infer(self, machine):
-        #"""
-        #run inference engine over the machines
-        #(usually called after constructions has been run)
-        #"""
-        #from inference import InferenceEngine as IE
-        #ie = IE()
-        #ie.load(self.inference_rules)
-        #ie.infer(machine)
 
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
