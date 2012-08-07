@@ -24,7 +24,7 @@ class PosControlTransition(Transition):
     def match(self, machine):
         if not isinstance(machine.control, PosControl):
             return False
-        str_ = str(machine.control)
+        str_ = machine.control.pos
         return self.input_.search(str_) is not None
 
 class ConceptTransition(PrintnameTransition):
