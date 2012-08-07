@@ -295,8 +295,6 @@ def read(f):
         try:
             m = dp.parse_into_machines(l)
             d[m.printname()] = m
-            print l
-            print "Parsing ok"
         except pyparsing.ParseException, pe:
             print l
             print "Error: ", str(pe)
