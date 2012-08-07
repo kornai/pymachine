@@ -63,11 +63,12 @@ class Machine(object):
             control.set_machine(self)
 
     def allNames(self):
-        return set([self.__unicode__()]).union(*[partition[0].allNames() for partition in self.base.partitions[1:]])
+        return set([self.__unicode__()]).union(*[partition[0].allNames()
+            for partition in self.base.partitions[1:]])
         
     def append(self, what, which_partition=1):
         logging.debug(u"{0}.append({1},{2})".format(self.printname(),
-                                                   what, which_partition))
+           unicode(what), which_partition).encode("utf-8"))
         if len(self.base.partitions) > which_partition:
             if what in self.base.partitions[which_partition]:
                 return
@@ -170,6 +171,7 @@ def test_printname():
     m_unicode = Machine(Monoid(u"\u00c1"))
     print unicode(m_unicode).encode("utf-8")
     print str(m_unicode)
+    logging.error(unicode(m_unicode).encode("utf-8"))
 
 
 if __name__ == "__main__":
