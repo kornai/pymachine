@@ -28,8 +28,7 @@ class Machine(object):
 
     def __eq__(self, other):
         # HACK this is only printname matching
-        return self.printname() == other.printname()
-        #return self.printname() == str(other)
+        return unicode(self) == unicode(other)
     
     def __hash__(self):
         # HACK
