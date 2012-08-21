@@ -34,6 +34,7 @@ class DefinitionParser:
     comment_sep = "%"
     prime = "'"
     hyphen = "-"
+    at = "@"
 
     def __init__(self):
         self.init_parser()
@@ -63,6 +64,7 @@ class DefinitionParser:
         self.comment_sep_lit = Literal(DefinitionParser.comment_sep)
         self.prime_lit = Literal(DefinitionParser.prime)
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
+        self.at_lit = Literal(DefinitionParser.at)
         
         self.deep_cases = reduce(lambda a, b: a | b,
             (Literal(dc) for dc in deep_cases))
@@ -70,6 +72,7 @@ class DefinitionParser:
         self.unary = Combine(Optional("-") + Word(string.lowercase + "_") +
                              Optional(Word(nums))) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
+        self.syntax_supp = self.at_lit + Word(string.uppercase + "_")
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -117,6 +120,9 @@ class DefinitionParser:
         self.unexpr << Group(
             # UE -> U
             (self.unary) ^
+
+            # UE -> SS
+            (self.syntax_supp) ^
 
             # UE -> U [ D ]
             (self.unary + self.lb_lit + self.definition + self.rb_lit) ^
@@ -200,6 +206,11 @@ class DefinitionParser:
                 m.append(parent, 1)
                 # nothing to append to any partitions
                 return None
+
+            # UE -> SS
+            if (expr[0] == cls.at):
+                return create_machine(cls.at + expr[1], 1)
+
 
         if (len(expr) == 3):
             # UB -> A B A
@@ -307,8 +318,8 @@ if __name__ == "__main__":
     #logging.basicConfig(level=logging.DEBUG)
     dp = DefinitionParser()
     pstr = sys.argv[-1]
-    if sys.argv[1] == "-g":
-        dp.parse_into_machines(pstr)
+    if sys.argv[1] == "-d":
+        print Machine.to_debug_str(dp.parse_into_machines(pstr))
     elif sys.argv[1] == "-f":
         lexicon = read(file(sys.argv[2]))
     else:
