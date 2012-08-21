@@ -142,7 +142,7 @@ class DefinitionParser:
     
     def parse(self, s):
         return self.sen.parseString(s).asList()
-
+        
     def __parse_expr(self, expr, parent, root):
         """
         creates machines from a parse node and its children
@@ -263,7 +263,7 @@ class DefinitionParser:
                 m.append(self.__parse_expr(expr[4], m, root), 2)
                 return m
 
-        pe = ParserException("Unknown expression in definition")
+        pe = ParserException("Unknown expression in definition: "+str(expr))
         logging.debug(str(pe))
         logging.debug(expr)
         raise pe
@@ -298,11 +298,13 @@ def read(f):
         except pyparsing.ParseException, pe:
             print l
             print "Error: ", str(pe)
+        except AttributeError:
+            print "machine.append problem"
 
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-g":
