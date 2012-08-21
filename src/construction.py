@@ -68,17 +68,51 @@ class VerbConstruction(Construction):
     cases, and builds a control from it. After that, the act() will do the
     linking process, eg. link the verb with other words, object, subject, etc.
     """
-    def __init__(self, name, machine):
+    def __init__(self, name, machine, supp_dict):
         self.name = name
         self.machine = machine
-        self.case_locations = self.discover_cases()
+        self.supp_dict = supp_dict
+        self.arg_locations = self.discover_arguments()
+        self.generate_phi()
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
         self.activated = False
 
+    def generate_phi(self):
+        arguments = self.arg_locations.keys()
+        # creating Transition objects from arguments
+        self.transitions = {}
+        self.phi = {}
+
+        # Verb transition will imply no change, we put it into phi
+        # to implement act() easier
+        vt = PosTransition("^VERB.*")
+        self.transitions["VERB"] = vt
+        self.phi[vt] = None
+
+        # normal arguments
+        for arg in arguments:
+            if arg.startswith("@"):
+                pt = PosTransition(
+                    "({0})".format("|".join(self.supp_dict[arg[1:]])))
+                self.transitions[arg] = pt
+                self.phi[pt] = arguments[arg]
+
+            # NOM case is implicit, that is why we need a distinction here
+            elif arg == "NOM":
+                pt = PosTransition("NOUN(?!.*CAS)".format(arg))
+                self.transitions[arg] = pt
+                self.phi[pt] = arguments[arg]
+
+            else:
+                pt = PosTransition("CAS<{0}>".format(arg))
+                self.transitions[arg] = pt
+                self.phi[pt] = arguments[arg]
+
     def generate_control(self):
-        cases = self.case_locations.keys()
+        arguments = self.transitions.keys()
+        arguments.remove("VERB")
         
         # this will be a hypercube
         control = FSA()
@@ -87,34 +121,29 @@ class VerbConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
 
         # inside states for the cube, except the last, accepting state
-        for i in xrange(1, pow(2, len(cases))):
+        for i in xrange(1, pow(2, len(arguments))):
             control.add_state(str(i), is_init=False, is_final=False)
 
         # last node of the hypercube
-        control.add_state(str(int(pow(2, len(cases)))),
+        control.add_state(str(int(pow(2, len(arguments)))),
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition(PosTransition("^VERB.*"), "0", "1")
+        control.add_transition(self.transitions["VERB"], "0", "1")
 
         # count every transition as an increase in number of state
-        for path in permutations(cases):
+        for path in permutations(arguments):
             actual_state = 1
-            for case in path:
-                increase = pow(2, cases.index(case))
+            for arg in path:
+                increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
-                if case == "NOM":
-                    control.add_transition(PosTransition(
-                        "NOUN(?!.*CAS)".format(case)),
+                control.add_transition(self.transitions[arg],
                         str(actual_state), str(new_state))
-                else:
-                    control.add_transition(
-                        PosTransition("CAS<{0}>".format(case)),
-                        str(actual_state), str(new_state))
+
                 actual_state = new_state
         return control
 
-    def discover_cases(self, machine=None, d=None):
+    def discover_arguments(self, machine=None, d=None):
         if machine is None:
             machine = self.machine
         if d is None:
@@ -125,12 +154,14 @@ class VerbConstruction(Construction):
             to_remove = None
             for mi, part_machine in enumerate(p):
                 pn = part_machine.printname()
-                if pn in deep_cases:
+                # we are interested in deep cases and
+                # supplementary regexps
+                if pn in deep_cases or pn.startswith("@"):
                     d[pn].append((machine, pi))
                     to_remove = mi
 
                 # recursive call
-                d.update(self.discover_cases(part_machine, d))
+                d.update(self.discover_arguments(part_machine, d))
 
             if to_remove is not None:
                 p = p[:to_remove] + p[to_remove+1:]
@@ -145,12 +176,10 @@ class VerbConstruction(Construction):
             return Construction.check(self, seq)
 
     def act(self, seq):
-        # get case for every machine, and put them to right places
-
         result = []
 
         # put a clear machine into self.machine while verb_machine will be
-        # the old self.machine, and the references in self.case_locations
+        # the old self.machine, and the references in self.arg_locations
         # will point at good locations in verb_machine
         clear_machine = copy(self.machine)
         verb_machine = self.machine
@@ -175,6 +204,18 @@ class VerbConstruction(Construction):
                 else:
                     raise Exception("""Every machine at this point of the code
                                     has to match a case pattern""")
+
+        for m in seq:
+            for transition in self.phi:
+                # skip None transitions (VERB)
+                if self.phi[transition] is None:
+                    continue
+
+                if transition.match(m):
+                    # possible multiple places for one machine
+                    for m_to, m_p_i in self.phi[transition]:
+                        m_to.append(m, m_p_i)
+                    break
 
         self.activated = True
         return result
