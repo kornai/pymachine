@@ -7,16 +7,21 @@ class SpreadingActivation(object):
     def __init__(self, lexicon):
         self.lexicon = lexicon
 
-    def activation_loop(self):
-        """Implements the algorithm. It goes as follows:
+    def activation_loop(self, sentence_machines):
+        """
+        Implements the algorithm. It goes as follows:
         @arg Expand all unexpanded words
         @arg Link along linkers (deep cases)
         @arg Check the lexicon to see if new words are activated by the ones
              already in the graph; if yes, add them to the graph. Repeat until
              no new words are found.
         @return Messages to be sent to active plugins.
-        The algorithm stops when ... I don't know."""
+        The algorithm stops when ... I don't know.
+        
+        @param sentence_machines the list of machines that make up the sentence.
+        """
         # TODO: NPs/ linkers to be contended
+        self.lexicon.add_active(sentence_machines)
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
         plugin_found = False
