@@ -97,18 +97,18 @@ class VerbConstruction(Construction):
                 pt = PosTransition(
                     "({0})".format("|".join(self.supp_dict[arg[1:]])))
                 self.transitions[arg] = pt
-                self.phi[pt] = arguments[arg]
+                self.phi[pt] = self.arg_locations[arg]
 
             # NOM case is implicit, that is why we need a distinction here
             elif arg == "NOM":
                 pt = PosTransition("NOUN(?!.*CAS)".format(arg))
                 self.transitions[arg] = pt
-                self.phi[pt] = arguments[arg]
+                self.phi[pt] = self.arg_locations[arg]
 
             else:
                 pt = PosTransition("CAS<{0}>".format(arg))
                 self.transitions[arg] = pt
-                self.phi[pt] = arguments[arg]
+                self.phi[pt] = self.arg_locations[arg]
 
     def generate_control(self):
         arguments = self.transitions.keys()
