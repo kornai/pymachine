@@ -70,10 +70,9 @@ class Wrapper:
             sp = SentenceParser()
             sa = SpreadingActivation(self.lexicon)
             machines = sp.parse(sentence)
-            self.lexicon.add_active(machines)
 
             # results is a list of (url, data) tuples
-            results = sa.activation_loop()
+            results = sa.activation_loop(machines)
             self.lexicon.clear_active()
         except Exception, e:
             import traceback
