@@ -12,12 +12,14 @@ from control import PosControl, ElviraPluginControl
 from constants import deep_cases
 
 class Construction(object):
-    def __init__(self, name, control):
+    def __init__(self, name, control, inchunk=False):
         self.name = name
 
         if not isinstance(control, FSA):
             raise TypeError("control has to be an FSA instance")
         self.control = control
+
+        self.inchunk = inchunk
 
     def check(self, seq):
         logging.debug((u"Checking {0} construction for matching with " +
@@ -50,18 +52,6 @@ class Construction(object):
         logging.debug("Construction matched, running action")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
-
-class AppendConstruction(Construction):
-    def __init__(self, name, control, act_from_left=True, append_to_left=True):
-        Construction.__init__(self)
-        # when check is done, and an action is needed,
-        # order of actions on machines is left to right or reverse
-        self.act_from_left = act_from_left
-
-        # when check is done, and an action is needed,
-        # and we already have two machines chosen by the self.act_from_left
-        # order traverse, on which machine do we want to append the other one
-        self.append_to_left = append_to_left
 
 class VerbConstruction(Construction):
     """A default construction for verbs. It reads definitions, discovers
@@ -228,10 +218,10 @@ class TheConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition(PrintnameTransition("the", exact=True), "0", "1")
+        control.add_transition(PrintnameTransition("^az?$"), "0", "1")
         control.add_transition(PosTransition("^NOUN.*"), "1", "2")
 
-        Construction.__init__(self, "TheConstruction", control)
+        Construction.__init__(self, "TheConstruction", control, inchunk=True)
 
     def act(self, seq):
         logging.debug("Construction matched, running last check")
@@ -249,7 +239,8 @@ class DummyNPConstruction(Construction):
         control.add_transition(PosTransition("^ADJ.*"), "0", "0")
         control.add_transition(PosTransition("^NOUN.*"), "0", "1")
 
-        Construction.__init__(self, "DummyNPConstruction", control)
+        Construction.__init__(self, "DummyNPConstruction", control,
+                              inchunk=True)
 
     def act(self, seq):
         logging.debug("Construction matched, running last check")
