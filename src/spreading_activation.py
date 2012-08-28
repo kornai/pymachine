@@ -7,7 +7,7 @@ class SpreadingActivation(object):
     def __init__(self, lexicon):
         self.lexicon = lexicon
 
-    def activation_loop(self, sentence_machines):
+    def activation_loop(self, chunks):
         """
         Implements the algorithm. It goes as follows:
         @arg Expand all unexpanded words
@@ -18,13 +18,31 @@ class SpreadingActivation(object):
         @return Messages to be sent to active plugins.
         The algorithm stops when ... I don't know.
         
-        @param sentence_machines the list of machines that make up the sentence.
+        @param chunks a list of lists of machines that make up the chunks in the
+                      sentence (and the rest, too).
         """
         # TODO: NPs/ linkers to be contended
-        self.lexicon.add_active(sentence_machines)
+        # chunks contains the chunks of the sentence -- at the beginning, all
+        # words are considered chunks, but then are merged by the syntactic
+        # constructions
+        sentence = itertools.chain(*chunks)
+        self.lexicon.add_active(sentence)
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
         plugin_found = False
+        chunk_constructions = set([c for c in self.lexicon.constructions
+                                   if c.inchunk])
+        semantic_constructions = set([c for c in self.lexicon.constructions
+                                      if c.inchunk])
+
+        # Chunk constructions are run here to form the phrase machines.
+        for chunk in filter(lambda c: len(c) > 1, chunks):
+            for c in chunk_constructions:
+                if c.check(chunk):
+                    c_res = c.act(chunk)
+                    if c_res is not None:
+                        chunk[:] = [c_res]  # c_res should be a single machine
+                        break
 
         # This condition will not work w/ the full lexicon, obviously.
         while len(unexpanded) > 0 and not plugin_found:
@@ -42,7 +60,7 @@ class SpreadingActivation(object):
                 self.lexicon.expand(machine)
 
             # Step 2b: constructions:
-            for c in self.lexicon.constructions:
+            for c in semantic_constructions:
                 # The machines that can take part in constructions
                 logging.debug("CONST " + c.name)
                 accepted = []
