@@ -33,7 +33,7 @@ class SpreadingActivation(object):
         chunk_constructions = set([c for c in self.lexicon.constructions
                                    if c.inchunk])
         semantic_constructions = set([c for c in self.lexicon.constructions
-                                      if c.inchunk])
+                                      if not c.inchunk])
 
         # Chunk constructions are run here to form the phrase machines.
         for chunk in filter(lambda c: len(c) > 1, chunks):
