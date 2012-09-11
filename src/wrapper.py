@@ -1,12 +1,10 @@
 import ConfigParser
-import sys
 
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
-from construction import (VerbConstruction, ElviraConstruction,
-                          TheConstruction, DummyNPConstruction)
+from construction import *
 from sup_dic import supplementary_dictionary_reader as sdreader
 
 config_filename = "machine.cfg"
@@ -59,6 +57,8 @@ class Wrapper:
 
         self.lexicon.add_construction(DummyNPConstruction())
         self.lexicon.add_construction(TheConstruction())
+        self.lexicon.add_construction(MaxNP_InBetweenPostP_Construction())
+        self.lexicon.add_construction(PostPConstruction())
         
 
         # TODO create shrdlu construction

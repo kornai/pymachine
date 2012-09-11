@@ -277,6 +277,28 @@ class MaxNP_InBetweenPostP_Construction(Construction):
         postp.append(noun2, 1)
         return noun2
 
+class PostPConstruction(Construction):
+    """PP -> NOUN POSTP"""
+    def __init__(self):
+        control = FSA()
+        control.add_state("0", is_init=True, is_final=False)
+        control.add_state("1", is_init=False, is_final=False)
+        control.add_state("2", is_init=False, is_final=True)
+        control.add_transition(PosTransition("^NOUN.*"), "0", "1")
+        control.add_transition(PosTransition("POSTP", exact=True), "1", "2")
+        Construction.__init__(self, "PostPConstruction", control, inchunk=True)
+
+    def act(self, seq):
+        logging.debug("Construction matched, running last check")
+        self.last_check(seq)
+        logging.debug("PostPConstruction matched, running action")
+        noun1 = seq[0]
+        postp = seq[1]
+        noun2 = seq[2]
+        postp.append(noun1, 2)
+        postp.append(noun2, 1)
+        return noun2
+
 class ElviraConstruction(Construction):
     def __init__(self):
         control = FSA()
