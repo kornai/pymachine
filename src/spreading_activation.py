@@ -1,4 +1,5 @@
 from control import PluginControl
+from construction import Construction
 import logging
 import itertools
 
@@ -43,9 +44,11 @@ class SpreadingActivation(object):
         unexpanded = list(self.lexicon.get_unexpanded())
         plugin_found = False
         chunk_constructions = set([c for c in self.lexicon.constructions
-                                   if c.inchunk])
+                                   if c.type_ == Construction.CHUNK])
         semantic_constructions = set([c for c in self.lexicon.constructions
-                                      if not c.inchunk])
+                                      if not c.type_ == Construction.SEMANTIC])
+        avm_constructions = set([c for c in self.lexicon.constructions
+                                   if c.type_ == Construction.AVM])
 
         # Chunk constructions are run here to form the phrase machines.
         for chunk in filter(lambda c: len(c) > 1, chunks):

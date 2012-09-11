@@ -12,14 +12,18 @@ from control import PosControl, ElviraPluginControl
 from constants import deep_cases
 
 class Construction(object):
-    def __init__(self, name, control, inchunk=False):
+    SEMANTIC, CHUNK, AVM = xrange(3)  # types
+    def __init__(self, name, control, type_=SEMANTIC):
+        """
+        @param type_ the type of the construction -- SEMANTIC, CHUNK or AVM.
+        """
         self.name = name
 
         if not isinstance(control, FSA):
             raise TypeError("control has to be an FSA instance")
         self.control = control
 
-        self.inchunk = inchunk
+        self.type_ = type_
 
     def check(self, seq):
         logging.debug((u"Checking {0} construction for matching with " +
@@ -221,7 +225,8 @@ class TheConstruction(Construction):
         control.add_transition(PrintnameTransition("^az?$"), "0", "1")
         control.add_transition(PosTransition("^NOUN.*"), "1", "2")
 
-        Construction.__init__(self, "TheConstruction", control, inchunk=True)
+        Construction.__init__(self, "TheConstruction", control,
+                              type_=Construction.CHUNK)
 
     def act(self, seq):
         logging.debug("Construction matched, running last check")
@@ -240,7 +245,7 @@ class DummyNPConstruction(Construction):
         control.add_transition(PosTransition("^NOUN.*"), "0", "1")
 
         Construction.__init__(self, "DummyNPConstruction", control,
-                              inchunk=True)
+                              type_=Construction.CHUNK)
 
     def act(self, seq):
         logging.debug("Construction matched, running last check")
@@ -264,7 +269,7 @@ class MaxNP_InBetweenPostP_Construction(Construction):
         control.add_transition(PosTransition("POSTP\[ATTRIB\]\|ADJ", exact=True), "1", "2")
         control.add_transition(PosTransition("^NOUN.*"), "2", "3")
         Construction.__init__(self, "MaxNP_InBetweenPostP_Construction", control,
-                              inchunk=True)
+                              type_=Construction.CHUNK)
 
     def act(self, seq):
         logging.debug("Construction matched, running last check")
@@ -286,7 +291,8 @@ class PostPConstruction(Construction):
         control.add_state("2", is_init=False, is_final=True)
         control.add_transition(PosTransition("^NOUN.*"), "0", "1")
         control.add_transition(PosTransition("POSTP", exact=True), "1", "2")
-        Construction.__init__(self, "PostPConstruction", control, inchunk=True)
+        Construction.__init__(self, "PostPConstruction", control, type_=
+                              Construction.CHUNK)
 
     def act(self, seq):
         logging.debug("Construction matched, running last check")
