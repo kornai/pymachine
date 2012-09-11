@@ -17,9 +17,19 @@ class AVM(object):
         self.__data[key] = [datatype, required, default_value, default_value]
         # TODO: do we need a default_value?
 
+    def satisfied(self):
+        """Returns @c True, if all required arguments are filled in."""
+        for value in self.__data.values():
+            if value[AVM.REQUIRED] and value[AVM.VALUE] is None:
+                return False
+        else:
+            return True
+
     def __getitem__(self, key):
+        """Gets the current value of an attribute."""
         return self.__data[key][AVM.VALUE]
 
     def __setitem__(self, key, value):
+        """Sets the current value of an attribute."""
         self.__data[key][AVM.VALUE] = value
 
