@@ -2,6 +2,18 @@ from control import PluginControl
 import logging
 import itertools
 
+def subsequence_index(seq, length):
+    """
+    Returns the start and end indices of all subsequences of @p seq of length
+    @p length as an iterator.
+    """
+    l = len(seq)
+    if l < length:
+        return
+    for begin in xrange(0, l - length + 1):
+        yield begin, begin + length
+    return
+
 class SpreadingActivation(object):
     """Implements spreading activation (surprise surprise)."""
     def __init__(self, lexicon):
@@ -37,12 +49,22 @@ class SpreadingActivation(object):
 
         # Chunk constructions are run here to form the phrase machines.
         for chunk in filter(lambda c: len(c) > 1, chunks):
-            for c in chunk_constructions:
-                if c.check(chunk):
-                    c_res = c.act(chunk)
-                    if c_res is not None:
-                        chunk[:] = [c_res]  # c_res should be a single machine
-                        break
+            change = True
+            while change:
+                change = False
+                try:
+                    for length in xrange(2, len(chunk) + 1):
+                        for begin, end in subsequence_index(chunk, length):
+                            part = chunk[begin:end]
+                            for c in chunk_constructions:
+                                if c.check(part):
+                                    c_res = c.act(part)
+                                    if c_res is not None:
+                                        change = True
+                                        chunk[begin:end] = [c_res]  # c_res should be a single machine
+                                        raise ValueError  # == break outer
+                except ValueError:
+                    pass
 
         # This condition will not work w/ the full lexicon, obviously.
         while len(unexpanded) > 0 and not plugin_found:
