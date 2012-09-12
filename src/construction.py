@@ -90,7 +90,7 @@ class VerbConstruction(Construction):
         for arg in arguments:
             if arg.startswith("@"):
                 pm = PosMatcher(
-                    "({0})".format("|".join(self.supp_dict[arg[1:]])))
+                    "({0})".format("|".join(self.supp_dict[arg])))
                 self.matchers[arg] = pm
                 phi[pm] = self.arg_locations[arg]
 
