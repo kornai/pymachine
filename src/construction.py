@@ -183,25 +183,6 @@ class VerbConstruction(Construction):
         result.append(verb_machine)
 
         for m in seq:
-            if m.printname() == self.machine.printname():
-                # this is the verb machine
-                # copy the (referenceof) PosControl of the verb in the sentence
-                # to the control of the new machine
-                verb_machine.control = m.control
-            else:
-                matcher = self.case_pattern.match(m.control.pos)
-                if matcher is not None or re.match("^NOUN", m.control.pos):
-                    case = (matcher.group(2) if matcher is not None else "NOM")
-                    if case not in self.case_locations:
-                        raise Exception("""Got a NOUN with a useless case""")
-
-                    for m_to, m_p_i in self.case_locations[case]:
-                        m_to.append(m, m_p_i)
-                else:
-                    raise Exception("""Every machine at this point of the code
-                                    has to match a case pattern""")
-
-        for m in seq:
             for transition in self.phi:
                 # skip None transitions (VERB)
                 if self.phi[transition] is None:
