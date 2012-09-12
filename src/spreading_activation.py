@@ -34,7 +34,6 @@ class SpreadingActivation(object):
         @param chunks a list of lists of machines that make up the chunks in the
                       sentence (and the rest, too).
         """
-        # TODO: NPs/ linkers to be contended
         # chunks contains the chunks of the sentence -- at the beginning, all
         # words are considered chunks, but then are merged by the syntactic
         # constructions
@@ -42,6 +41,8 @@ class SpreadingActivation(object):
         self.lexicon.add_active(sentence)
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
+        # TODO: required bit to machines
+        # TODO: remove this
         plugin_found = False
         chunk_constructions = set([c for c in self.lexicon.constructions
                                    if c.type_ == Construction.CHUNK])
@@ -70,7 +71,7 @@ class SpreadingActivation(object):
                     pass
 
         # This condition will not work w/ the full lexicon, obviously.
-        while len(unexpanded) > 0 and not plugin_found:
+        while not plugin_found:
             dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
             logging.debug("\n\nLOOP:" + str(last_active) + ' ' + dbg_str + "\n\n")
 #            logging.debug('ACTIVE')
@@ -84,7 +85,7 @@ class SpreadingActivation(object):
 
                 self.lexicon.expand(machine)
 
-            # Step 2b: constructions:
+            # Step 2a: semantic constructions:
             for c in semantic_constructions:
                 # The machines that can take part in constructions
                 logging.debug("CONST " + c.name)
@@ -129,6 +130,14 @@ class SpreadingActivation(object):
                     else:
                         del accepted[-1]
 
+            # Step 2b: AVM constructions
+            for c in avm_constructions:
+                for m in self.lexicon.active_machines():
+                    if c.check([m]):
+                        c.act([m])
+                        if c.avm.satisfied():
+                            plugin_found = True
+
             # Step 3: activation
             self.lexicon.activate()
             unexpanded = list(self.lexicon.get_unexpanded())
@@ -138,6 +147,7 @@ class SpreadingActivation(object):
                 last_active = len(self.lexicon.active)
 
         # Return messages to active plugins
+        # TODO: add AVMs. What is the relation between AVMs and Plugins?
         logging.debug("\n\nENDE\n\n")
         ret = []
         for m in self.lexicon.active_machines():
