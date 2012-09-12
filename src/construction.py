@@ -4,8 +4,9 @@ from collections import defaultdict
 from itertools import permutations
 from copy import deepcopy as copy
 
-from fst import FSA, PrintnameMatcher
-from fst import PosControlMatcher as PosMatcher
+from fst import FSA
+from matcher import PrintnameMatcher
+from matcher import PosControlMatcher as PosMatcher
 from machine import Machine
 from monoid import Monoid
 from control import PosControl, ElviraPluginControl
@@ -248,6 +249,7 @@ class AVMConstruction(Construction):
             for matcher in self.phi:
                 if matcher.match(machine):
                     self.avm[self.phi[matcher]] = machine
+        return [self.avm]
 
 class TheConstruction(Construction):
     """NOUN<DET> -> The NOUN"""
@@ -267,7 +269,7 @@ class TheConstruction(Construction):
         self.last_check(seq)
         logging.debug("TheConstruction matched, running action")
         seq[1].control.pos += "<DET>"
-        return seq[1]
+        return [seq[1]]
 
 class DummyNPConstruction(Construction):
     """NP construction. NP -> Adj* NOUN"""
@@ -289,7 +291,7 @@ class DummyNPConstruction(Construction):
         adjs = seq[:-1]
         for adj in adjs:
             noun.append(adj)
-        return noun
+        return [noun]
 
 class MaxNP_InBetweenPostP_Construction(Construction):
     """NP -> NOUN POSTP[ATTRIB]|ADJ NOUN"""
@@ -314,7 +316,7 @@ class MaxNP_InBetweenPostP_Construction(Construction):
         noun2 = seq[2]
         postp.append(noun1, 2)
         postp.append(noun2, 1)
-        return noun2
+        return [noun2]
 
 class PostPConstruction(Construction):
     """PP -> NOUN POSTP"""
@@ -337,7 +339,7 @@ class PostPConstruction(Construction):
         noun2 = seq[2]
         postp.append(noun1, 2)
         postp.append(noun2, 1)
-        return noun2
+        return [noun2]
 
 class ElviraConstruction(Construction):
     def __init__(self):
