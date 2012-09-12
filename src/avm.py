@@ -1,6 +1,7 @@
 """Attribute-value matrix."""
 
 from matcher import Matcher
+from StringIO import StringIO
 
 class AVM(object):
     TYPE, REQUIRED, DEFAULT, VALUE = xrange(4)
@@ -50,5 +51,5 @@ class AVM(object):
         return self.__data.__iter__()
 
     def __unicode__(self):
-        return unicode(self.__data)
+        return u'{' + u', '.join(u'{0}: {1}'.format(key, self[key]) for key in self) + u'}'
 
