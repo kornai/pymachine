@@ -1,38 +1,8 @@
 from collections import defaultdict, Iterable
 import logging
-import re
 
-from control import PosControl, ConceptControl
 from machine import Machine
-
-class Transition(object):
-    def __init__(self, string, exact=False):
-        if exact:
-            self.input_ = re.compile("^{0}$".format(string))
-        else:
-            self.input_ = re.compile("{0}".format(string))
-
-    def match(self, machine):
-        raise NotImplementedError()
-
-class PrintnameTransition(Transition):
-    def match(self, machine):
-        str_ = machine.printname()
-        return self.input_.search(str_) is not None
-
-class PosControlTransition(Transition):
-    def match(self, machine):
-        if not isinstance(machine.control, PosControl):
-            return False
-        str_ = machine.control.pos
-        return self.input_.search(str_) is not None
-
-class ConceptTransition(PrintnameTransition):
-    def match(self, machine):
-        if PrintnameTransition.match(self, machine):
-            return isinstance(machine.control, ConceptControl)
-        else:
-            return False
+from matcher import Matcher
 
 
 class FSA(object):
@@ -71,12 +41,12 @@ class FSA(object):
         else:
             self.final_states.add(state)
 
-    def add_transition(self, transition, input_state, output_state):
+    def add_transition(self, matcher, input_state, output_state):
         if input_state not in self.states or output_state not in self.states:
             raise ValueError("transition states has to be in states already")
-        if not isinstance(transition, Transition):
-            raise TypeError("transition has to be of type Transition")
-        self.transitions[input_state][transition] = output_state
+        if not isinstance(matcher, Matcher):
+            raise TypeError("transition's matcher has to be of type Matcher")
+        self.transitions[input_state][matcher] = output_state
 
     def check_states(self):
         if len(self.states) == 0:

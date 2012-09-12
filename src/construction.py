@@ -4,8 +4,8 @@ from collections import defaultdict
 from itertools import permutations
 from copy import deepcopy as copy
 
-from fst import FSA, PrintnameTransition
-from fst import PosControlTransition as PosTransition
+from fst import FSA, PrintnameMatcher
+from fst import PosControlMatcher as PosMatcher
 from machine import Machine
 from monoid import Monoid
 from control import PosControl, ElviraPluginControl
@@ -75,32 +75,32 @@ class VerbConstruction(Construction):
 
     def generate_phi(self):
         arguments = self.arg_locations.keys()
-        # creating Transition objects from arguments
+        # creating Matcher objects from arguments
         self.transitions = {}
         self.phi = {}
 
         # Verb transition will imply no change, we put it into phi
         # to implement act() easier
-        vt = PosTransition("^VERB.*")
+        vt = PosMatcher("^VERB.*")
         self.transitions["VERB"] = vt
         self.phi[vt] = None
 
         # normal arguments
         for arg in arguments:
             if arg.startswith("@"):
-                pt = PosTransition(
+                pt = PosMatcher(
                     "({0})".format("|".join(self.supp_dict[arg[1:]])))
                 self.transitions[arg] = pt
                 self.phi[pt] = self.arg_locations[arg]
 
             # NOM case is implicit, that is why we need a distinction here
             elif arg == "NOM":
-                pt = PosTransition("NOUN(?!.*CAS)".format(arg))
+                pt = PosMatcher("NOUN(?!.*CAS)".format(arg))
                 self.transitions[arg] = pt
                 self.phi[pt] = self.arg_locations[arg]
 
             else:
-                pt = PosTransition("CAS<{0}>".format(arg))
+                pt = PosMatcher("CAS<{0}>".format(arg))
                 self.transitions[arg] = pt
                 self.phi[pt] = self.arg_locations[arg]
 
@@ -222,8 +222,8 @@ class TheConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition(PrintnameTransition("^az?$"), "0", "1")
-        control.add_transition(PosTransition("^NOUN.*"), "1", "2")
+        control.add_transition(PrintnameMatcher("^az?$"), "0", "1")
+        control.add_transition(PosMatcher("^NOUN.*"), "1", "2")
 
         Construction.__init__(self, "TheConstruction", control,
                               type_=Construction.CHUNK)
@@ -241,8 +241,8 @@ class DummyNPConstruction(Construction):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=True)
-        control.add_transition(PosTransition("^ADJ.*"), "0", "0")
-        control.add_transition(PosTransition("^NOUN.*"), "0", "1")
+        control.add_transition(PosMatcher("^ADJ.*"), "0", "0")
+        control.add_transition(PosMatcher("^NOUN.*"), "0", "1")
 
         Construction.__init__(self, "DummyNPConstruction", control,
                               type_=Construction.CHUNK)
@@ -265,9 +265,9 @@ class MaxNP_InBetweenPostP_Construction(Construction):
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=False)
         control.add_state("3", is_init=False, is_final=True)
-        control.add_transition(PosTransition("^NOUN.*"), "0", "1")
-        control.add_transition(PosTransition("POSTP\[ATTRIB\]\|ADJ", exact=True), "1", "2")
-        control.add_transition(PosTransition("^NOUN.*"), "2", "3")
+        control.add_transition(PosMatcher("^NOUN.*"), "0", "1")
+        control.add_transition(PosMatcher("POSTP\[ATTRIB\]\|ADJ", exact=True), "1", "2")
+        control.add_transition(PosMatcher("^NOUN.*"), "2", "3")
         Construction.__init__(self, "MaxNP_InBetweenPostP_Construction", control,
                               type_=Construction.CHUNK)
 
@@ -289,8 +289,8 @@ class PostPConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition(PosTransition("^NOUN.*"), "0", "1")
-        control.add_transition(PosTransition("POSTP", exact=True), "1", "2")
+        control.add_transition(PosMatcher("^NOUN.*"), "0", "1")
+        control.add_transition(PosMatcher("POSTP", exact=True), "1", "2")
         Construction.__init__(self, "PostPConstruction", control, type_=
                               Construction.CHUNK)
 
@@ -314,10 +314,10 @@ class ElviraConstruction(Construction):
         control.add_state("2", is_init=False, is_final=False)
         control.add_state("3", is_init=False, is_final=False)
         control.add_state("4", is_init=False, is_final=True)
-        control.add_transition(PrintnameTransition("vonat"), "0", "1")
-        control.add_transition(PrintnameTransition("menetrend"), "1", "2")
-        control.add_transition(PrintnameTransition("BEFORE_AT"), "2", "3")
-        control.add_transition(PrintnameTransition("AFTER_AT"), "3", "4")
+        control.add_transition(PrintnameMatcher("vonat"), "0", "1")
+        control.add_transition(PrintnameMatcher("menetrend"), "1", "2")
+        control.add_transition(PrintnameMatcher("BEFORE_AT"), "2", "3")
+        control.add_transition(PrintnameMatcher("AFTER_AT"), "3", "4")
 
         Construction.__init__(self, self.__class__.__name__, control)
 
