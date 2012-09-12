@@ -4,8 +4,9 @@ from collections import defaultdict
 from itertools import permutations
 from copy import deepcopy as copy
 
-from fst import FSA, PrintnameMatcher
-from fst import PosControlMatcher as PosMatcher
+from fst import FSA
+from matcher import PrintnameMatcher
+from matcher import PosControlMatcher as PosMatcher
 from machine import Machine
 from monoid import Monoid
 from control import PosControl, ElviraPluginControl
@@ -67,7 +68,7 @@ class VerbConstruction(Construction):
         self.machine = machine
         self.supp_dict = supp_dict
         self.arg_locations = self.discover_arguments()
-        self.generate_phi()
+        self.phi = self.generate_phi()
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
@@ -76,36 +77,37 @@ class VerbConstruction(Construction):
     def generate_phi(self):
         arguments = self.arg_locations.keys()
         # creating Matcher objects from arguments
-        self.transitions = {}
-        self.phi = {}
+        self.matchers = {}
+        phi = {}
 
         # Verb transition will imply no change, we put it into phi
         # to implement act() easier
-        vt = PosMatcher("^VERB.*")
-        self.transitions["VERB"] = vt
-        self.phi[vt] = None
+        vm = PosMatcher("^VERB.*")
+        self.matchers["VERB"] = vm
+        phi[vm] = None
 
         # normal arguments
         for arg in arguments:
             if arg.startswith("@"):
-                pt = PosMatcher(
+                pm = PosMatcher(
                     "({0})".format("|".join(self.supp_dict[arg[1:]])))
-                self.transitions[arg] = pt
-                self.phi[pt] = self.arg_locations[arg]
+                self.matchers[arg] = pm
+                phi[pm] = self.arg_locations[arg]
 
             # NOM case is implicit, that is why we need a distinction here
             elif arg == "NOM":
-                pt = PosMatcher("NOUN(?!.*CAS)".format(arg))
-                self.transitions[arg] = pt
-                self.phi[pt] = self.arg_locations[arg]
+                pm = PosMatcher("NOUN(?!.*CAS)".format(arg))
+                self.matchers[arg] = pm
+                phi[pm] = self.arg_locations[arg]
 
             else:
-                pt = PosMatcher("CAS<{0}>".format(arg))
-                self.transitions[arg] = pt
-                self.phi[pt] = self.arg_locations[arg]
+                pm = PosMatcher("CAS<{0}>".format(arg))
+                self.matchers[arg] = pm
+                phi[pm] = self.arg_locations[arg]
+        return phi
 
     def generate_control(self):
-        arguments = self.transitions.keys()
+        arguments = self.matchers.keys()
         arguments.remove("VERB")
         
         # this will be a hypercube
@@ -123,7 +125,7 @@ class VerbConstruction(Construction):
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition(self.transitions["VERB"], "0", "1")
+        control.add_transition(self.matchers["VERB"], "0", "1")
 
         # count every transition as an increase in number of state
         for path in permutations(arguments):
@@ -131,7 +133,7 @@ class VerbConstruction(Construction):
             for arg in path:
                 increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
-                control.add_transition(self.transitions[arg],
+                control.add_transition(self.matchers[arg],
                         str(actual_state), str(new_state))
 
                 actual_state = new_state
@@ -214,6 +216,40 @@ class VerbConstruction(Construction):
         self.activated = True
         return result
 
+class AVMConstruction(Construction):
+    """this class will fill the slots in the AVM"""
+    def __init__(self, avm, name):
+        self.avm = avm
+        self.phi = self.generate_phi()
+        control = self.generate_control()
+        Construction.__init__(self, name, control, type_=Construction.AVM)
+
+    def generate_phi(self):
+        phi = {}
+        for key in self.avm:
+            matcher, _, _, _ = self.avm[key]
+            phi[matcher] = key
+        return phi
+
+    def generate_control(self):
+        control = FSA()
+        control.add_state("0", is_init=True, is_final=False)
+
+        state_num = 1
+        for key in self.avm:
+            state_name = str(state_num)
+            matcher, _, _, _ = self.avm[key]
+            control.add_state(state_name, is_init=False, is_final=True)
+            control.add_transition(matcher, "0", state_name)
+            state_num += 1
+        return control
+
+    def act(self, seq):
+        for machine in seq:
+            for matcher in self.phi:
+                if matcher.match(machine):
+                    self.avm[self.phi[matcher]] = machine
+        return [self.avm]
 
 class TheConstruction(Construction):
     """NOUN<DET> -> The NOUN"""
@@ -233,7 +269,7 @@ class TheConstruction(Construction):
         self.last_check(seq)
         logging.debug("TheConstruction matched, running action")
         seq[1].control.pos += "<DET>"
-        return seq[1]
+        return [seq[1]]
 
 class DummyNPConstruction(Construction):
     """NP construction. NP -> Adj* NOUN"""
@@ -255,7 +291,7 @@ class DummyNPConstruction(Construction):
         adjs = seq[:-1]
         for adj in adjs:
             noun.append(adj)
-        return noun
+        return [noun]
 
 class MaxNP_InBetweenPostP_Construction(Construction):
     """NP -> NOUN POSTP[ATTRIB]|ADJ NOUN"""
@@ -280,7 +316,7 @@ class MaxNP_InBetweenPostP_Construction(Construction):
         noun2 = seq[2]
         postp.append(noun1, 2)
         postp.append(noun2, 1)
-        return noun2
+        return [noun2]
 
 class PostPConstruction(Construction):
     """PP -> NOUN POSTP"""
@@ -303,7 +339,7 @@ class PostPConstruction(Construction):
         noun2 = seq[2]
         postp.append(noun1, 2)
         postp.append(noun2, 1)
-        return noun2
+        return [noun2]
 
 class ElviraConstruction(Construction):
     def __init__(self):
