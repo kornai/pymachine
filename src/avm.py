@@ -9,6 +9,7 @@ class AVM(object):
         self.__data = {}  # {key: [type, required, default_value, value]}
 
     def add_attribute(self, key, datatype, required=False, default_value=None):
+        """Adds a new attribute to the "matrix"."""
         if not isinstance(required, bool):
             raise ValueError("required must be a bool, not " + type(required))
         if not isinstance(datatype, Matcher):
@@ -25,6 +26,17 @@ class AVM(object):
         else:
             return True
 
+    def get_attribute(self, key):
+        """Returns the whole attribute data tuple for @p key."""
+        return self.__data[key]
+
+    def get_field(self, key, field):
+        """
+        Returns the specified field from the data tuple for @p key. The valid
+        values for @p field are @c TYPE, @c REQUIRED, @c DEFAULT and @c VALUE.
+        """
+        return self.__data[key][field]
+
     def __getitem__(self, key):
         """Gets the current value of an attribute."""
         return self.__data[key][AVM.VALUE]
@@ -34,9 +46,6 @@ class AVM(object):
         self.__data[key][AVM.VALUE] = value
 
     def __iter__(self):
+        """Iterates through the attribute keys."""
         return self.__data.__iter__()
-
-    def get_field(self, key, field):
-        return self.__data[key][field]
-
 
