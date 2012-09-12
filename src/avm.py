@@ -8,7 +8,7 @@ class AVM(object):
     def __init__(self):
         self.__data = {}  # {key: [type, required, default_value, value]}
 
-    def add_field(self, key, datatype, required=False, default_value=None):
+    def add_attribute(self, key, datatype, required=False, default_value=None):
         if not isinstance(required, bool):
             raise ValueError("required must be a bool, not " + type(required))
         if not isinstance(datatype, Matcher):
@@ -35,3 +35,8 @@ class AVM(object):
 
     def __iter__(self):
         return self.__data.__iter__()
+
+    def get_field(self, key, field):
+        return self.__data[key][field]
+
+

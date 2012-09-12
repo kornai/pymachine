@@ -11,6 +11,7 @@ from machine import Machine
 from monoid import Monoid
 from control import PosControl, ElviraPluginControl
 from constants import deep_cases
+from avm import AVM
 
 class Construction(object):
     SEMANTIC, CHUNK, AVM = xrange(3)  # types
@@ -207,7 +208,7 @@ class AVMConstruction(Construction):
     def generate_phi(self):
         phi = {}
         for key in self.avm:
-            matcher, _, _, _ = self.avm[key]
+            matcher = self.avm.get_field(key, AVM.TYPE)
             phi[matcher] = key
         return phi
 
@@ -218,7 +219,7 @@ class AVMConstruction(Construction):
         state_num = 1
         for key in self.avm:
             state_name = str(state_num)
-            matcher, _, _, _ = self.avm[key]
+            matcher = self.avm.get_field(key, AVM.TYPE)
             control.add_state(state_name, is_init=False, is_final=True)
             control.add_transition(matcher, "0", state_name)
             state_num += 1
