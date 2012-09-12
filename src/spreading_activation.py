@@ -47,7 +47,7 @@ class SpreadingActivation(object):
         chunk_constructions = set([c for c in self.lexicon.constructions
                                    if c.type_ == Construction.CHUNK])
         semantic_constructions = set([c for c in self.lexicon.constructions
-                                      if not c.type_ == Construction.SEMANTIC])
+                                      if c.type_ == Construction.SEMANTIC])
         avm_constructions = set([c for c in self.lexicon.constructions
                                    if c.type_ == Construction.AVM])
 
