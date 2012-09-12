@@ -65,7 +65,7 @@ class SpreadingActivation(object):
                                     c_res = c.act(part)
                                     if c_res is not None:
                                         change = True
-                                        chunk[begin:end] = [c_res]  # c_res should be a single machine
+                                        chunk[begin:end] = c_res  # c_res should contain a single machine here (?)
                                         raise ValueError  # == break outer
                 except ValueError:
                     pass
