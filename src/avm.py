@@ -33,3 +33,5 @@ class AVM(object):
         """Sets the current value of an attribute."""
         self.__data[key][AVM.VALUE] = value
 
+    def __iter__(self):
+        return self.__data.__iter__()
