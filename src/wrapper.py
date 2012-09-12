@@ -6,6 +6,7 @@ from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
 from construction import *
 from sup_dic import supplementary_dictionary_reader as sdreader
+from avm import AVM
 
 config_filename = "machine.cfg"
 
@@ -43,7 +44,7 @@ class Wrapper:
             megy_construction = VerbConstruction("megy", self.lexicon.static[
                 "megy"], self.supp_dict)
             del self.lexicon.static["megy"]
-            self.lexicon.add_construction(megy_construction)
+            #self.lexicon.add_construction(megy_construction)
         except KeyError:
             pass
         try:
@@ -53,13 +54,20 @@ class Wrapper:
             self.lexicon.add_construction(tesz_construction)
         except KeyError:
             pass
-        self.lexicon.add_construction(ElviraConstruction())
+        #self.lexicon.add_construction(ElviraConstruction())
 
         self.lexicon.add_construction(DummyNPConstruction())
         self.lexicon.add_construction(TheConstruction())
         self.lexicon.add_construction(MaxNP_InBetweenPostP_Construction())
         self.lexicon.add_construction(PostPConstruction())
-        
+
+        elvira_avm = AVM()
+        elvira_avm.add_attribute("vonat", PrintnameMatcher("vonat"), True, None)
+        elvira_avm.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
+        elvira_avm.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, None)
+        elvira_avm.add_attribute("tgt", self.supp_dict["@HUN_GO_TGT"], True, None)
+        elvira_const = AVMConstruction(elvira_avm, "ElviraAvmConstruction")
+        self.lexicon.add_construction(elvira_const)
 
         # TODO create shrdlu construction
 
