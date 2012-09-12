@@ -132,11 +132,13 @@ class SpreadingActivation(object):
 
             # Step 2b: AVM constructions
             for c in avm_constructions:
+                logging.debug("AVM {0} before: {1}".format(c.name, unicode(c.avm)))
                 for m in self.lexicon.active_machines():
                     if c.check([m]):
                         c.act([m])
                         if c.avm.satisfied():
                             plugin_found = True
+                logging.debug("AVM {0} after: {1}".format(c.name, unicode(c.avm)))
 
             # Step 3: activation
             self.lexicon.activate()

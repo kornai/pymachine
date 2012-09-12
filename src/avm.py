@@ -49,3 +49,6 @@ class AVM(object):
         """Iterates through the attribute keys."""
         return self.__data.__iter__()
 
+    def __unicode__(self):
+        return unicode(self.__data)
+
