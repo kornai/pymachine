@@ -1,7 +1,6 @@
 """Attribute-value matrix."""
 
 from matcher import Matcher
-from StringIO import StringIO
 
 class AVM(object):
     TYPE, REQUIRED, DEFAULT, VALUE = xrange(4)
@@ -37,6 +36,10 @@ class AVM(object):
         values for @p field are @c TYPE, @c REQUIRED, @c DEFAULT and @c VALUE.
         """
         return self.__data[key][field]
+
+    def get_dict(self):
+        """Returns the attribute-value dictionary in a Python dict."""
+        return dict((k, v[AVM.VALUE]) for k, v in self.__data.iteritems())
 
     def __getitem__(self, key):
         """Gets the current value of an attribute."""
