@@ -180,7 +180,7 @@ class DefinitionParser:
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
                 m.append(self.__parse_expr(expr[0], m, root), 1)
-                m.append(root, 2)
+                #m.append(root, 2)
                 return m
 
             # BE -> B A
@@ -188,7 +188,7 @@ class DefinitionParser:
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
                 m.append(self.__parse_expr(expr[1], m, root), 2)
-                m.append(root, 1)
+                #m.append(root, 1)
                 return m
 
             # BE -> 'B
@@ -313,7 +313,8 @@ def read(f):
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
