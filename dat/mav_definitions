@@ -1,30 +1,29 @@
-1 bksz N # # #: bksz
-2 bkv N # # #: bksz
+1 bksz N # # #: 
 
-11 elso3oszta1ly N # # #: first_class
-12 ma1sodoszta1ly N # # #: second_class
+11 elso3oszta1ly N first_class # #: 
+12 ma1sodoszta1ly N second_class # #: 
 
-21 intercity N # # #: train
-22 ic N # # #: intercity
+20 vonat N train # #: 
+21 intercity N intercity # #: train, reservation
 
-31 sza1mla N # # #: invoice
+31 sza1mla N invoice # #: 
 
-40 hely N # # #: place, window IS_A
-41 ablak N # # #: window
+40 hely N seat # #: window IS_A, face_front IS_A
+41 ablak N window # #: 
+42 menetira1ny N face_front # #: 
 
-50 kedvezme1ny N # # #: reduction
-51 mav_kedvezme1ny N # # #: reduction, student IS_A, start IS_A, pensioner IS_A, civil_servant IS_A, 33 IS_A, 50 IS_A, 75 IS_A, 90 IS_A
-52 dia1k N # # #: student
-53 start N # # #: start
-54 start_ka1rtya N # # #: start
-55 nyugdi1jas N # # #: pensioner
-56 ko2zalkalmazott N # # #: civil_servant
+50 kedvezme1ny N reduction # #: 
+51 mav_kedvezme1ny N mav_reduction # #: reduction, train, student IS_A, start_card IS_A, pensioner IS_A, civil_servant IS_A, 33 IS_A, 50 IS_A, 75 IS_A, 90 IS_A
+52 dia1k N student # #: 
+53 start_ka1rtya N start_card # #: 
+55 nyugdi1jas N pensioner # #: 
+56 ko2zalkalmazott N civil_servant # #: 
 
-60 jegyti1pus N # # #: ticket_type
-61 menette1rti N # # #: ticket_type, return
-62 retu1r N # # #: ticket_type, return
-63 csak_oda N # # #: ticket_type
+60 jegyti1pus N ticket_type # #: round_trip IS_A, one_way IS_A
+61 menette1rti N round_trip # #: ticket_type
+63 csak_oda N one_way # #: ticket_type
 
-71 jegy N # # #: ticket_type
-72 helyjegy N # # #: ticket_type, place_ticket
-73 be1rlet N # # #: ticket_type, pass
+70 jegy N ticket # #: 
+71 vonatjegy N train_ticket # #: ticket, train
+72 helyjegy N seat_reservation # #: ticket, train, reservation, seat
+73 be1rlet N pass # #: ticket, train, pass
