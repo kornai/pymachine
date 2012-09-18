@@ -35,3 +35,16 @@ class ConceptMatcher(PrintnameMatcher):
         else:
             return False
 
+class EnumMatcher(Matcher):
+    def __init__(self, enum_name, lexicon):
+        self.name = enum_name
+        self.machine_names = self.collect_machines(lexicon)
+
+    def collect_machines(self, lexicon):
+        cm = lexicon.static[self.name]
+        return set([str(m.base.partitions[1][0]) for m in cm.base.partitions[1]
+                if m.printname() == "IS_A"])
+
+    def match(self, machine):
+        return str(machine) in self.machine_names
+
