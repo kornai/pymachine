@@ -61,13 +61,38 @@ class Wrapper:
         self.lexicon.add_construction(MaxNP_InBetweenPostP_Construction())
         self.lexicon.add_construction(PostPConstruction())
 
-        elvira_avm = AVM()
-        elvira_avm.add_attribute("vonat", PrintnameMatcher("vonat"), True, None)
-        elvira_avm.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
-        elvira_avm.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, None)
-        elvira_avm.add_attribute("tgt", self.supp_dict["@HUN_GO_TGT"], True, None)
-        elvira_const = AVMConstruction(elvira_avm, "ElviraAvmConstruction")
+        ea = elvira_avm = AVM()
+        ea.add_attribute("vonat", PrintnameMatcher("vonat"), True, None)
+        ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
+        ea.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, None)
+        ea.add_attribute("tgt", self.supp_dict["@HUN_GO_TGT"], True, None)
+        elvira_const = AVMConstruction(ea, "ElviraAvmConstruction")
         self.lexicon.add_construction(elvira_const)
+
+        pta = plain_ticket_avm = AVM()
+        pt_const = AVMConstruction(pta, "PlainTicketAvmConstruction")
+        pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
+        pta.add_attribute("CLASS", EnumMatcher("class", lexicon), True, None)
+        pta.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
+        pta.add_attribute("INV", PrintnameMatcher("invoice"), True, None)
+        pta.add_attribute("RED", EnumMatcher("mav_reduction"), True, None)
+        pta.add_attribute("RET", EnumMatcher("ticket_type"), True, "one_way")
+        pta.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
+                         "Budapest")
+        self.lexicon.add_construction(pt_const)
+
+        ita = ic_ticket_avm = AVM()
+        it_const = AVMConstruction(pta, "ICTicketAvmConstruction")
+        ita.add_attribute("BKSZ", PrintnameMatcher("bksz"), False, None)
+        ita.add_attribute("CLASS", EnumMatcher("class", lexicon), True, None)
+        ita.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
+        ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
+        ita.add_attribute("RED", EnumMatcher("mav_reduction"), True, 
+                         "full_price")
+        ita.add_attribute("RET", EnumMatcher("ticket_type"), False, "one_way")
+        ita.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
+                         "Budapest")
+        self.lexicon.add_construction(it_const)
 
         # TODO create shrdlu construction
 
