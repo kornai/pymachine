@@ -5,6 +5,7 @@ from lexicon import Lexicon
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
 from construction import *
+from matcher import *
 from sup_dic import supplementary_dictionary_reader as sdreader
 from avm import AVM
 
@@ -72,7 +73,7 @@ class Wrapper:
         pta = plain_ticket_avm = AVM()
         pt_const = AVMConstruction(pta, "PlainTicketAvmConstruction")
         pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
-        pta.add_attribute("CLASS", EnumMatcher("class", lexicon), True, None)
+        pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
         pta.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         pta.add_attribute("INV", PrintnameMatcher("invoice"), True, None)
         pta.add_attribute("RED", EnumMatcher("mav_reduction"), True, None)
@@ -84,7 +85,7 @@ class Wrapper:
         ita = ic_ticket_avm = AVM()
         it_const = AVMConstruction(pta, "ICTicketAvmConstruction")
         ita.add_attribute("BKSZ", PrintnameMatcher("bksz"), False, None)
-        ita.add_attribute("CLASS", EnumMatcher("class", lexicon), True, None)
+        ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
         ita.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
         ita.add_attribute("RED", EnumMatcher("mav_reduction"), True, 
