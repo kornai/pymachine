@@ -1,3 +1,4 @@
+import os
 import ConfigParser
 
 from sentence_parser import SentenceParser
