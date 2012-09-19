@@ -25,7 +25,8 @@ class Wrapper:
         config = ConfigParser.SafeConfigParser({"machinepath": machinepath})
         config.read(self.cfn)
         items = dict(config.items("machine"))
-        self.def_files = [s.strip() for s in items["definitions"].split(",")]
+        self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
+            for s in items["definitions"].split(",")]
         self.supp_dict_fn = items["supp_dict"]
 
     def __read_files(self):
@@ -33,8 +34,8 @@ class Wrapper:
         self.__read_supp_dict()
 
     def __read_definitions(self):
-        for f in self.def_files:
-            definitions = read_defs(file(f))
+        for file_name, printname_index in self.def_files:
+            definitions = read_defs(file(file_name), printname_index)
             self.lexicon.add_static(definitions.itervalues())
 
     def __read_supp_dict(self):

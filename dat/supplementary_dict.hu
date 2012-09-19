@@ -5,3 +5,4 @@ HUN_GO_SRC N.*<CAS<DEL>> #-ro3l
 HUN_GO_SRC N.*<CAS<ELA>> #-bo1l
 HUN_GO_TGT N.*<CAS<SBL>> #-ra
 HUN_GO_TGT N.*<CAS<ILL>> #-ba
+HUN_NOM N.*(?!.*CAS) # NOM is not written as CAS

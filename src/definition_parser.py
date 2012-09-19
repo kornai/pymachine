@@ -283,17 +283,17 @@ class DefinitionParser:
         for d in definition:
             yield self.__parse_expr(d, parent, root)
     
-    def parse_into_machines(self, s):
+    def parse_into_machines(self, s, printname_index=0):
         parsed = self.parse(s)
         
         # HACK printname is now set to hungarian
-        machine = create_machine(parsed[1][0], 1)
+        machine = create_machine(parsed[1][printname_index], 1)
         if len(parsed) > 2:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 1)
         return machine
 
-def read(f):
+def read(f, printname_index=0):
     d = {}
     dp = DefinitionParser()
     for line in f:
@@ -304,7 +304,7 @@ def read(f):
         if l.startswith("#"):
             continue
         try:
-            m = dp.parse_into_machines(l)
+            m = dp.parse_into_machines(l, printname_index)
             d[m.printname()] = m
         except pyparsing.ParseException, pe:
             print l
