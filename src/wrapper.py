@@ -1,3 +1,4 @@
+import os
 import ConfigParser
 
 from sentence_parser import SentenceParser
@@ -9,10 +10,8 @@ from matcher import *
 from sup_dic import supplementary_dictionary_reader as sdreader
 from avm import AVM
 
-config_filename = "machine.cfg"
-
 class Wrapper:
-    def __init__(self, cf=config_filename):
+    def __init__(self, cf):
         self.cfn = cf
         self.__read_config()
 
@@ -21,10 +20,14 @@ class Wrapper:
         self.__add_constructions()
 
     def __read_config(self):
-        config = ConfigParser.SafeConfigParser()
+        machinepath = os.path.realpath(__file__).rsplit("/", 2)[0]
+        if "MACHINEPATH" in os.environ:
+            machinepath = os.environ["MACHINEPATH"]
+        config = ConfigParser.SafeConfigParser({"machinepath": machinepath})
         config.read(self.cfn)
         items = dict(config.items("machine"))
-        self.def_fn = items["definitions"]
+        self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
+            for s in items["definitions"].split(",")]
         self.supp_dict_fn = items["supp_dict"]
 
     def __read_files(self):
@@ -32,8 +35,9 @@ class Wrapper:
         self.__read_supp_dict()
 
     def __read_definitions(self):
-        definitions = read_defs(file(self.def_fn))
-        self.lexicon.add_static(definitions.itervalues())
+        for file_name, printname_index in self.def_files:
+            definitions = read_defs(file(file_name), printname_index)
+            self.lexicon.add_static(definitions.itervalues())
 
     def __read_supp_dict(self):
         self.supp_dict = sdreader(file(self.supp_dict_fn))
@@ -73,22 +77,24 @@ class Wrapper:
         pta = plain_ticket_avm = AVM()
         pt_const = AVMConstruction(pta, "PlainTicketAvmConstruction")
         pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
-        pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
+        pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
+                          True, None)
         pta.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         pta.add_attribute("INV", PrintnameMatcher("invoice"), True, None)
-        pta.add_attribute("RED", EnumMatcher("mav_reduction"), True,
-                          "full_price")
-        pta.add_attribute("RET", EnumMatcher("ticket_type"), True, "one_way")
+        pta.add_attribute("RED", EnumMatcher("mav_reduction", self.lexicon),
+                          True, "full_price")
+        pta.add_attribute("RET", EnumMatcher("ticket_type", self.lexicon),
+                          True, "one_way")
         pta.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
                          "Budapest")
         self.lexicon.add_construction(pt_const)
 
         ita = ic_ticket_avm = AVM()
         it_const = AVMConstruction(pta, "ICTicketAvmConstruction")
-        ita.add_attribute("CLASS", EnumMatcher("class", lexicon), True, None)
+        ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
         ita.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
-        ita.add_attribute("PLACE", EnumMatcher("seat", lexicon), False, None)
+        ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), False, None)
         ita.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
                          "Budapest")
         ita.add_attribute("TIME", PosMatcher("Timex"), False, None)
