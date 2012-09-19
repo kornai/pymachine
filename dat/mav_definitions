@@ -1,4 +1,4 @@
-1 bksz N # # #: 
+1 bksz N bksz # #: 
 
 10 oszta1ly N class # #: first_class IS_A, second_class IS_A
 11 elso3oszta1ly N first_class # #: class
