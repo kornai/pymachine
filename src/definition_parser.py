@@ -36,6 +36,8 @@ class DefinitionParser:
     prime = "'"
     hyphen = "-"
     at = "@"
+    dollar = "#"
+    hashmark = "*"
     unary_p = re.compile("^[a-z_#\-/0-9]+$")
     binary_p = re.compile("^[A-Z_]+$")
 
@@ -71,6 +73,8 @@ class DefinitionParser:
         self.prime_lit = Literal(DefinitionParser.prime)
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
         self.at_lit = Literal(DefinitionParser.at)
+        self.hashmark_lit = Literal(DefinitionParser.hashmark)
+        self.dollar_lit = Literal(DefinitionParser.dollar)
         
         self.deep_cases = reduce(lambda a, b: a | b,
             (Literal(dc) for dc in deep_cases))
@@ -78,7 +82,8 @@ class DefinitionParser:
         self.unary = Combine(Optional("-") + Word(string.lowercase + "_" + nums) +
                              Optional(Word(nums))) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
-        self.syntax_supp = self.at_lit + Word(string.uppercase + "_")
+        self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
+        self.syntax_avm = self.dollar_lit + Word(string.ascii_letters + "_")
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -129,6 +134,9 @@ class DefinitionParser:
 
             # UE -> SS
             (self.syntax_supp) ^
+
+            # UE -> AVM
+            (self.syntax_avm) ^
 
             # UE -> U [ D ]
             (self.unary + self.lb_lit + self.definition + self.rb_lit) ^
@@ -214,8 +222,12 @@ class DefinitionParser:
                 return None
 
             # UE -> SS
-            if (expr[0] == cls.at):
-                return create_machine(cls.at + expr[1], 1)
+            if (expr[0] == cls.dollar):
+                return create_machine(cls.dollar + expr[1], 1)
+
+            # UE -> AVM
+            if (expr[0] == cls.hashmark):
+                return create_machine(cls.hashmark + expr[1], 1)
 
 
         if (len(expr) == 3):
@@ -307,7 +319,7 @@ def read(f, printname_index=0):
         logging.info("Parsing: {0}".format(l))
         if len(l) == 0:
             continue
-        if l.startswith("#"):
+        if l.startswith("%"):
             continue
         try:
             m = dp.parse_into_machines(l, printname_index)
