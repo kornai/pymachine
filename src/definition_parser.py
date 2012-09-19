@@ -1,6 +1,7 @@
 import logging
 import sys
 import string
+import re
 
 try:
     import pyparsing
@@ -35,18 +36,23 @@ class DefinitionParser:
     prime = "'"
     hyphen = "-"
     at = "@"
+    unary_p = re.compile("^[a-z_#\-/0-9]+$")
+    binary_p = re.compile("^[A-Z_]+$")
 
     def __init__(self):
         self.init_parser()
 
     @classmethod
     def _is_binary(cls, s):
-        return type(s) in cls._str and s.isupper() and not s in deep_cases
+        return (type(s) in cls._str and
+               (cls.binary_p.match(s) is not None
+                and not s in deep_cases))
     
     @classmethod
     def _is_unary(cls, s):
-        # TODO unaries can contain hyphens
-        return type(s) in cls._str and s.islower() or s in deep_cases
+        return (type(s) in cls._str and
+               (cls.unary_p.match(s) is not None
+                or s in deep_cases))
     
     @classmethod
     def _is_deep_case(cls, s):
@@ -69,7 +75,7 @@ class DefinitionParser:
         self.deep_cases = reduce(lambda a, b: a | b,
             (Literal(dc) for dc in deep_cases))
         
-        self.unary = Combine(Optional("-") + Word(string.lowercase + "_") +
+        self.unary = Combine(Optional("-") + Word(string.lowercase + "_" + nums) +
                              Optional(Word(nums))) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
         self.syntax_supp = self.at_lit + Word(string.uppercase + "_")
@@ -180,7 +186,7 @@ class DefinitionParser:
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
                 m.append(self.__parse_expr(expr[0], m, root), 1)
-                #m.append(root, 2)
+                m.append(root, 2)
                 return m
 
             # BE -> B A
@@ -188,7 +194,7 @@ class DefinitionParser:
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
                 m.append(self.__parse_expr(expr[1], m, root), 2)
-                #m.append(root, 1)
+                m.append(root, 1)
                 return m
 
             # BE -> 'B
