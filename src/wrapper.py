@@ -21,7 +21,10 @@ class Wrapper:
         self.__add_constructions()
 
     def __read_config(self):
-        config = ConfigParser.SafeConfigParser()
+        machinepath = os.path.realpath(__file__).rsplit("/", 2)[0]
+        if "MACHINEPATH" in os.environ:
+            machinepath = os.environ["MACHINEPATH"]
+        config = ConfigParser.SafeConfigParser({"machinepath": machinepath})
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_fn = items["definitions"]
