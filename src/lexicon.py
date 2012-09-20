@@ -6,7 +6,7 @@ import copy
 from machine import Machine
 from monoid import Monoid
 from control import ElviraPluginControl, ConceptControl
-from construction import Construction
+from construction import Construction, AVMConstruction
 
 class Lexicon:
     """THE machine repository."""
@@ -18,19 +18,10 @@ class Lexicon:
         self.active = {}
         # Constructions
         self.constructions = []
+        # AVM name -> construction. Not used by default, have to be added to
+        # self.constructions first via activation
+        self.avm_constructions = {}
 #        self.create_elvira_machine()
-
-    def create_elvira_machine(self):
-        logging.warning("Elvira machine is created right " +
-                        "now at init of Lexicon, HACKHACKHACK")
-        # HACK
-        elvira_control = ElviraPluginControl()
-        elvira_machine = Machine(Monoid("elvira"), elvira_control)
-        elvira_machine.append("BEFORE_AT")
-        elvira_machine.append("AFTER_AT")
-        elvira_machine.append("vonat")
-        elvira_machine.append("menetrend")
-        self.static["elvira"] = elvira_machine
 
     def __add_active_machine(self, m, expanded=False):
         """Helper method for add_active()"""
@@ -64,12 +55,30 @@ class Lexicon:
                 self.add_static(m)
 
     def add_construction(self, what):
-        """Adds construction(s) to the lexicon."""
+        """
+        Adds construction(s) to the lexicon.
+        @param what a construction, or an iterable thereof.
+        """
         if isinstance(what, Construction):
             self.constructions.append(what)
         elif isinstance(what, Iterable):
             for c in what:
-                self.constructions.append(c)
+                if isinstance(what, Construction):
+                    self.constructions.append(c)
+
+    def add_avm_construction(self, what):
+        """
+        Adds an AVM construction. Constructions added via this function are
+        in a 'dormant' state, which can only be changed by the activation
+        algorithm.
+        @param what an AVM construction, or an iterable thereof.
+        """
+        if isinstance(what, AVMConstruction):
+            self.avm_constructions[what.name] = what
+        elif isinstance(what, Iterable):
+            for c in what:
+                if isinstance(what, AVMConstruction):
+                    self.avm_constructions[c.name] = c
 
     def expand(self, machine):
         """expanding a machine
@@ -117,6 +126,9 @@ class Lexicon:
                 # FIXME: [0] is a hack, fix it 
                 return self.active[static_machine].keys()[0]
             else:
+                if static_machine.startswith('#'):
+                    self.wake_avm_construction(static_machine)
+                    return None
                 active_machine = Machine(Monoid(static_machine), ConceptControl())
                 self.__add_active_machine(active_machine)
                 return active_machine
@@ -127,6 +139,9 @@ class Lexicon:
             if static_name in self.active:
                 active_machine = self.active[static_name].keys()[0]
             else:
+                if static_name.startswith('#'):
+                    self.wake_avm_construction(static_name)
+                    return None
                 active_machine = Machine(Monoid(static_name))
                 active_control = copy.deepcopy(static_machine.control)
                 active_machine.set_control(active_control)
@@ -139,10 +154,21 @@ class Lexicon:
                 part_index = i + 1
                 for ss_machine in part:
                     as_machine = self.unify_recursively(ss_machine, stop)
-                    active_machine.append(as_machine, part_index)
+                    if as_machine is not None:
+                        active_machine.append(as_machine, part_index)
             return active_machine
         else:
             raise TypeError('static_machine must be a Machine or a str')
+
+    def wake_avm_construction(self, avm_name):
+        """
+        Copies an AVM construction from @c avm_constructions to @c constructions
+        (that is, "wakes" it up).
+        """
+        avm_construction = self.avm_constructions.get(avm_name)
+        # TODO
+        if avm_construction is not None and avm_construction not in self.constructions:
+            self.constructions.append(avm_construction)
 
     def activate(self):
         """Finds and returns the machines that should be activated by the
@@ -160,7 +186,8 @@ class Lexicon:
             has_machine = False
             for machine in chain(*static_machine.base.partitions[1:]):
                 has_machine = True
-                if unicode(machine) not in self.active:
+                if (not unicode(machine).startswith(u'#') and
+                    unicode(machine) not in self.active):
                     break
             else:
                 if has_machine:
