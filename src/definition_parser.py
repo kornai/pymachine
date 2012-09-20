@@ -39,8 +39,8 @@ class DefinitionParser:
     prime = "'"
     hyphen = "-"
     at = "@"
-    dollar = "#"
-    hashmark = "*"
+    dollar = "$"
+    hashmark = "#"
     unary_p = re.compile("^[a-z_#\-/0-9]+$")
     binary_p = re.compile("^[A-Z_]+$")
 
@@ -86,7 +86,7 @@ class DefinitionParser:
                              Optional(Word(nums))) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
         self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
-        self.syntax_avm = self.dollar_lit + Word(string.ascii_letters + "_")
+        self.syntax_avm = self.hashmark_lit+ Word(string.ascii_letters + "_")
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
