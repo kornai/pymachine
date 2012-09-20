@@ -18,7 +18,7 @@ from constants import deep_cases
 from control import ConceptControl
 
 def create_machine(name, partitions):
-    return Machine(Monoid(proszeky_to_utf(name).decode("utf-8"), partitions),
+    return Machine(Monoid(proszeky_to_utf(name), partitions),
                    ConceptControl())
 
 class ParserException(Exception):
