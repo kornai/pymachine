@@ -103,7 +103,7 @@ class Wrapper:
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), False, None)
         ita.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
                          "Budapest")
-        ita.add_attribute("TIME", PosMatcher("Timex"), False, None)
+        ita.add_attribute("TIME", PosMatcher("[TIME]$"), False, None)
         self.lexicon.add_construction(it_const)
 
         # TODO create shrdlu construction
