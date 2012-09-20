@@ -199,11 +199,11 @@ class VerbConstruction(Construction):
 
 class AVMConstruction(Construction):
     """this class will fill the slots in the AVM"""
-    def __init__(self, avm, name):
+    def __init__(self, avm):
         self.avm = avm
         self.phi = self.generate_phi()
         control = self.generate_control()
-        Construction.__init__(self, name, control, type_=Construction.AVM)
+        Construction.__init__(self, avm.name() + 'Construction', control, type_=Construction.AVM)
 
     def generate_phi(self):
         phi = {}

@@ -48,8 +48,6 @@ class SpreadingActivation(object):
                                    if c.type_ == Construction.CHUNK])
         semantic_constructions = set([c for c in self.lexicon.constructions
                                       if c.type_ == Construction.SEMANTIC])
-        avm_constructions = set([c for c in self.lexicon.constructions
-                                   if c.type_ == Construction.AVM])
 
         # Chunk constructions are run here to form the phrase machines.
         for chunk in filter(lambda c: len(c) > 1, chunks):
@@ -130,6 +128,8 @@ class SpreadingActivation(object):
                     else:
                         del accepted[-1]
 
+            avm_constructions = set([c for c in self.lexicon.constructions
+                                     if c.type_ == Construction.AVM])
             # Step 2b: AVM constructions
             for c in avm_constructions:
                 logging.debug(u"AVM {0} before: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))

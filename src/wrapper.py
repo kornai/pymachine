@@ -72,16 +72,16 @@ class Wrapper:
         self.lexicon.add_construction(MaxNP_InBetweenPostP_Construction())
         self.lexicon.add_construction(PostPConstruction())
 
-        ea = elvira_avm = AVM()
+        ea = elvira_avm = AVM('ElviraAVM')
         ea.add_attribute("vonat", PrintnameMatcher("vonat"), True, None)
         ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
         ea.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, None)
         ea.add_attribute("tgt", self.supp_dict["@HUN_GO_TGT"], True, None)
-        elvira_const = AVMConstruction(ea, "ElviraAvmConstruction")
-        self.lexicon.add_construction(elvira_const)
+        elvira_const = AVMConstruction(ea)
+        self.lexicon.add_avm_construction(elvira_const)
 
-        pta = plain_ticket_avm = AVM()
-        pt_const = AVMConstruction(pta, "PlainTicketAvmConstruction")
+        pta = plain_ticket_avm = AVM('PlainTicketAvm')
+        pt_const = AVMConstruction(pta)
         pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
                           True, None)
@@ -93,10 +93,10 @@ class Wrapper:
                           True, "one_way")
         pta.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
                          "Budapest")
-        self.lexicon.add_construction(pt_const)
+        self.lexicon.add_avm_construction(pt_const)
 
-        ita = ic_ticket_avm = AVM()
-        it_const = AVMConstruction(pta, "ICTicketAvmConstruction")
+        ita = ic_ticket_avm = AVM('ICTicketAvm')
+        it_const = AVMConstruction(ita)
         ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
         ita.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
