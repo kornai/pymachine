@@ -1,4 +1,10 @@
 #!/bin/sh
+# generates a language specific definition file from
+# concepts (based on concept printnames), and a hand-written
+# language-specific file with concatenation
+
+# WARNING: now only hungarian printnames will work, because
+# index is hard-coded. See cut -f
 concept_definitions=$1
 langspec_definitions=$2
 out=$3
