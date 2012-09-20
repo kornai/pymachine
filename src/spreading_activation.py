@@ -70,8 +70,10 @@ class SpreadingActivation(object):
 
         # This condition will not work w/ the full lexicon, obviously.
         while not plugin_found:
-            dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
-            logging.debug("\n\nLOOP:" + str(last_active) + ' ' + dbg_str + "\n\n")
+            active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
+            static_dbg_str = ', '.join(k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
+            logging.debug("\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str + "\n\n")
+            logging.debug("\n\nSTATIC:" + ' ' + static_dbg_str + "\n\n")
 #            logging.debug('ACTIVE')
 #            from machine import Machine
 #            for ac in self.lexicon.active.values():
@@ -123,6 +125,7 @@ class SpreadingActivation(object):
                         for m in c_res:
                             if isinstance(m.control, PluginControl):
                                 plugin_found = True
+                                logging.debug('Plugin found: ' + str(m))
                                 break
                         break
                     else:
@@ -138,6 +141,7 @@ class SpreadingActivation(object):
                         c.act([m])
                         if c.avm.satisfied():
                             plugin_found = True
+                            logging.debug('AVM found: ' + c.name)
                 logging.debug(u"AVM {0} after: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))
 
             # Step 3: activation

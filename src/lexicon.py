@@ -94,8 +94,8 @@ class Lexicon:
                             right now, but {0} is not active""".format(
                             printname))
         if printname not in self.static:
-            logging.warning("expanding a machine ({0}) that is not in " + 
-                            "knowledge base ie. Lexicon.static".format(
+            logging.warning(("expanding a machine ({0}) that is not in " + 
+                            "knowledge base ie. Lexicon.static").format(
                             repr(printname)))
             self.active[printname][machine] = True
             return
@@ -112,23 +112,27 @@ class Lexicon:
         machine or a string.
         @param stop the set of machines already unified."""
         if stop is None:
-            logging.debug("unify_recursively: "
+            logging.debug("unify_recursively:\n"
                           + Machine.to_debug_str(static_machine))
             stop = set()
 
         # If we have already unified this machine: just return
         static_printname = static_machine.printname()
         if static_printname in stop:
+#            logging.debug('ur stops')
             return self.active[static_printname].keys()[0]
         # If static_machine is a string, we don't have much to do
         if isinstance(static_machine, str):
             if static_machine in self.active:
                 # FIXME: [0] is a hack, fix it 
+#                logging.debug('ur str in active')
                 return self.active[static_machine].keys()[0]
             else:
                 if static_machine.startswith('#'):
+#                    logging.debug('ur waking up')
                     self.wake_avm_construction(static_machine)
                     return None
+#                logging.debug('ur activating str')
                 active_machine = Machine(Monoid(static_machine), ConceptControl())
                 self.__add_active_machine(active_machine)
                 return active_machine
@@ -137,11 +141,14 @@ class Lexicon:
             static_name = static_machine.printname()
 
             if static_name in self.active:
+#                logging.debug('ur machine in active')
                 active_machine = self.active[static_name].keys()[0]
             else:
                 if static_name.startswith('#'):
+#                    logging.debug('ur waking up')
                     self.wake_avm_construction(static_name)
                     return None
+#                logging.debug('ur activating machine')
                 active_machine = Machine(Monoid(static_name))
                 active_control = copy.deepcopy(static_machine.control)
                 active_machine.set_control(active_control)

@@ -4,7 +4,7 @@
 11 elso3oszta1ly N first_class # #: class
 12 ma1sodoszta1ly N second_class # #: class
 
-20 vonat N train # #: 
+% 20 vonat N train # #:  % We have it already in Elvira
 21 intercity N intercity # #: train, reservation
 
 31 sza1mla N invoice # #: 
