@@ -203,7 +203,7 @@ class AVMConstruction(Construction):
         self.avm = avm
         self.phi = self.generate_phi()
         control = self.generate_control()
-        Construction.__init__(self, avm.name() + 'Construction', control, type_=Construction.AVM)
+        Construction.__init__(self, avm.name + 'Construction', control, type_=Construction.AVM)
 
     def generate_phi(self):
         phi = {}

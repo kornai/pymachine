@@ -74,11 +74,11 @@ class Lexicon:
         @param what an AVM construction, or an iterable thereof.
         """
         if isinstance(what, AVMConstruction):
-            self.avm_constructions[what.avm.name()] = what
+            self.avm_constructions[what.avm.name] = what
         elif isinstance(what, Iterable):
             for c in what:
                 if isinstance(what, AVMConstruction):
-                    self.avm_constructions[c.avm.name()] = c
+                    self.avm_constructions[c.avm.name] = c
 
     def expand(self, machine):
         """expanding a machine

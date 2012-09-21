@@ -6,11 +6,8 @@ class AVM(object):
     TYPE, REQUIRED, DEFAULT, VALUE = xrange(4)
 
     def __init__(self, name):
-        self.__name = name
+        self.name = name
         self.__data = {}  # {key: [type, required, default_value, value]}
-
-    def name(self):
-        return self.__name
 
     def add_attribute(self, key, datatype, required=False, default_value=None):
         """Adds a new attribute to the "matrix"."""
