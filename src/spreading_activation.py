@@ -48,6 +48,7 @@ class SpreadingActivation(object):
                                    if c.type_ == Construction.CHUNK])
         semantic_constructions = set([c for c in self.lexicon.constructions
                                       if c.type_ == Construction.SEMANTIC])
+        avm_constructions = set()
 
         # Chunk constructions are run here to form the phrase machines.
         for chunk in filter(lambda c: len(c) > 1, chunks):
@@ -158,13 +159,10 @@ class SpreadingActivation(object):
         # TODO: add AVMs. What is the relation between AVMs and Plugins?
         logging.debug("\n\nENDE\n\n")
         ret = []
-        for m in self.lexicon.active_machines():
-            if isinstance(m.control, PluginControl):
-                # TODO: rename to activate() or sth and get rid of the
-                # call to isinstance()
-                msg = m.control.message()
-                if msg is not None:
-                    ret.append(msg)
+        for c in avm_constructions:
+            if c.avm.satisfied():
+                ret.append(c.avm.get_basic_dict())
+
         logging.debug('Returning ' + str(ret))
         return ret
 

@@ -1,6 +1,7 @@
 """Attribute-value matrix."""
 
 from matcher import Matcher
+from machine import Machine
 
 class AVM(object):
     TYPE, REQUIRED, DEFAULT, VALUE = xrange(4)
@@ -40,7 +41,20 @@ class AVM(object):
 
     def get_dict(self):
         """Returns the attribute-value dictionary in a Python dict."""
-        return dict((k, v[AVM.VALUE]) for k, v in self.__data.iteritems())
+        ret = dict((k, v[AVM.VALUE]) for k, v in self.__data.iteritems())
+        ret['__NAME__'] = self.name
+        return ret
+
+    def get_basic_dict(self):
+        """
+        Returns the attribute-value dictionary in a Python dict, all Machine
+        values replaced by their printnames.
+        """
+        ret = self.get_dict()
+        for k, v in ret.iteritems():
+            if isinstance(v, Machine):
+                ret[k] = unicode(v)
+        return ret
 
     def __getitem__(self, key):
         """Gets the current value of an attribute."""
