@@ -5,7 +5,7 @@
 12 ma1sodoszta1ly N second_class # #: class
 
 % 20 vonat N train # #:  % We have it already in Elvira
-21 intercity N intercity # #: train, reservation
+21 intercity N intercity # #: train, reservation, #ICTicketAvm
 
 31 sza1mla N invoice # #: 
 
