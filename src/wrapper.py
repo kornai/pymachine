@@ -86,6 +86,7 @@ class Wrapper:
         pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
                           True, None)
+        pta.add_attribute("DATE", PosMatcher("[DATE]$"), False, None)
         pta.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         pta.add_attribute("INV", PrintnameMatcher("invoice"), True, None)
         pta.add_attribute("RED", EnumMatcher("mav_reduction", self.lexicon),
@@ -99,12 +100,13 @@ class Wrapper:
         ita = ic_ticket_avm = AVM('ICTicketAvm')
         it_const = AVMConstruction(ita)
         ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
+        ita.add_attribute("DATE", PosMatcher("[DATE]$"), False, None)
         ita.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), False, None)
         ita.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
                          "Budapest")
-        ita.add_attribute("TIME", PosMatcher("[TIME]$"), False, None)
+        ita.add_attribute("TIME", PosMatcher("([TIME]|<DET>)$"), False, None)
         self.lexicon.add_avm_construction(it_const)
 
         # TODO create shrdlu construction
