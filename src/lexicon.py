@@ -74,11 +74,11 @@ class Lexicon:
         @param what an AVM construction, or an iterable thereof.
         """
         if isinstance(what, AVMConstruction):
-            self.avm_constructions[what.name] = what
+            self.avm_constructions[what.avm.name()] = what
         elif isinstance(what, Iterable):
             for c in what:
                 if isinstance(what, AVMConstruction):
-                    self.avm_constructions[c.name] = c
+                    self.avm_constructions[c.avm.name()] = c
 
     def expand(self, machine):
         """expanding a machine
@@ -122,6 +122,7 @@ class Lexicon:
 #            logging.debug('ur stops')
             return self.active[static_printname].keys()[0]
         # If static_machine is a string, we don't have much to do
+#        logging.debug('ur static_machine {0}, type: {1}'.format(str(static_machine), str(type(static_machine))))
         if isinstance(static_machine, str):
             if static_machine in self.active:
                 # FIXME: [0] is a hack, fix it 
@@ -139,11 +140,13 @@ class Lexicon:
         # If it's a machine, we create the corresponding active one
         elif isinstance(static_machine, Machine):
             static_name = static_machine.printname()
+#            logging.debug('Does {0} start with #? {1}'.format(static_name, static_name.startswith('#')))
 
             if static_name in self.active:
 #                logging.debug('ur machine in active')
                 active_machine = self.active[static_name].keys()[0]
             else:
+#                logging.debug('Not in active')
                 if static_name.startswith('#'):
 #                    logging.debug('ur waking up')
                     self.wake_avm_construction(static_name)
@@ -172,7 +175,7 @@ class Lexicon:
         Copies an AVM construction from @c avm_constructions to @c constructions
         (that is, "wakes" it up).
         """
-        avm_construction = self.avm_constructions.get(avm_name)
+        avm_construction = self.avm_constructions.get(avm_name[1:])
         # TODO
         if avm_construction is not None and avm_construction not in self.constructions:
             self.constructions.append(avm_construction)

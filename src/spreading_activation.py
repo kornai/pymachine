@@ -133,6 +133,8 @@ class SpreadingActivation(object):
 
             avm_constructions = set([c for c in self.lexicon.constructions
                                      if c.type_ == Construction.AVM])
+            active_avm_dbg_str = ', '.join(c.name.encode('utf-8') for c in avm_constructions)
+            logging.debug("\n\nAVM CONSTRUCTIONS:" + ' ' + active_avm_dbg_str + "\n\n")
             # Step 2b: AVM constructions
             for c in avm_constructions:
                 logging.debug(u"AVM {0} before: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))
@@ -147,10 +149,10 @@ class SpreadingActivation(object):
             # Step 3: activation
             self.lexicon.activate()
             unexpanded = list(self.lexicon.get_unexpanded())
-            if len(self.lexicon.active) == last_active:
+            if len(self.lexicon.active) + len(avm_constructions) == last_active:
                 break
             else:
-                last_active = len(self.lexicon.active)
+                last_active = len(self.lexicon.active) + len(avm_constructions)
 
         # Return messages to active plugins
         # TODO: add AVMs. What is the relation between AVMs and Plugins?
