@@ -41,9 +41,6 @@ class SpreadingActivation(object):
         self.lexicon.add_active(sentence)
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
-        # TODO: required bit to machines
-        # TODO: remove this
-        plugin_found = False
         chunk_constructions = set([c for c in self.lexicon.constructions
                                    if c.type_ == Construction.CHUNK])
         semantic_constructions = set([c for c in self.lexicon.constructions
@@ -69,8 +66,13 @@ class SpreadingActivation(object):
                 except ValueError:
                     pass
 
-        # This condition will not work w/ the full lexicon, obviously.
-        while not plugin_found:
+        # This condition works for the demo, but we need to find another one for
+        # the whole lexicon
+        plugin_found = False
+        safety_zone = 0
+        while not plugin_found or safety_zone < 5:
+            if plugin_found:
+                safety_zone += 1
             active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
             static_dbg_str = ', '.join(k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
             logging.debug("\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str + "\n\n")
