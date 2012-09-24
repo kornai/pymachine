@@ -76,7 +76,7 @@ class Wrapper:
         ea = elvira_avm = AVM('ElviraAVM')
         ea.add_attribute("vonat", PrintnameMatcher("vonat"), True, None)
         ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
-        ea.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, None)
+        ea.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, "Budapest")
         ea.add_attribute("tgt", self.supp_dict["@HUN_GO_TGT"], True, None)
         elvira_const = AVMConstruction(ea)
         self.lexicon.add_avm_construction(elvira_const)
@@ -84,7 +84,7 @@ class Wrapper:
         pta = plain_ticket_avm = AVM('PlainTicketAvm')
         pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
-                          True, None)
+                          True, "2")
         pta.add_attribute("DATE", PosMatcher("[DATE]$"), False, None)
         pta.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
         pta.add_attribute("INV", PrintnameMatcher("invoice"), True, None)
@@ -104,7 +104,7 @@ class Wrapper:
         ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), False, None)
         ita.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
-                         "Budapest")
+                         "Budapest-Nyugati")
         ita.add_attribute("TIME", PosMatcher("([TIME]|<DET>)$"), False, None)
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
