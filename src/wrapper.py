@@ -83,12 +83,12 @@ class Wrapper:
 
         pta = plain_ticket_avm = AVM('PlainTicketAvm')
         pt_const = AVMConstruction(pta)
-        pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
+        pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), False, None)
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
                           True, "2")
         pta.add_attribute("DATE", PosMatcher("[DATE]$"), False, None)
         pta.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
-        pta.add_attribute("INV", PrintnameMatcher("invoice"), True, None)
+        pta.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
         pta.add_attribute("RED", EnumMatcher("mav_reduction", self.lexicon),
                           True, "full_price")
         pta.add_attribute("RET", EnumMatcher("ticket_type", self.lexicon),
