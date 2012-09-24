@@ -82,7 +82,6 @@ class Wrapper:
         self.lexicon.add_avm_construction(elvira_const)
 
         pta = plain_ticket_avm = AVM('PlainTicketAvm')
-        pt_const = AVMConstruction(pta)
         pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), True, None)
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
                           True, None)
@@ -95,10 +94,10 @@ class Wrapper:
                           True, "one_way")
         pta.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
                          "Budapest")
-        self.lexicon.add_avm_construction(pt_const)
+        pt_const = AVMConstruction(pta)
+        self.lexicon.add_construction(pt_const)
 
         ita = ic_ticket_avm = AVM('ICTicketAvm')
-        it_const = AVMConstruction(ita)
         ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
         ita.add_attribute("DATE", PosMatcher("[DATE]$"), False, None)
         ita.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
@@ -107,6 +106,7 @@ class Wrapper:
         ita.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
                          "Budapest")
         ita.add_attribute("TIME", PosMatcher("([TIME]|<DET>)$"), False, None)
+        it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
 
         # TODO create shrdlu construction
