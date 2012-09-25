@@ -78,6 +78,7 @@ class Wrapper:
         ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
         ea.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, "Budapest")
         ea.add_attribute("tgt", self.supp_dict["@HUN_GO_TGT"], True, None)
+        ea.add_attribute("date", PosMatcher("\[DATE\]$"), False, None)
         elvira_const = AVMConstruction(ea)
         self.lexicon.add_avm_construction(elvira_const)
 
