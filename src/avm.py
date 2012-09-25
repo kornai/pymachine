@@ -68,7 +68,6 @@ class AVM(object):
 
     def __setitem__(self, key, value):
         """Sets the current value of an attribute."""
-        self.__data[key][AVM.VALUE] = value
         self.__data[key] = (self.__data[key][:AVM.VALUE] + (value,) +
                             self.__data[key][AVM.VALUE+1:])
 

@@ -37,6 +37,17 @@ class SpreadingActivation(object):
         # chunks contains the chunks of the sentence -- at the beginning, all
         # words are considered chunks, but then are merged by the syntactic
         # constructions
+
+        # Before we can do anything, we have to reset everything to the starting
+        # state. Currently this concerns only the AVM constructions.
+
+        avm_constructions = [c for c in self.lexicon.constructions
+                             if c.type_ == Construction.AVM]
+        for c in avm_constructions:
+            c.avm.clear()
+            if c in self.lexicon.avm_constructions.values():
+                self.lexicon.constructions.remove(c)
+
         sentence = itertools.chain(*chunks)
         self.lexicon.add_active(sentence)
         last_active = len(self.lexicon.active)
