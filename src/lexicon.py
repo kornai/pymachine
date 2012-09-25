@@ -234,5 +234,17 @@ class Lexicon:
         return [v.keys()[0] for v in self.active.values()]
 
     def clear_active(self):
+        """
+        Resets the lexicon to the default (inactive) state. Must be called
+        between activation phases.
+        """
         self.active = {}
+
+        # Resets the AVM constructions.
+        avm_constructions = [c for c in self.constructions
+                             if c.type_ == Construction.AVM]
+        for c in avm_constructions:
+            c.avm.clear()
+            if c in self.avm_constructions.values():
+                self.constructions.remove(c)
 
