@@ -40,11 +40,22 @@ class EnumMatcher(Matcher):
     def __init__(self, enum_name, lexicon):
         self.name = enum_name
         self.machine_names = self.collect_machines(lexicon)
+        logging.debug("EnumMatcher({0}) created with {1} machines".format(
+            self.name, " ".join(self.machine_names)))
 
     def collect_machines(self, lexicon):
         cm = lexicon.static[self.name]
-        return set([str(m.base.partitions[1][0]) for m in cm.base.partitions[1]
-                if m.printname() == "IS_A"])
+        machines_on_type =  set([str(m.base.partitions[1][0])
+            for m in cm.base.partitions[1] if m.printname() == "IS_A"])
+
+        all_machines = machines_on_type
+        for pn, m in lexicon.static.iteritems():
+            for child in m.base.partitions[1]:
+                if (child.printname() == "IS_A" and
+                    child.base.partitions[2][0] == self.name):
+                    all_machines.add(pn)
+                    break
+        return all_machines
 
     def match(self, machine):
         return str(machine) in self.machine_names
