@@ -60,7 +60,7 @@ class AVM(object):
         keys = self.__data.keys()
         for key in keys:
             datatype, required, default_value, _ = self.__data[key]
-            self.__data[key] = datatype, required, default_value, default_value
+            self.__data[key] = [datatype, required, default_value, default_value]
 
     def __getitem__(self, key):
         """Gets the current value of an attribute."""
@@ -68,8 +68,7 @@ class AVM(object):
 
     def __setitem__(self, key, value):
         """Sets the current value of an attribute."""
-        self.__data[key] = (self.__data[key][:AVM.VALUE] + (value,) +
-                            self.__data[key][AVM.VALUE+1:])
+        self.__data[key][AVM.VALUE] = value
 
     def __iter__(self):
         """Iterates through the attribute keys."""
