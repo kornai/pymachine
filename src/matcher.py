@@ -11,6 +11,7 @@ class Matcher(object):
             self.input_ = re.compile("{0}".format(string))
 
     def match(self, machine):
+        """@return a boolean."""
         raise NotImplementedError()
 
 class PrintnameMatcher(Matcher):
@@ -47,4 +48,23 @@ class EnumMatcher(Matcher):
 
     def match(self, machine):
         return str(machine) in self.machine_names
+
+class NotMatcher(Matcher):
+    """The boolean NOT operator."""
+    def __init__(self, matcher):
+        self.matcher = matcher
+
+    def match(self, machine):
+        return not self.matcher.match(machine)
+
+class AndMatcher(Matcher):
+    """The boolean AND operator."""
+    def __init__(self, *matchers):
+        self.matchers = matchers
+
+    def match(self, machine):
+        for m in self.matchers:
+            if not m.match(machine):
+                return False
+        return True
 
