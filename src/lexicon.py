@@ -116,6 +116,8 @@ class Lexicon:
                           + Machine.to_debug_str(static_machine))
             stop = set()
 
+        if unicode(static_machine) == u'IS_A':
+            return None
         # If we have already unified this machine: just return
         static_printname = static_machine.printname()
         if static_printname in stop:
