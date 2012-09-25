@@ -56,6 +56,12 @@ class AVM(object):
                 ret[k] = unicode(v)
         return ret
 
+    def clear(self):
+        keys = self.__data.keys()
+        for key in keys:
+            datatype, required, default_value, _ = self.__data[key]
+            self.__data[key] = datatype, required, default_value, default_value
+
     def __getitem__(self, key):
         """Gets the current value of an attribute."""
         return self.__data[key][AVM.VALUE]
