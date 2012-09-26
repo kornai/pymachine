@@ -75,7 +75,7 @@ class Wrapper:
         self.lexicon.add_construction(PostPConstruction())
 
         station_matcher = FileContainsMatcher(self.stations_fn)
-        ic_name_matcher = EnumMatcher("intercity", self.lexicon)
+        ic_name_matcher = EnumMatcher("ic_name", self.lexicon)
         src_matcher = AndMatcher(self.supp_dict["@HUN_GO_SRC"],
                                  station_matcher)
         tgt_matcher = AndMatcher(self.supp_dict["@HUN_GO_TGT"],
@@ -119,7 +119,7 @@ class Wrapper:
         ita.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), AVM.ROPT, None)
         ita.add_attribute("SRC", src_matcher, AVM.RREQ, "Budapest-Nyugati")
-        ita.add_attribute("TIME", AndMatcher(PosMatcher("\[TIME\]$"),
+        ita.add_attribute("TIME", OrMatcher(PosMatcher("\[TIME\]$"),
                                              ic_name_matcher), AVM.ROPT, None)
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
