@@ -81,38 +81,46 @@ class Wrapper:
         tgt_matcher = AndMatcher(self.supp_dict["@HUN_GO_TGT"],
                                  station_matcher)
         ea = elvira_avm = AVM('ElviraAVM')
-        ea.add_attribute("vonat", PrintnameMatcher("vonat"), True, None)
-        ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
-        ea.add_attribute("src", src_matcher, True, "Budapest")
-        ea.add_attribute("tgt", tgt_matcher, True, None)
-        ea.add_attribute("date", PosMatcher("\[DATE\]$"), False, None)
+        ea.add_attribute("vonat", PrintnameMatcher("vonat"), AVM.RREQ, None)
+        ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), AVM.RREQ, None)
+        ea.add_attribute("src", src_matcher, AVM.RREQ, "Budapest")
+        ea.add_attribute("tgt", tgt_matcher, AVM.RREQ, None)
+        ea.add_attribute("date", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
         elvira_const = AVMConstruction(ea)
         self.lexicon.add_avm_construction(elvira_const)
 
         pta = plain_ticket_avm = AVM('PlainTicketAvm')
-        pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), False, None)
+        pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), AVM.ROPT, None)
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
-                          True, "2")
-        pta.add_attribute("DATE", PosMatcher("\[DATE\]$"), False, None)
-        pta.add_attribute("DEST", tgt_matcher , True, None)
-        pta.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
+                          AVM.RREQ, "2")
+        pta.add_attribute("DATE", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
+        pta.add_attribute("DEST", tgt_matcher, AVM.RREQ, None)
+        pta.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
         pta.add_attribute("RED", EnumMatcher("mav_reduction", self.lexicon),
-                          True, "full_price")
+                          AVM.RREQ, "full_price")
         pta.add_attribute("RET", EnumMatcher("ticket_type", self.lexicon),
-                          True, "one_way")
-        pta.add_attribute("SRC", src_matcher, True, "Budapest")
+                          AVM.RREQ, "one_way")
+        pta.add_attribute("SRC", src_matcher, AVM.RREQ, "Budapest")
+        # Elvira takes precedence
+        pta.add_attribute("ELVIRA", AndMatcher(
+            PrintnameMatcher('ElviraAVM'),
+            SatisfiedAVMMatcher()), AVM.RNEG, None)
+        # If there is an invalid seat ticket request, do not return a ticket either
+        pta.add_attribute('SEAT_TICKET', AndMatcher(
+            PrintnameMatcher('ICTicketAvm'),
+            SatisfiedAVMMatcher(False)), AVM.RNEG, None)
         pt_const = AVMConstruction(pta)
         self.lexicon.add_construction(pt_const)
 
         ita = ic_ticket_avm = AVM('ICTicketAvm')
-        ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
-        ita.add_attribute("DATE", PosMatcher("\[DATE\]$"), False, None)
-        ita.add_attribute("DEST", tgt_matcher, True, None)
-        ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
-        ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), False, None)
-        ita.add_attribute("SRC", src_matcher, True, "Budapest-Nyugati")
+        ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), AVM.RREQ, None)
+        ita.add_attribute("DATE", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
+        ita.add_attribute("DEST", tgt_matcher, AVM.RREQ, None)
+        ita.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
+        ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), AVM.ROPT, None)
+        ita.add_attribute("SRC", src_matcher, AVM.RREQ, "Budapest-Nyugati")
         ita.add_attribute("TIME", AndMatcher(PosMatcher("\[TIME\]$"),
-                                             ic_name_matcher), False, None)
+                                             ic_name_matcher), AVM.ROPT, None)
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
 
