@@ -95,6 +95,14 @@ class Wrapper:
                           AVM.RREQ, "one_way")
         pta.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], AVM.RREQ,
                          "Budapest")
+        # Elvira takes precedence
+        pta.add_attribute("ELVIRA", AndMatcher(
+            PrintnameMatcher('ElviraAVM'),
+            SatisfiedAVMMatcher()), AVM.RNEG, None)
+        # If there is an invalid seat ticket request, do not return a ticket either
+        pta.add_attribute('SEAT_TICKET', AndMatcher(
+            PrintnameMatcher('ICTicketAvm'),
+            SatisfiedAVMMatcher(False)), AVM.RNEG, None)
         pt_const = AVMConstruction(pta)
         self.lexicon.add_construction(pt_const)
 

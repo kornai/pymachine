@@ -99,13 +99,15 @@ class OrMatcher(Matcher):
         return False
 
 class SatisfiedAVMMatcher(Matcher):
-    """Matches a satisfied AVM."""
-    def __init__(self):
-        pass
+    """
+    Matches a satisfied (or unsatisfied, depending on the ctor's argument) AVM.
+    """
+    def __init__(self, satisfied=True):
+        self.satisfied = satisfied
 
     def _match(self, avm):
         try:
-            return avm.satisfied()
+            return avm.satisfied() == self.satisfied
         except AttributeError:
             # Not an avm
             return False

@@ -142,7 +142,9 @@ class SpreadingActivation(object):
             # Step 2b: AVM constructions
             for c in avm_constructions:
                 logging.debug(u"AVM {0} before: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))
-                for m in self.lexicon.active_machines():
+                attr_vals = set(self.lexicon.active_machines()) | set(
+                        c.avm for c in avm_constructions)
+                for m in attr_vals:
                     if c.check([m]):
                         c.act([m])
                         if c.avm.satisfied():
