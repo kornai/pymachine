@@ -6,6 +6,7 @@
 
 % 20 vonat N train # #:  % We have it already in Elvira
 21 intercity N intercity # #: train, reservation, #ICTicketAvm
+22 ic_ne1v N ic_name # #: %to collect ic_name enums
 
 31 sza1mla N invoice # #: 
 

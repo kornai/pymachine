@@ -40,12 +40,12 @@ class EnumMatcher(Matcher):
     def __init__(self, enum_name, lexicon):
         self.name = enum_name
         self.machine_names = self.collect_machines(lexicon)
-        logging.debug("EnumMatcher({0}) created with {1} machines".format(
-            self.name, " ".join(self.machine_names)))
+        logging.debug(u"EnumMatcher({0}) created with {1} machines".format(
+            self.name, u" ".join(self.machine_names)))
 
     def collect_machines(self, lexicon):
         cm = lexicon.static[self.name]
-        machines_on_type =  set([str(m.base.partitions[1][0])
+        machines_on_type =  set([str(m.base.partitions[1][0]).lower()
             for m in cm.base.partitions[1] if m.printname() == "IS_A"])
 
         all_machines = machines_on_type
@@ -53,12 +53,20 @@ class EnumMatcher(Matcher):
             for child in m.base.partitions[1]:
                 if (child.printname() == "IS_A" and
                     child.base.partitions[2][0] == self.name):
-                    all_machines.add(pn)
+                    all_machines.add(pn.lower())
                     break
         return all_machines
 
     def match(self, machine):
         return str(machine) in self.machine_names
+
+class FileContainsMatcher(Matcher):
+    def __init__(self, file_name):
+        self.strs = set([s.strip().lower() for s in
+            open(file_name).read().decode("utf-8").split("\n")])
+
+    def match(self, machine):
+        return str(machine) in self.strs
 
 class NotMatcher(Matcher):
     """The boolean NOT operator."""

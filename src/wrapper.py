@@ -29,6 +29,7 @@ class Wrapper:
         self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
             for s in items["definitions"].split(",")]
         self.supp_dict_fn = items["supp_dict"]
+        self.stations_fn = items["stations"]
 
     def __read_files(self):
         self.__read_definitions()
@@ -73,11 +74,17 @@ class Wrapper:
         self.lexicon.add_construction(MaxNP_InBetweenPostP_Construction())
         self.lexicon.add_construction(PostPConstruction())
 
+        station_matcher = FileContainsMatcher(self.stations_fn)
+        ic_name_matcher = EnumMatcher("ic_name", self.lexicon)
+        src_matcher = AndMatcher(self.supp_dict["@HUN_GO_SRC"],
+                                 station_matcher)
+        tgt_matcher = AndMatcher(self.supp_dict["@HUN_GO_TGT"],
+                                 station_matcher)
         ea = elvira_avm = AVM('ElviraAVM')
         ea.add_attribute("vonat", PrintnameMatcher("vonat"), True, None)
         ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), True, None)
-        ea.add_attribute("src", self.supp_dict["@HUN_GO_SRC"], True, "Budapest")
-        ea.add_attribute("tgt", self.supp_dict["@HUN_GO_TGT"], True, None)
+        ea.add_attribute("src", src_matcher, True, "Budapest")
+        ea.add_attribute("tgt", tgt_matcher, True, None)
         ea.add_attribute("date", PosMatcher("\[DATE\]$"), False, None)
         elvira_const = AVMConstruction(ea)
         self.lexicon.add_avm_construction(elvira_const)
@@ -87,26 +94,25 @@ class Wrapper:
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
                           True, "2")
         pta.add_attribute("DATE", PosMatcher("\[DATE\]$"), False, None)
-        pta.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
+        pta.add_attribute("DEST", tgt_matcher , True, None)
         pta.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
         pta.add_attribute("RED", EnumMatcher("mav_reduction", self.lexicon),
                           True, "full_price")
         pta.add_attribute("RET", EnumMatcher("ticket_type", self.lexicon),
                           True, "one_way")
-        pta.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
-                         "Budapest")
+        pta.add_attribute("SRC", src_matcher, True, "Budapest")
         pt_const = AVMConstruction(pta)
         self.lexicon.add_construction(pt_const)
 
         ita = ic_ticket_avm = AVM('ICTicketAvm')
         ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), True, None)
         ita.add_attribute("DATE", PosMatcher("\[DATE\]$"), False, None)
-        ita.add_attribute("DEST", self.supp_dict["@HUN_GO_TGT"], True, None)
+        ita.add_attribute("DEST", tgt_matcher, True, None)
         ita.add_attribute("INV", PrintnameMatcher("invoice"), False, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), False, None)
-        ita.add_attribute("SRC", self.supp_dict["@HUN_GO_SRC"], True,
-                         "Budapest-Nyugati")
-        ita.add_attribute("TIME", PosMatcher("(\[TIME\]|<DET>)$"), False, None)
+        ita.add_attribute("SRC", src_matcher, True, "Budapest-Nyugati")
+        ita.add_attribute("TIME", AndMatcher(PosMatcher("\[TIME\]$"),
+                                             ic_name_matcher), False, None)
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
 
