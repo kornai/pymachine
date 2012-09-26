@@ -5,25 +5,37 @@ from machine import Machine
 
 class AVM(object):
     TYPE, REQUIRED, DEFAULT, VALUE = xrange(4)
+    RREQ, ROPT, RNEG = xrange(1, -2, -1)
 
     def __init__(self, name):
         self.name = name
         self.__data = {}  # {key: [type, required, default_value, value]}
 
-    def add_attribute(self, key, datatype, required=False, default_value=None):
-        """Adds a new attribute to the "matrix"."""
-        if not isinstance(required, bool):
-            raise ValueError("required must be a bool, not " + type(required))
+    def add_attribute(self, key, datatype, required=ROPT, default_value=None):
+        """
+        Adds a new attribute to the "matrix".
+        @param required can take three values:
+               RREQ: required,
+               ROPT: optional,
+               RNEG: must not to be filled.
+        """
+        if required not in [AVM.RREQ, AVM.ROPT, AVM.RNEG]:
+            raise ValueError("required must be one of RREQ, ROPT, RNEG, not " +
+                             repr(required))
         if not isinstance(datatype, Matcher):
             raise ValueError("datatype must be a Matcher, not " +
                              type(datatype))
         self.__data[key] = [datatype, required, default_value, default_value]
-        # TODO: do we need a default_value?
+
+    def printname(self):
+        return self.name
 
     def satisfied(self):
         """Returns @c True, if all required arguments are filled in."""
         for value in self.__data.values():
-            if value[AVM.REQUIRED] and value[AVM.VALUE] is None:
+            if ((value[AVM.REQUIRED] == AVM.RREQ and value[AVM.VALUE] is None)
+                or
+                (value[AVM.REQUIRED] == AVM.RNEG and value[AVM.VALUE] is not None)):
                 return False
         else:
             return True
