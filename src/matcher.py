@@ -79,7 +79,7 @@ class FileContainsMatcher(Matcher):
 
     def match(self, machine):
         res = unicode(machine) in self.strs
-        logging.debug("matching of {0} in file {1} is {2}".format(
+        logging.debug(u"matching of {0} in file {1} is {2}".format(
             unicode(machine), self.fn, res))
         return res
 
