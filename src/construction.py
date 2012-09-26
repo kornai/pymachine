@@ -225,6 +225,9 @@ class AVMConstruction(Construction):
             state_num += 1
         return control
 
+    def check(self, seq):
+        return True
+
     def act(self, seq):
         for machine in seq:
             for matcher in self.phi:
