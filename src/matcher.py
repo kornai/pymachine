@@ -61,12 +61,12 @@ class EnumMatcher(Matcher):
             for child in m.base.partitions[1]:
                 if (child.printname() == "IS_A" and
                     child.base.partitions[2][0] == self.name):
-                    all_machines.add(pn.lower())
+                    all_machines.add(pn)
                     break
         return all_machines
 
     def _match(self, machine):
-        res = str(machine) in self.machine_names
+        res = unicode(machine) in self.machine_names
         logging.debug(u"matching of {0} in enum {1} is {2}".format(
             unicode(machine), self.name, res))
         return res
