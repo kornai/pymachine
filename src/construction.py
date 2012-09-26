@@ -230,6 +230,11 @@ class AVMConstruction(Construction):
             for matcher in self.phi:
                 if matcher.match(machine):
                     self.avm[self.phi[matcher]] = machine
+                else:
+                    if self.avm[self.phi[matcher]] == machine:
+                        dv = self.avm.get_field(self.phi[matcher], AVM.DEFAULT)
+                        self.avm[self.phi[matcher]] = dv
+
         return [self.avm]
 
 class TheConstruction(Construction):
