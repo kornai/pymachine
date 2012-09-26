@@ -75,7 +75,7 @@ class Wrapper:
         self.lexicon.add_construction(PostPConstruction())
 
         station_matcher = FileContainsMatcher(self.stations_fn)
-        ic_name_matcher = EnumMatcher("ic_name", self.lexicon)
+        ic_name_matcher = EnumMatcher("intercity", self.lexicon)
         src_matcher = AndMatcher(self.supp_dict["@HUN_GO_SRC"],
                                  station_matcher)
         tgt_matcher = AndMatcher(self.supp_dict["@HUN_GO_TGT"],
