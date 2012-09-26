@@ -100,7 +100,7 @@ class Wrapper:
                           AVM.RREQ, "full_price")
         pta.add_attribute("RET", EnumMatcher("ticket_type", self.lexicon),
                           AVM.RREQ, "one_way")
-        pta.add_attribute("SRC", src_matcher, AVM.RREQ, "Budapest")
+        pta.add_attribute("SRC", src_matcher, AVM.RREQ, u"Budapest-Nyugati")
         # Elvira takes precedence
         pta.add_attribute("ELVIRA", AndMatcher(
             PrintnameMatcher('ElviraAVM'),
@@ -113,14 +113,14 @@ class Wrapper:
         self.lexicon.add_construction(pt_const)
 
         ita = ic_ticket_avm = AVM('ICTicketAvm')
-        ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), AVM.RREQ, None)
+        ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), AVM.RREQ, "2")
         ita.add_attribute("DATE", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
         ita.add_attribute("DEST", tgt_matcher, AVM.RREQ, None)
         ita.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), AVM.ROPT, None)
-        ita.add_attribute("SRC", src_matcher, AVM.RREQ, "Budapest-Nyugati")
+        ita.add_attribute("SRC", src_matcher, AVM.RREQ, u"Budapest-Nyugati")
         ita.add_attribute("TIME", OrMatcher(PosMatcher("\[TIME\]$"),
-                                             ic_name_matcher), AVM.ROPT, None)
+                                             ic_name_matcher), AVM.RREQ, None)
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
 
