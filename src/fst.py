@@ -3,7 +3,7 @@ import logging
 
 from machine import Machine
 from matcher import Matcher
-
+from avm import AVM
 
 class FSA(object):
     def __init__(self, regex_transitions=True):
@@ -79,7 +79,7 @@ class FSA(object):
         self.active_states = new_active_states
 
     def read(self, what):
-        if isinstance(what, Machine):
+        if isinstance(what, Machine) or isinstance(what, AVM):
             self.read_machine(what)
         elif isinstance(what, Iterable):
             for what_ in what:

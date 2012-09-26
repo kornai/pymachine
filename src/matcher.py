@@ -11,16 +11,24 @@ class Matcher(object):
             self.input_ = re.compile("{0}".format(string))
 
     def match(self, machine):
+        try:
+            return self._match(machine)
+        except Exception, e:
+            logging.debug('Exception in matcher {0}: {1}'.format(
+                str(type(self)), e))
+            return False
+
+    def _match(self, machine):
         """@return a boolean."""
         raise NotImplementedError()
 
 class PrintnameMatcher(Matcher):
-    def match(self, machine):
+    def _match(self, machine):
         str_ = machine.printname()
         return self.input_.search(str_) is not None
 
 class PosControlMatcher(Matcher):
-    def match(self, machine):
+    def _match(self, machine):
         if not isinstance(machine.control, PosControl):
             return False
         str_ = machine.control.pos
@@ -30,7 +38,7 @@ class PosControlMatcher(Matcher):
         return self.input_.search(str_) is not None
 
 class ConceptMatcher(PrintnameMatcher):
-    def match(self, machine):
+    def _match(self, machine):
         if PrintnameMatcher.match(self, machine):
             return isinstance(machine.control, ConceptControl)
         else:
@@ -57,7 +65,7 @@ class EnumMatcher(Matcher):
                     break
         return all_machines
 
-    def match(self, machine):
+    def _match(self, machine):
         return str(machine) in self.machine_names
 
 class NotMatcher(Matcher):
@@ -65,7 +73,7 @@ class NotMatcher(Matcher):
     def __init__(self, matcher):
         self.matcher = matcher
 
-    def match(self, machine):
+    def _match(self, machine):
         return not self.matcher.match(machine)
 
 class AndMatcher(Matcher):
@@ -73,9 +81,32 @@ class AndMatcher(Matcher):
     def __init__(self, *matchers):
         self.matchers = matchers
 
-    def match(self, machine):
+    def _match(self, machine):
         for m in self.matchers:
             if not m.match(machine):
                 return False
         return True
+
+class OrMatcher(Matcher):
+    """The boolean OR operator."""
+    def __init__(self, *matchers):
+        self.matchers = matchers
+
+    def _match(self, machine):
+        for m in self.matchers:
+            if m.match(machine):
+                return True
+        return False
+
+class SatisfiedAVMMatcher(Matcher):
+    """Matches a satisfied AVM."""
+    def __init__(self):
+        pass
+
+    def _match(self, avm):
+        try:
+            return avm.satisfied()
+        except AttributeError:
+            # Not an avm
+            return False
 
