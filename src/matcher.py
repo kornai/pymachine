@@ -53,7 +53,7 @@ class EnumMatcher(Matcher):
 
     def collect_machines(self, lexicon):
         cm = lexicon.static[self.name]
-        machines_on_type =  set([str(m.base.partitions[1][0]).lower()
+        machines_on_type =  set([str(m.base.partitions[1][0])
             for m in cm.base.partitions[1] if m.printname() == "IS_A"])
 
         all_machines = machines_on_type
@@ -66,7 +66,10 @@ class EnumMatcher(Matcher):
         return all_machines
 
     def _match(self, machine):
-        return str(machine) in self.machine_names
+        res = str(machine) in self.machine_names
+        logging.debug(u"matching of {0} in enum {1} is {2}".format(
+            unicode(machine), self.name, res))
+        return res
 
 class FileContainsMatcher(Matcher):
     def __init__(self, file_name):
