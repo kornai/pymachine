@@ -73,11 +73,15 @@ class EnumMatcher(Matcher):
 
 class FileContainsMatcher(Matcher):
     def __init__(self, file_name):
+        self.fn = file_name
         self.strs = set([s.strip().lower() for s in
             open(file_name).read().decode("utf-8").split("\n")])
 
     def match(self, machine):
-        return str(machine) in self.strs
+        res = unicode(machine) in self.strs
+        logging.debug("matching of {0} in file {1} is {2}".format(
+            unicode(machine), self.fn, res))
+        return res
 
 class NotMatcher(Matcher):
     """The boolean NOT operator."""
