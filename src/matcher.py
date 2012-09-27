@@ -78,7 +78,7 @@ class FileContainsMatcher(Matcher):
             open(file_name).read().decode("utf-8").split("\n")])
 
     def match(self, machine):
-        res = unicode(machine) in self.strs
+        res = unicode(machine).lower() in self.strs
         logging.debug(u"matching of {0} in file {1} is {2}".format(
             unicode(machine), self.fn, res))
         return res
