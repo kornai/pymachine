@@ -125,7 +125,7 @@ class Wrapper:
         ita.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), AVM.ROPT, None)
         ita.add_attribute("SRC", src_matcher, AVM.RREQ, u"Budapest-Nyugati")
-        ita.add_attribute("TIME", OrMatcher(PosMatcher("\[TIME\]$"),
+        ita.add_attribute("TIME", OrMatcher(PosMatcher("\[TIME\]"),
                                              ic_name_matcher), AVM.RREQ, None)
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
