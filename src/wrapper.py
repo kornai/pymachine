@@ -109,6 +109,12 @@ class Wrapper:
         pta.add_attribute('SEAT_TICKET', AndMatcher(
             PrintnameMatcher('ICTicketAvm'),
             SatisfiedAVMMatcher(False)), AVM.RNEG, None)
+        pta.add_attribute('JEGY', AndMatcher(
+            PrintnameMatcher('^jegy$'), NotMatcher(ConceptMatcher())),
+            AVM.ROPT, None)
+        pta.add_attribute('HELYJEGY', AndMatcher(
+            PrintnameMatcher('^helyjegy$'), NotMatcher(ConceptMatcher())),
+            AVM.ROPT, None)
         pt_const = AVMConstruction(pta)
         self.lexicon.add_construction(pt_const)
 
