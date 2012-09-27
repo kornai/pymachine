@@ -81,8 +81,8 @@ class Wrapper:
         tgt_matcher = AndMatcher(self.supp_dict["@HUN_GO_TGT"],
                                  station_matcher)
         ea = elvira_avm = AVM('ElviraAVM')
-        ea.add_attribute("vonat", PrintnameMatcher("vonat"), AVM.RREQ, None)
-        ea.add_attribute("menetrend", PrintnameMatcher("menetrend"), AVM.RREQ, None)
+        ea.add_attribute("vonat", PrintnameMatcher("train"), AVM.RREQ, None)
+        ea.add_attribute("menetrend", PrintnameMatcher("schedule"), AVM.RREQ, None)
         ea.add_attribute("src", src_matcher, AVM.RREQ, "Budapest")
         ea.add_attribute("tgt", tgt_matcher, AVM.RREQ, None)
         ea.add_attribute("date", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
