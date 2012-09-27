@@ -37,12 +37,12 @@ class PosControlMatcher(Matcher):
             self.input_.search(str_) is not None))
         return self.input_.search(str_) is not None
 
-class ConceptMatcher(PrintnameMatcher):
+class ConceptMatcher(Matcher):
+    """Matches concepts (words not in the sentence)."""
+    def __init__(self):
+        pass
     def _match(self, machine):
-        if PrintnameMatcher.match(self, machine):
-            return isinstance(machine.control, ConceptControl)
-        else:
-            return False
+        return isinstance(machine.control, ConceptControl)
 
 class EnumMatcher(Matcher):
     def __init__(self, enum_name, lexicon):
