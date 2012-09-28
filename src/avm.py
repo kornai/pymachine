@@ -2,6 +2,8 @@
 
 from matcher import Matcher
 from machine import Machine
+from pyparsing import *
+import logging
 
 class AVM(object):
     TYPE, REQUIRED, DEFAULT, VALUE = xrange(4)
@@ -10,6 +12,8 @@ class AVM(object):
     def __init__(self, name):
         self.name = name
         self.__data = {}  # {key: [type, required, default_value, value]}
+        self.bool_expr = None
+        self.bool_str = None
 
     def add_attribute(self, key, datatype, required=ROPT, default_value=None):
         """
@@ -30,15 +34,30 @@ class AVM(object):
     def printname(self):
         return self.name
 
+    def set_satisfaction(self, bool_str):
+        self.bool_str = bool_str
+
+        boolOperand = Word(alphas + '_') | oneOf("True False")
+        self.bool_expr = operatorPrecedence( boolOperand,
+            [
+            ("not", 1, opAssoc.RIGHT, self.notop),
+            ("or",  2, opAssoc.LEFT,  self.orop),
+            ("and", 2, opAssoc.LEFT,  self.andop),
+            ])
+
     def satisfied(self):
         """Returns @c True, if all required arguments are filled in."""
-        for value in self.__data.values():
-            if ((value[AVM.REQUIRED] == AVM.RREQ and value[AVM.VALUE] is None)
-                or
-                (value[AVM.REQUIRED] == AVM.RNEG and value[AVM.VALUE] is not None)):
-                return False
+        if self.bool_expr is not None:
+            logging.debug('OTTTT')
+            return self.bool_expr.parseString(self.bool_str)[0]
         else:
-            return True
+            for value in self.__data.values():
+                if ((value[AVM.REQUIRED] == AVM.RREQ and value[AVM.VALUE] is None)
+                    or
+                    (value[AVM.REQUIRED] == AVM.RNEG and value[AVM.VALUE] is not None)):
+                    return False
+            else:
+                return True
 
     def get_attribute(self, key):
         """Returns the whole attribute data tuple for @p key."""
@@ -88,4 +107,45 @@ class AVM(object):
 
     def __unicode__(self):
         return u'{' + u', '.join(u'{0}: {1}'.format(key, self[key]) for key in self) + u'}'
+    
+    # -------------------------- bool functions for satisfied() ----------------
+
+    def andop(self, t):
+        args = t[0][0::2]
+        for a in args:
+            if isinstance(a,basestring):
+                if a in set(['True', 'False']):
+                    v = bool(a)
+                else:
+                    v = self[a] is not None
+            else:
+                v = bool(a)
+            if not v:
+                return False
+        return True
+
+    def orop(self, t):
+        args = t[0][0::2]
+        for a in args:
+            if isinstance(a,basestring):
+                if a in set(['True', 'False']):
+                    v = bool(a)
+                else:
+                    v = self[a] is not None
+            else:
+                v = bool(a)
+            if v:
+                return True
+        return False
+
+    def notop(self, t):
+        arg = t[0][1]
+        if isinstance(arg,basestring):
+            if arg in set(['True', 'False']):
+                v = bool(arg)
+            else:
+                v = self[arg] is not None
+        else:
+            v = bool(arg)
+        return not v
 

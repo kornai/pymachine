@@ -86,6 +86,7 @@ class Wrapper:
         ea.add_attribute("src", src_matcher, AVM.RREQ, "Budapest")
         ea.add_attribute("tgt", tgt_matcher, AVM.RREQ, None)
         ea.add_attribute("date", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
+        ea.set_satisfaction('vonat and menetrend and tgt')
         elvira_const = AVMConstruction(ea)
         self.lexicon.add_avm_construction(elvira_const)
 
@@ -115,6 +116,8 @@ class Wrapper:
         pta.add_attribute('HELYJEGY', AndMatcher(
             PrintnameMatcher('^helyjegy$'), NotMatcher(ConceptMatcher())),
             AVM.ROPT, None)
+        pta.add_attribute("IC", ic_name_matcher, AVM.ROPT, None)
+        pta.set_satisfaction('SRC and CLASS and RED and RET and (IC or DEST) and not ELVIRA and not SEAT_TICKET and not (HELYJEGY and not JEGY)')
         pt_const = AVMConstruction(pta)
         self.lexicon.add_construction(pt_const)
 
@@ -125,8 +128,9 @@ class Wrapper:
         ita.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), AVM.ROPT, None)
         ita.add_attribute("SRC", src_matcher, AVM.RREQ, u"Budapest-Nyugati")
-        ita.add_attribute("TIME", OrMatcher(PosMatcher("\[TIME\]"),
-                                             ic_name_matcher), AVM.RREQ, None)
+        ita.add_attribute("IC", ic_name_matcher, AVM.ROPT, None)
+        ita.add_attribute("TIME", PosMatcher("\[TIME\]"), AVM.RREQ, None)
+        ita.set_satisfaction('SRC and CLASS and (IC or (TIME and DEST))')
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
 
