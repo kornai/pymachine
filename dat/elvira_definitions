@@ -3,4 +3,4 @@
 20002 menetrend N schedule # #: public_transportation, when
 % 20010 megy V go # #: [NOM] BEFORE_AT [SRC], [NOM] AFTER_AT [TGT]
 20020 mikor W when # #: 
-20030 elvira N elvira elvira elvira: train, schedule, #ElviraAVM
+20030 elvira N elvira elvira elvira: schedule, #ElviraAVM
