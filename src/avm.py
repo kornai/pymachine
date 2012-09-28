@@ -141,7 +141,7 @@ class AVM(object):
     def notop(self, t):
         arg = t[0][1]
         if isinstance(arg,basestring):
-            if a in set(['True', 'False']):
+            if arg in set(['True', 'False']):
                 v = bool(arg)
             else:
                 v = self[arg] is not None
