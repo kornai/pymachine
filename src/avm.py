@@ -1,0 +1,91 @@
+"""Attribute-value matrix."""
+
+from matcher import Matcher
+from machine import Machine
+
+class AVM(object):
+    TYPE, REQUIRED, DEFAULT, VALUE = xrange(4)
+    RREQ, ROPT, RNEG = xrange(1, -2, -1)
+
+    def __init__(self, name):
+        self.name = name
+        self.__data = {}  # {key: [type, required, default_value, value]}
+
+    def add_attribute(self, key, datatype, required=ROPT, default_value=None):
+        """
+        Adds a new attribute to the "matrix".
+        @param required can take three values:
+               RREQ: required,
+               ROPT: optional,
+               RNEG: must not to be filled.
+        """
+        if required not in [AVM.RREQ, AVM.ROPT, AVM.RNEG]:
+            raise ValueError("required must be one of RREQ, ROPT, RNEG, not " +
+                             repr(required))
+        if not isinstance(datatype, Matcher):
+            raise ValueError("datatype must be a Matcher, not " +
+                             type(datatype))
+        self.__data[key] = [datatype, required, default_value, default_value]
+
+    def printname(self):
+        return self.name
+
+    def satisfied(self):
+        """Returns @c True, if all required arguments are filled in."""
+        for value in self.__data.values():
+            if ((value[AVM.REQUIRED] == AVM.RREQ and value[AVM.VALUE] is None)
+                or
+                (value[AVM.REQUIRED] == AVM.RNEG and value[AVM.VALUE] is not None)):
+                return False
+        else:
+            return True
+
+    def get_attribute(self, key):
+        """Returns the whole attribute data tuple for @p key."""
+        return self.__data[key]
+
+    def get_field(self, key, field):
+        """
+        Returns the specified field from the data tuple for @p key. The valid
+        values for @p field are @c TYPE, @c REQUIRED, @c DEFAULT and @c VALUE.
+        """
+        return self.__data[key][field]
+
+    def get_dict(self):
+        """Returns the attribute-value dictionary in a Python dict."""
+        ret = dict((k, v[AVM.VALUE]) for k, v in self.__data.iteritems())
+        ret['__NAME__'] = self.name
+        return ret
+
+    def get_basic_dict(self):
+        """
+        Returns the attribute-value dictionary in a Python dict, all Machine
+        values replaced by their printnames.
+        """
+        ret = self.get_dict()
+        for k, v in ret.iteritems():
+            if isinstance(v, Machine):
+                ret[k] = unicode(v)
+        return ret
+
+    def clear(self):
+        keys = self.__data.keys()
+        for key in keys:
+            datatype, required, default_value, _ = self.__data[key]
+            self.__data[key] = [datatype, required, default_value, default_value]
+
+    def __getitem__(self, key):
+        """Gets the current value of an attribute."""
+        return self.__data[key][AVM.VALUE]
+
+    def __setitem__(self, key, value):
+        """Sets the current value of an attribute."""
+        self.__data[key][AVM.VALUE] = value
+
+    def __iter__(self):
+        """Iterates through the attribute keys."""
+        return self.__data.__iter__()
+
+    def __unicode__(self):
+        return u'{' + u', '.join(u'{0}: {1}'.format(key, self[key]) for key in self) + u'}'
+

@@ -1,0 +1,19 @@
+2 bkv N # # #: bksz
+22 ic N # # #: intercity
+54 start N # # #: start_card
+58 ege1sz N # # #: full_price
+62 retu1r N # # #: round_trip
+101 sza1z N # # #: 100
+102 kilencven N # # #: 90
+103 hetveno2t N # # #: 75
+104 o2tven N # # #: 50
+105 harmincha1rom N # # #: 33
+111 menetjegy N # # #: ticket
+112 oda-vissza N # # #: round_trip
+113 kiege1szi1to3 N # # #: bksz
+114 fe1la1ru1 N # # #: 50
+115 dia1kjegy N # # #: student, ticket
+116 keleti N # # #: budapest
+117 nyugati N # # #: budapest
+118 de1li N # # #: budapest
+119 kiege1szito3 A # # #: bksz

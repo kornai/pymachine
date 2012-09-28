@@ -1,6 +1,7 @@
 import logging
 import sys
 import string
+import re
 
 try:
     import pyparsing
@@ -9,13 +10,16 @@ except ImportError:
     logging.critical("PyParsing has to be installed on the computer")
     sys.exit(-1)
 
+from langtools.utils.accents import proszeky_to_utf
+
 from machine import Machine
 from monoid import Monoid
 from constants import deep_cases
 from control import ConceptControl
 
 def create_machine(name, partitions):
-    return Machine(Monoid(name, partitions), ConceptControl())
+    return Machine(Monoid(proszeky_to_utf(name), partitions),
+                   ConceptControl())
 
 class ParserException(Exception):
     pass
@@ -35,18 +39,25 @@ class DefinitionParser:
     prime = "'"
     hyphen = "-"
     at = "@"
+    dollar = "$"
+    hashmark = "#"
+    unary_p = re.compile("^[a-z_#\-/0-9]+$")
+    binary_p = re.compile("^[A-Z_]+$")
 
     def __init__(self):
         self.init_parser()
 
     @classmethod
     def _is_binary(cls, s):
-        return type(s) in cls._str and s.isupper() and not s in deep_cases
+        return (type(s) in cls._str and
+               (cls.binary_p.match(s) is not None
+                and not s in deep_cases))
     
     @classmethod
     def _is_unary(cls, s):
-        # TODO unaries can contain hyphens
-        return type(s) in cls._str and s.islower() or s in deep_cases
+        return (type(s) in cls._str and
+               (cls.unary_p.match(s) is not None
+                or s in deep_cases))
     
     @classmethod
     def _is_deep_case(cls, s):
@@ -65,14 +76,17 @@ class DefinitionParser:
         self.prime_lit = Literal(DefinitionParser.prime)
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
         self.at_lit = Literal(DefinitionParser.at)
+        self.hashmark_lit = Literal(DefinitionParser.hashmark)
+        self.dollar_lit = Literal(DefinitionParser.dollar)
         
         self.deep_cases = reduce(lambda a, b: a | b,
             (Literal(dc) for dc in deep_cases))
         
-        self.unary = Combine(Optional("-") + Word(string.lowercase + "_") +
+        self.unary = Combine(Optional("-") + Word(string.lowercase + "_" + nums) +
                              Optional(Word(nums))) | self.deep_cases
         self.binary = Word(string.uppercase + "_" + nums)
-        self.syntax_supp = self.at_lit + Word(string.uppercase + "_")
+        self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
+        self.syntax_avm = self.hashmark_lit+ Word(string.ascii_letters + "_")
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -123,6 +137,9 @@ class DefinitionParser:
 
             # UE -> SS
             (self.syntax_supp) ^
+
+            # UE -> AVM
+            (self.syntax_avm) ^
 
             # UE -> U [ D ]
             (self.unary + self.lb_lit + self.definition + self.rb_lit) ^
@@ -208,8 +225,12 @@ class DefinitionParser:
                 return None
 
             # UE -> SS
-            if (expr[0] == cls.at):
-                return create_machine(cls.at + expr[1], 1)
+            if (expr[0] == cls.dollar):
+                return create_machine(cls.dollar + expr[1], 1)
+
+            # UE -> AVM
+            if (expr[0] == cls.hashmark):
+                return create_machine(cls.hashmark + expr[1], 1)
 
 
         if (len(expr) == 3):
@@ -283,17 +304,17 @@ class DefinitionParser:
         for d in definition:
             yield self.__parse_expr(d, parent, root)
     
-    def parse_into_machines(self, s):
+    def parse_into_machines(self, s, printname_index=0):
         parsed = self.parse(s)
         
         # HACK printname is now set to hungarian
-        machine = create_machine(parsed[1][0], 1)
+        machine = create_machine(parsed[1][printname_index], 1)
         if len(parsed) > 2:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 1)
         return machine
 
-def read(f):
+def read(f, printname_index=0):
     d = {}
     dp = DefinitionParser()
     for line in f:
@@ -301,10 +322,10 @@ def read(f):
         logging.info("Parsing: {0}".format(l))
         if len(l) == 0:
             continue
-        if l.startswith("#"):
+        if l.startswith("%"):
             continue
         try:
-            m = dp.parse_into_machines(l)
+            m = dp.parse_into_machines(l, printname_index)
             d[m.printname()] = m
         except pyparsing.ParseException, pe:
             print l
@@ -316,6 +337,7 @@ def read(f):
 
 if __name__ == "__main__":
     #logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":

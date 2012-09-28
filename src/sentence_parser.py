@@ -25,14 +25,13 @@ class SentenceParser:
             if len(token_or_chunk) == 2:
                 # chunk
                 chunk, case = token_or_chunk
-                for token in chunk:
-                    surface, stem, analysis = token
-                    machines.append(Machine(Monoid(stem), Control(analysis)))
+                machines.append([Machine(Monoid(stem), Control(analysis)) 
+                                 for _, stem, analysis in chunk])
             else:
                 # token
                 token = token_or_chunk
                 surface, stem, analysis = token
-                machines.append(Machine(Monoid(stem), Control(analysis)))
+                machines.append([Machine(Monoid(stem), Control(analysis))])
         return machines
 
 if __name__ == "__main__":

@@ -1,30 +1,83 @@
 from control import PluginControl
+from construction import Construction
 import logging
 import itertools
+
+def subsequence_index(seq, length):
+    """
+    Returns the start and end indices of all subsequences of @p seq of length
+    @p length as an iterator.
+    """
+    l = len(seq)
+    if l < length:
+        return
+    for begin in xrange(0, l - length + 1):
+        yield begin, begin + length
+    return
 
 class SpreadingActivation(object):
     """Implements spreading activation (surprise surprise)."""
     def __init__(self, lexicon):
         self.lexicon = lexicon
 
-    def activation_loop(self):
-        """Implements the algorithm. It goes as follows:
+    def activation_loop(self, chunks):
+        """
+        Implements the algorithm. It goes as follows:
         @arg Expand all unexpanded words
         @arg Link along linkers (deep cases)
         @arg Check the lexicon to see if new words are activated by the ones
              already in the graph; if yes, add them to the graph. Repeat until
              no new words are found.
         @return Messages to be sent to active plugins.
-        The algorithm stops when ... I don't know."""
-        # TODO: NPs/ linkers to be contended
+        The algorithm stops when ... I don't know.
+        
+        @param chunks a list of lists of machines that make up the chunks in the
+                      sentence (and the rest, too).
+        """
+        # chunks contains the chunks of the sentence -- at the beginning, all
+        # words are considered chunks, but then are merged by the syntactic
+        # constructions
+
+        sentence = itertools.chain(*chunks)
+        self.lexicon.add_active(sentence)
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
-        plugin_found = False
+        chunk_constructions = set([c for c in self.lexicon.constructions
+                                   if c.type_ == Construction.CHUNK])
+        semantic_constructions = set([c for c in self.lexicon.constructions
+                                      if c.type_ == Construction.SEMANTIC])
+        avm_constructions = set()
 
-        # This condition will not work w/ the full lexicon, obviously.
-        while len(unexpanded) > 0 and not plugin_found:
-            dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
-            logging.debug("\n\nLOOP:" + str(last_active) + ' ' + dbg_str + "\n\n")
+        # Chunk constructions are run here to form the phrase machines.
+        for chunk in filter(lambda c: len(c) > 1, chunks):
+            change = True
+            while change:
+                change = False
+                try:
+                    for length in xrange(2, len(chunk) + 1):
+                        for begin, end in subsequence_index(chunk, length):
+                            part = chunk[begin:end]
+                            for c in chunk_constructions:
+                                if c.check(part):
+                                    c_res = c.act(part)
+                                    if c_res is not None:
+                                        change = True
+                                        chunk[begin:end] = c_res  # c_res should contain a single machine here (?)
+                                        raise ValueError  # == break outer
+                except ValueError:
+                    pass
+
+        # This condition works for the demo, but we need to find another one for
+        # the whole lexicon
+        plugin_found = False
+        safety_zone = 0
+        while not plugin_found or safety_zone < 5:
+            if plugin_found:
+                safety_zone += 1
+            active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
+            static_dbg_str = ', '.join(k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
+            logging.debug("\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str + "\n\n")
+            logging.debug("\n\nSTATIC:" + ' ' + static_dbg_str + "\n\n")
 #            logging.debug('ACTIVE')
 #            from machine import Machine
 #            for ac in self.lexicon.active.values():
@@ -36,8 +89,8 @@ class SpreadingActivation(object):
 
                 self.lexicon.expand(machine)
 
-            # Step 2b: constructions:
-            for c in self.lexicon.constructions:
+            # Step 2a: semantic constructions:
+            for c in semantic_constructions:
                 # The machines that can take part in constructions
                 logging.debug("CONST " + c.name)
                 accepted = []
@@ -76,29 +129,45 @@ class SpreadingActivation(object):
                         for m in c_res:
                             if isinstance(m.control, PluginControl):
                                 plugin_found = True
+                                logging.debug('Plugin found: ' + str(m))
                                 break
                         break
                     else:
                         del accepted[-1]
 
+            avm_constructions = set([c for c in self.lexicon.constructions
+                                     if c.type_ == Construction.AVM])
+            active_avm_dbg_str = ', '.join(c.name.encode('utf-8') for c in avm_constructions)
+            logging.debug("\n\nAVM CONSTRUCTIONS:" + ' ' + active_avm_dbg_str + "\n\n")
+            # Step 2b: AVM constructions
+            for c in avm_constructions:
+                logging.debug(u"AVM {0} before: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))
+                attr_vals = set(self.lexicon.active_machines()) | set(
+                        c.avm for c in avm_constructions)
+                for m in attr_vals:
+                    if c.check([m]):
+                        c.act([m])
+                        if c.avm.satisfied():
+                            plugin_found = True
+                            logging.debug('AVM found: ' + c.name)
+                logging.debug(u"AVM {0} after: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))
+
             # Step 3: activation
             self.lexicon.activate()
             unexpanded = list(self.lexicon.get_unexpanded())
-            if len(self.lexicon.active) == last_active:
+            if len(self.lexicon.active) + len(avm_constructions) == last_active:
                 break
             else:
-                last_active = len(self.lexicon.active)
+                last_active = len(self.lexicon.active) + len(avm_constructions)
 
         # Return messages to active plugins
+        # TODO: add AVMs. What is the relation between AVMs and Plugins?
         logging.debug("\n\nENDE\n\n")
         ret = []
-        for m in self.lexicon.active_machines():
-            if isinstance(m.control, PluginControl):
-                # TODO: rename to activate() or sth and get rid of the
-                # call to isinstance()
-                msg = m.control.message()
-                if msg is not None:
-                    ret.append(msg)
+        for c in avm_constructions:
+            if c.avm.satisfied():
+                ret.append(c.avm.get_basic_dict())
+
         logging.debug('Returning ' + str(ret))
         return ret
 
