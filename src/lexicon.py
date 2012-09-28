@@ -22,6 +22,7 @@ class Lexicon:
         # self.constructions first via activation
         self.avm_constructions = {}
 #        self.create_elvira_machine()
+        self.clear_active()
 
     def __add_active_machine(self, m, expanded=False):
         """Helper method for add_active()"""
@@ -119,7 +120,10 @@ class Lexicon:
         if unicode(static_machine) == u'IS_A':
             return None
         # If we have already unified this machine: just return
-        static_printname = static_machine.printname()
+        if not isinstance(static_machine, str) and not isinstance(static_machine, unicode):
+            static_printname = static_machine.printname()
+        else:
+            static_printname = static_machine
         if static_printname in stop:
 #            logging.debug('ur stops')
             return self.active[static_printname].keys()[0]
@@ -241,6 +245,8 @@ class Lexicon:
         between activation phases.
         """
         self.active = {}
+        # HACK
+        self.unify_recursively('train')
 
         # Resets the AVM constructions.
         avm_constructions = [c for c in self.constructions

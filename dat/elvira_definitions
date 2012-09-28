@@ -1,6 +1,6 @@
 20000 vonat N train # #: public_transportation
 20001 tb N public_transportation # #: 
-20002 menetrend N schedule # #: public_transportation, when
+20002 menetrend N schedule # #: when , public_transportation
 % 20010 megy V go # #: [NOM] BEFORE_AT [SRC], [NOM] AFTER_AT [TGT]
 20020 mikor W when # #: 
-20030 elvira N elvira elvira elvira: schedule, #ElviraAVM
+20030 elvira N elvira elvira elvira: schedule, train, #ElviraAVM
