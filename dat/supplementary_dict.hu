@@ -1,10 +1,10 @@
 HUN_PUT_LOC N.*<CAS<SBL>> #-ra
 HUN_PUT_LOC N.*<CAS<ALL>> #-hoz
 HUN_PUT_LOC PP
-HUN_GO_SRC N.*<CAS<DEL>>.*(?!.*<DET>) #-ro1l
-HUN_GO_SRC N.*<CAS<ELA>>.*(?!.*<DET>) #-bo1l
-HUN_GO_SRC N.*<CAS<ABL>>.*(?!.*<DET>) #-to1l
-HUN_GO_TGT N.*<CAS<SBL>>.*(?!.*<DET>) #-ra
-HUN_GO_TGT N.*<CAS<ILL>>.*(?!.*<DET>) #-ba
-HUN_GO_TGT N.*<CAS<TER>>.*(?!.*<DET>) #-ig
+HUN_GO_SRC N.*<CAS<DEL>>(?!.*<DET>) #-ro1l
+HUN_GO_SRC N.*<CAS<ELA>>(?!.*<DET>) #-bo1l
+HUN_GO_SRC N.*<CAS<ABL>>(?!.*<DET>) #-to1l
+HUN_GO_TGT N.*<CAS<SBL>>(?!.*<DET>) #-ra
+HUN_GO_TGT N.*<CAS<ILL>>(?!.*<DET>) #-ba
+HUN_GO_TGT N.*<CAS<TER>>(?!.*<DET>) #-ig
 HUN_NOM N.*(?!.*CAS) # NOM is not written as CAS

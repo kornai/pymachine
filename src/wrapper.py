@@ -75,7 +75,10 @@ class Wrapper:
         self.lexicon.add_construction(PostPConstruction())
 
         station_matcher = FileContainsMatcher(self.stations_fn)
-        ic_name_matcher = EnumMatcher("ic_name", self.lexicon)
+        ic_name_matcher = AndMatcher(
+                EnumMatcher("ic_name", self.lexicon),
+                PosMatcher("<DET>")
+                )
         src_matcher = AndMatcher(self.supp_dict["@HUN_GO_SRC"],
                                  station_matcher)
         tgt_matcher = AndMatcher(self.supp_dict["@HUN_GO_TGT"],
@@ -111,7 +114,7 @@ class Wrapper:
             PrintnameMatcher('ICTicketAvm'),
             SatisfiedAVMMatcher(False)), AVM.RNEG, None)
         pta.add_attribute('JEGY', AndMatcher(
-            PrintnameMatcher('^jegy$'), NotMatcher(ConceptMatcher())),
+            PrintnameMatcher('^(?:jegy|menetjegy|vonatjegy)$'), NotMatcher(ConceptMatcher())),
             AVM.ROPT, None)
         pta.add_attribute('HELYJEGY', AndMatcher(
             PrintnameMatcher('^helyjegy$'), NotMatcher(ConceptMatcher())),
