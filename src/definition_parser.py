@@ -10,7 +10,7 @@ except ImportError:
     logging.critical("PyParsing has to be installed on the computer")
     sys.exit(-1)
 
-from langtools.utils.accents import proszeky_to_utf
+from langtools.utils.accents import decode_from_proszeky
 
 from machine import Machine
 from monoid import Monoid
@@ -18,7 +18,7 @@ from constants import deep_cases
 from control import ConceptControl
 
 def create_machine(name, partitions):
-    return Machine(Monoid(proszeky_to_utf(name), partitions),
+    return Machine(Monoid(decode_from_proszeky(name), partitions),
                    ConceptControl())
 
 class ParserException(Exception):
