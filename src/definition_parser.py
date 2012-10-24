@@ -87,6 +87,7 @@ class DefinitionParser:
         self.binary = Word(string.uppercase + "_" + nums)
         self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
         self.syntax_avm = self.hashmark_lit+ Word(string.ascii_letters + "_")
+        self.syntax_exturl = self.at_lit+ Word(string.ascii_letters + "_")
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -140,6 +141,9 @@ class DefinitionParser:
 
             # UE -> AVM
             (self.syntax_avm) ^
+
+            # UE -> ExtUrl
+            (self.syntax_exturl) ^
 
             # UE -> U [ D ]
             (self.unary + self.lb_lit + self.definition + self.rb_lit) ^
@@ -231,6 +235,10 @@ class DefinitionParser:
             # UE -> AVM
             if (expr[0] == cls.hashmark):
                 return create_machine(cls.hashmark + expr[1], 1)
+
+            # UE -> External url
+            if (expr[0] == cls.at):
+                return create_machine(cls.at+ expr[1], 1)
 
 
         if (len(expr) == 3):
