@@ -1,5 +1,4 @@
 import logging
-from StringIO import StringIO
 import copy
 
 from monoid import Monoid
@@ -104,33 +103,6 @@ class Machine(object):
                         results.append((self, part_i + 1))
                 results += m.search(what=what, empty=empty)
         return results
-
-    """from now, only print and draw methots"""
-    
-    def to_dot(self, toplevel=False):
-        s = u"subgraph"
-        if toplevel:
-            s = u"graph"
-        
-        s += u" cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(self))
-        s += u"label={0}_{1};\n".format(self.base.partitions[0], id(self))
-        
-        if len(self.base.partitions) > 1:
-            s += "color=black;\n"
-            for p in reversed(self.base.partitions[1:]):
-                s += u"subgraph cluster_{0}_{1} {{\n".format(self.base.partitions[0], id(p))
-                s += "label=\"\"\n"
-                s += "color=lightgrey;\n"
-                for m in reversed(p):
-                    if isinstance(m, Machine):
-                        s += m.to_dot()
-                s += "}\n"
-        else:
-            #s += "color=white;\n"
-            s += u"{0}[color=white, fontcolor=white];\n".format(self.base.partitions[0])
-        s += "}\n"
-        
-        return s
 
     @staticmethod
     def to_debug_str(machine):
