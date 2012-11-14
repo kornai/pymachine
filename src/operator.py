@@ -11,7 +11,7 @@ class Operator(object):
         """
         pass
 
-class AppendOperator(object):
+class AppendOperator(Operator):
     """Appends a machine to another's partition: <tt>X, Y -> X[Y]</tt>."""
     def __init__(self, X, Y, part=1):
         """
@@ -25,14 +25,5 @@ class AppendOperator(object):
 
     def act(self, seq):
         seq[self.X].append(seq[self.Y], self.part)
-
-################################################################################
-### To discuss:                                                              ###
-### 1. What should the act method return?                                    ###
-###    a. The machines affected by the changes (don't think so)              ###
-###    b. The whole seq, except for the machines that have been "dealt with" ###
-###       by the operation (e.g. Y in AppendOperator) -- this is consistent  ###
-###       with how Construction.act(s) works.                                ###
-###    c. Nothing -- but then what will XConst.act() return?                 ###
-################################################################################
+        return seq[self.X]
 
