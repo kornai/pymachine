@@ -2,7 +2,7 @@ import logging
 
 from machine import Machine
 from monoid import Monoid
-from control import PosControl as Control
+from control import KRPosControl as Control
 
 class SentenceParser:
     """This class will create machines from analyzed and chunked text"""
