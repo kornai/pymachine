@@ -154,6 +154,8 @@ class SpreadingActivation(object):
 
             # Step 3: activation
             self.lexicon.activate()
+
+            # Step 4: housekeeping
             unexpanded = list(self.lexicon.get_unexpanded())
             if len(self.lexicon.active) + len(avm_constructions) == last_active:
                 break

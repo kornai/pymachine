@@ -59,6 +59,16 @@ class Construction(object):
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
 
+class NPConstruction(Construction):
+    def __init__(self, rules, operators):
+        self.rules = rules  # TODO: create control
+        self.operators = operators
+
+    def act(self, seq):
+        for operator in self.operators:
+            seq = operator.act(seq)
+        return seq
+
 class VerbConstruction(Construction):
     """A default construction for verbs. It reads definitions, discovers
     cases, and builds a control from it. After that, the act() will do the

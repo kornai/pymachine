@@ -1,6 +1,6 @@
 import re
 import logging
-
+from np_parser import subset
 from control import PosControl, ConceptControl
 
 class Matcher(object):
@@ -126,4 +126,15 @@ class SatisfiedAVMMatcher(Matcher):
         except AttributeError:
             # Not an avm
             return False
+
+class PatternMatcher(Matcher):
+    
+    def __init__(self, pattern):
+        self.pattern = pattern
+    
+    def _match(self, machine):
+        return subset(self.pattern, machine.control) #?
+ 
+
+
 
