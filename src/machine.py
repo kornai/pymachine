@@ -1,5 +1,4 @@
 import logging
-from StringIO import StringIO
 import copy
 
 from monoid import Monoid
