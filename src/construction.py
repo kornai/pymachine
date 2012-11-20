@@ -12,6 +12,8 @@ from monoid import Monoid
 from control import PosControl, ElviraPluginControl
 from constants import deep_cases
 from avm import AVM
+from operators import ExpandOperator
+from np_parser import parse_rule
 
 class Construction(object):
     SEMANTIC, CHUNK, AVM = xrange(3)  # types
@@ -60,9 +62,48 @@ class Construction(object):
         # hardcoded into the code, later it will be done by Machine objects
 
 class NPConstruction(Construction):
-    def __init__(self, rules, operators):
-        self.rules = rules  # TODO: create control
+    def __init__(self, rule, operators):
+        self.rule = rule  # TODO: create control
+        self.matchers = parse_rule(self.rule)
         self.operators = operators
+
+    def last_check(self, seq):
+        """
+        Checks if the greek letters (e.g. bound variables) are consistent.
+        @todo Implement it similarly VerbConstruction, e.g. as an argument
+              filling problem.
+        """
+        patterns = [m.pattern for m in self.matchers]
+        assert len(seq) == len(patterns)
+
+        greeks = defaultdict(set)
+        for i in xrange(len(seq)):
+            if not self._collect_variable_values(
+                    # TODO: .control?
+                    patterns[i], seq[i].control, greeks):
+                return False
+        for v in greeks.values():
+            if len(v) > 1:
+                return False
+        return True
+
+    def _collect_variable_values(self, tmpl, data, greeks):
+        """
+        Collects the values of the variables in @p tmpl from @p cata and adds
+        them to the multimap @p greeks.
+        """
+        for key in tmpl:
+            if key not in data:
+                # Should be; it's already checked in check()
+                return False
+            else:
+                if isinstance(tmpl[key], dict):
+                    return self._collect_variable_values(
+                            tmpl[key], data[key], greeks)
+                else:
+                    if tmpl[key][0] == '@':
+                        greeks[tmpl[key]].add(data[key])
+        return True    
 
     def act(self, seq):
         for operator in self.operators:
@@ -74,9 +115,10 @@ class VerbConstruction(Construction):
     cases, and builds a control from it. After that, the act() will do the
     linking process, eg. link the verb with other words, object, subject, etc.
     """
-    def __init__(self, name, machine, supp_dict):
+    def __init__(self, name, lexicon, supp_dict):
         self.name = name
-        self.machine = machine
+        self.lexicon = lexicon
+        self.machine = lexicon.static[name]
         self.supp_dict = supp_dict
         self.arg_locations = self.discover_arguments()
         self.phi = self.generate_phi()
@@ -135,7 +177,8 @@ class VerbConstruction(Construction):
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition(self.matchers["VERB"], "0", "1")
+        control.add_transition(self.matchers["VERB"],
+                               [ExpandOperator(self.lexicon)], "0", "1")
 
         # count every transition as an increase in number of state
         for path in permutations(arguments):
@@ -393,7 +436,6 @@ def test():
     print res[0]
     print res[0].control
     print res[0].base.partitions[1][0]
-
 
 if __name__ == "__main__":
     test()

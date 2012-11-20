@@ -4,6 +4,7 @@ control does syntax-related things"""
 import logging
 
 import machine as mach
+from langtools.utils.readkr import kr_to_dictionary as kr2dict
 
 class Control(object):
     def __init__(self, machine=None):
@@ -20,17 +21,10 @@ class PosControl(Control):
         Control.__init__(self, machine)
         self.pos = pos
 
-    #def __hash__(self):
-        #return hash(self.pos)
-#
-    #def __eq__(self, other):
-        #return self.pos.__eq__(other.pos)
-#
-    #def __cmp__(self, other):
-        #return self.pos < other.pos
-#
-    #def __str__(self):
-        #return self.pos
+class KRPosControl(Control):
+    def __init__(self, pos, machine=None):
+        Control.__init__(self, machine)
+        self.kr = kr2dict(pos)
 
 class ConceptControl(Control):
     """object controlling machines that were not in the sentence, but
