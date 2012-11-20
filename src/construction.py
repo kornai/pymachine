@@ -74,9 +74,10 @@ class VerbConstruction(Construction):
     cases, and builds a control from it. After that, the act() will do the
     linking process, eg. link the verb with other words, object, subject, etc.
     """
-    def __init__(self, name, machine, supp_dict):
+    def __init__(self, name, lexicon, supp_dict):
         self.name = name
-        self.machine = machine
+        self.lexicon = lexicon
+        self.machine = lexicon.static[name]
         self.supp_dict = supp_dict
         self.arg_locations = self.discover_arguments()
         self.phi = self.generate_phi()
