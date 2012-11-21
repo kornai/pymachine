@@ -27,3 +27,22 @@ class AppendOperator(Operator):
         seq[self.X].append(seq[self.Y], self.part)
         return seq[self.X]
 
+class ExpandOperator(Operator):
+    """Expands an active machine."""
+    def __init__(self, lexicon, i):
+        """
+        @param lexicon the lexicon.
+        """
+        self.lexicon = lexicon
+
+    def act(self, input):
+        """
+        @param input the machine read by the transition.
+        @param working_area a list.
+        """
+        return self.lexicon.expand(input)
+
+class FillArgumentOperator(Operator):
+    """Fills the argument of the representation in the working area."""
+    def act(self, input):
+        pass

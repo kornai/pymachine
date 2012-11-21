@@ -127,13 +127,37 @@ class SatisfiedAVMMatcher(Matcher):
             # Not an avm
             return False
 
+
 class PatternMatcher(Matcher):
     
     def __init__(self, pattern):
         self.pattern = pattern
     
+
+    def _subset(small, large):
+        is_subset = True
+        for key in small:
+            if is_subset == False:
+                break
+          if key not in large:
+              is_subset = False
+              break
+          else:
+              if type(small[key]) == dict:
+                  is_subset = subset(small[key], large[key])
+              else:  
+                  if small[key] != large[key]:
+                      if len(small[key]) == 0 or small[key][0] != '@':
+                          is_subset = False
+                      """
+                      @ denotes a Greek character (matching everything).                    
+                      """  
+        return is_subset    
+    
+ 
     def _match(self, machine):
-        return subset(self.pattern, machine.control) #?
+        return self._subset(self.pattern, machine.control) 
+
  
 
 
