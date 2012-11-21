@@ -3,28 +3,6 @@ from langtools.utils import readkr
 import matcher
 
 
-
-def fill_def_values(dict_attributes):
-
-    if dict_attributes['CAT'] == 'NOUN':
-        if 'CAS' not in dict_attributes:
-            dict_attributes['CAS'] = 'NOM'
-        if 'NUM' not in dict_attributes:
-            dict_attributes['NUM'] = 'SING'
-        if 'ANP' not in dict_attributes:
-            dict_attributes['ANP'] = '0'
-        if 'DEF' not in dict_attributes:
-            dict_attributes['DEF'] = '0'
-        if 'POSS' not in dict_attributes:
-            dict_attributes['POSS'] = '0'
-    if dict_attributes['CAT'] == 'ADJ':
-        if 'CAS' not in dict_attributes:
-            dict_attributes['CAS'] = 'NOM'        
-    if 'SRC' in dict_attributes:
-        dict_attributes['SRC']['STEM'] = fill_def_values(dict_attributes['SRC']['STEM'])
-    return dict_attributes
-
-
 def find_next_kr(string):
     
     first = len(string)
