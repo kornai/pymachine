@@ -126,14 +126,10 @@ class SatisfiedAVMMatcher(Matcher):
             # Not an avm
             return False
 
-
 class PatternMatcher(Matcher):
-    
     """ Matches a rule. """
-    
     def __init__(self, pattern):
         self.pattern = pattern
-    
 
     def _subset(self, small, large):
         for key in small:
@@ -148,8 +144,6 @@ class PatternMatcher(Matcher):
                         if len(small[key]) == 0 or small[key][0] != '@':
                             return False
         return True             
-            
-    
  
     def _match(self, machine):
         return self._subset(self.pattern, machine.control.kr) 
