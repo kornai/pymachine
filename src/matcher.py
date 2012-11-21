@@ -156,9 +156,5 @@ class PatternMatcher(Matcher):
     
  
     def _match(self, machine):
-        return self._subset(self.pattern, machine.control) 
-
- 
-
-
+        return self._subset(self.pattern, machine.control.kr) 
 
