@@ -4,7 +4,7 @@ from collections import defaultdict
 from itertools import permutations
 from copy import deepcopy as copy
 
-from fst import FSA
+from fst import FSA, FST
 from matcher import PrintnameMatcher
 from matcher import PosControlMatcher as PosMatcher
 from machine import Machine
@@ -62,10 +62,22 @@ class Construction(object):
         # hardcoded into the code, later it will be done by Machine objects
 
 class NPConstruction(Construction):
-    def __init__(self, rule, operators):
+    def __init__(self, name, rule, operators):
         self.rule = rule  # TODO: create control
         self.matchers = parse_rule(self.rule)
         self.operators = operators
+        Construction.__init__(self, name, self._create_control(),
+                              Construction.CHUNK)
+
+    def _create_control(self):
+        control = FSA()
+        control.add_state("0", is_init=True, is_final=False)
+        control.add_state(str(len(self.matchers)), is_init=False, is_final=True)
+        for state in xrange(1, len(self.matchers)):
+            control.add_state(str(state), is_init=False, is_final=False)
+            control.add_transition(self.matchers[state - 1],
+                                   str(state - 1), str(state))
+        return control
 
     def last_check(self, seq):
         """
@@ -162,7 +174,7 @@ class VerbConstruction(Construction):
         arguments.remove("VERB")
         
         # this will be a hypercube
-        control = FSA()
+        control = FST()
 
         # zero state is for verb
         control.add_state("0", is_init=True, is_final=False)
@@ -185,7 +197,7 @@ class VerbConstruction(Construction):
             for arg in path:
                 increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
-                control.add_transition(self.matchers[arg],
+                control.add_transition(self.matchers[arg], [],
                         str(actual_state), str(new_state))
 
                 actual_state = new_state
