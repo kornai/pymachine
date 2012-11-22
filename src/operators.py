@@ -5,7 +5,7 @@ from control import KRPosControl, ConceptControl
 
 class Operator(object):
     """The abstract superclass of the operator hierarchy."""
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         """
         Acts on the machines in the randomly accessible sequence @p seq.
         @note The indices of the machines affected by the operation must be
@@ -25,7 +25,7 @@ class AppendOperator(Operator):
         self.Y = Y
         self.part = part
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         seq[self.X].append(seq[self.Y], self.part)
         return seq[self.X]
 
@@ -37,7 +37,7 @@ class ExpandOperator(Operator):
         """
         self.lexicon = lexicon
 
-    def act(self, input):
+    def act(self, input, working_area=None):
         """
         @param input the machine read by the transition.
         @param working_area a list.
@@ -52,7 +52,7 @@ class FeatChangeOperator(Operator):
         self.key = key
         self.value = value
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         if len(seq) > 1:
             raise ValueError("FeatChangeOperator can now only change " +
                              "one machine as its input")
@@ -77,7 +77,7 @@ class CreateBinaryOperator(Operator):
         self.first = first
         self.second = second
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         # HACK zseder: I will assume input of act as a sequence even though
         # I know this will be changed later, only in the sake of not seeming
         # LAZY
@@ -89,5 +89,5 @@ class CreateBinaryOperator(Operator):
 class FillArgumentOperator(Operator):
     """Fills the argument of the representation in the working area."""
     # TODO makrai
-    def act(self, input):
+    def act(self, input, working_area=None):
         pass
