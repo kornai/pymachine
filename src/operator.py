@@ -31,7 +31,7 @@ class AppendOperator(Operator):
 
 class ExpandOperator(Operator):
     """Expands an active machine."""
-    def __init__(self, lexicon, i):
+    def __init__(self, lexicon):
         """
         @param lexicon the lexicon.
         """
