@@ -72,9 +72,9 @@ class NPConstruction(Construction):
     def _create_control(self):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
-        control.add_state(str(len(self.matchers)), is_init=False, is_final=True)
-        for state in xrange(1, len(self.matchers)):
-            control.add_state(str(state), is_init=False, is_final=False)
+        for state in xrange(1, len(self.matchers) + 1):
+            control.add_state(str(state), is_init=False,
+                    is_final=(state == len(self.matchers)))
             control.add_transition(self.matchers[state - 1],
                                    str(state - 1), str(state))
         return control
