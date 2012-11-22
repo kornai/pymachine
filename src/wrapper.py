@@ -2,14 +2,21 @@
 # vim: set fileencoding=utf-8 :
 
 import os
+import sys
+import logging
 import ConfigParser
 
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
+from construction import VerbConstruction, DummyNPConstruction,\
+        PostPConstruction, TheConstruction, MaxNP_InBetweenPostP_Construction,\
+        AVMConstruction
+from matcher import FileContainsMatcher, EnumMatcher, PrintnameMatcher,\
+        PosControlMatcher as PosMatcher, AndMatcher, NotMatcher, ConceptMatcher,\
+        SatisfiedAVMMatcher
+
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
-from construction import *
-from matcher import *
 from sup_dic import supplementary_dictionary_reader as sdreader
 from avm import AVM
 
@@ -57,15 +64,15 @@ class Wrapper:
         # TODO this should be created automatically, maybe from knowing,
         # that "megy" is actually a verb, there is a POS in the definitions
         try:
-            megy_construction = VerbConstruction("megy", self.lexicon.static[
-                "megy"], self.supp_dict)
-            del self.lexicon.static["megy"]
+            megy_construction = VerbConstruction("megy", self.lexicon,
+                                                 self.supp_dict)
+            #del self.lexicon.static["megy"]
             #self.lexicon.add_construction(megy_construction)
         except KeyError:
             pass
         try:
-            tesz_construction = VerbConstruction("tesz", self.lexicon.static[
-                "tesz"], self.supp_dict)
+            tesz_construction = VerbConstruction("tesz", self.lexicon,
+                                                 self.supp_dict)
             del self.lexicon.static["tesz"]
             self.lexicon.add_construction(tesz_construction)
         except KeyError:
@@ -160,12 +167,27 @@ class Wrapper:
 
         return results
 
-def test():
-    w = Wrapper(config_filename)
-    w.run([([("a", "DET"),
-             ("kek", "ADJ"),
-             ("kockat", "NOUN<CAS<ACC>>")
-            ], "ACC")])
+def test(cfg_filename):
+#    w = Wrapper(cfg_filename)
+    #w.run([([("a", "a", "a/DET"),
+             #("piros", "piros", "piros/ADJ"),
+             #("kockat", "kocka", "kocka/NOUN<CAS<ACC>>")
+            #], "ACC")])
+
+    from construction import NPConstruction
+    from operators import AppendOperator
+    npc = NPConstruction("1F", "asdf-> ADJ<CAS<NOM>> NOUN", AppendOperator(1, 0))
+    test_np = [
+         ("piros", "piros", "piros/ADJ"),
+         ("kockat", "kocka", "kocka/NOUN<CAS<ACC>>")]
+
+    sp = SentenceParser()
+    machines = sp.parse(test_np)
+    if npc.check(machines):
+        print npc.act(machines)
+    else:
+        print "In your face!"
 
 if __name__ == "__main__":
-    test() 
+    logging.basicConfig(level=logging.DEBUG)
+    test(sys.argv[1]) 
