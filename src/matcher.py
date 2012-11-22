@@ -1,6 +1,5 @@
 import re
 import logging
-from np_parser import subset
 from control import PosControl, ConceptControl
 
 class Matcher(object):
@@ -128,13 +127,24 @@ class SatisfiedAVMMatcher(Matcher):
             return False
 
 class PatternMatcher(Matcher):
-    
+    """ Matches a rule. """
     def __init__(self, pattern):
         self.pattern = pattern
-    
-    def _match(self, machine):
-        return subset(self.pattern, machine.control) #?
+
+    def _subset(self, small, large):
+        for key in small:
+            if key not in large:
+                return False    
+            else:
+                if type(small[key]) == dict:
+                    return self._subset(small[key], large[key])
+                else:  
+                    if small[key] != large[key]:
+                        #@ denotes a Greek character (matching everything). 
+                        if len(small[key]) == 0 or small[key][0] != '@':
+                            return False
+        return True             
  
-
-
+    def _match(self, machine):
+        return self._subset(self.pattern, machine.control.kr) 
 

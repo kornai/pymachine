@@ -79,8 +79,7 @@ class NPConstruction(Construction):
         greeks = defaultdict(set)
         for i in xrange(len(seq)):
             if not self._collect_variable_values(
-                    # TODO: .control?
-                    patterns[i], seq[i].control, greeks):
+                    patterns[i], seq[i].control.kr, greeks):
                 return False
         for v in greeks.values():
             if len(v) > 1:

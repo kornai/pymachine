@@ -6,14 +6,13 @@ from matcher import Matcher
 from avm import AVM
 
 class FSA(object):
-    def __init__(self, regex_transitions=True):
+    def __init__(self):
         self.states = set()
         self.input_alphabet = set()
         self.init_states = set()
         self.final_states = set()
         self.transitions = defaultdict(dict)
         self.active_states = None
-        self.regex_transitions = regex_transitions
 
     def add_state(self, state, is_init=False, is_final=False):
         self.states.add(state)
@@ -86,28 +85,28 @@ class FSA(object):
                 self.read(what_)
 
 class FST(FSA):
-    def __init__(self, output_alphabet=None):
+    def __init__(self):
         FSA.__init__(self)
-        if output_alphabet is None:
-            self.output_alphabet = set()
-        else:
-            self.set_output_aplhabet(output_alphabet)
 
-    def set_output_alphabet(self, a):
-        if isinstance(a, set):
-            self.output_alphabet = a
-        else:
-            raise TypeError("output alphabet has to be type of set")
+    def add_transition(self, matcher, operators, input_state, output_state):
+        if input_state not in self.states or output_state not in self.states:
+            raise ValueError("transition states has to be in states already")
+        if not isinstance(matcher, Matcher):
+            raise TypeError("transition's matcher has to be of type Matcher")
+        self.transitions[input_state][matcher] = (output_state, operators)
 
-    def add_transition(self, input_string, output_string, input_state,
-                       output_state):
-        # TODO
-        # outputs are strings? what if input was regexp?
-        raise Exception("FST.add_transition() has to be implemented.")
+    def read_machine(self, machine):
+        self.check_states()
+        if self.active_states is None:
+            self.init_active_states()
+        new_active_states = set() 
+        for active_state in self.active_states:
+            for transition, (out_state, operators) in (
+                self.transitions[active_state].iteritems()):
 
-    def read_symbol(self, string):
-        # TODO
-        # deterministic or non-deterministic?
-        # output is a print, a function call or what?
-        raise Exception("FST.read_symbol() has to be implemented.")
+                if transition.match(machine):
+                    for op in operators:
+                        op.act()
+                    new_active_states.add(out_state)
+        self.active_states = new_active_states
 
