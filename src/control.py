@@ -24,7 +24,7 @@ class PosControl(Control):
 class KRPosControl(Control):
     def __init__(self, pos, machine=None):
         Control.__init__(self, machine)
-        self.kr = kr2dict(pos)
+        self.kr = kr2dict(pos, True)
 
 class ConceptControl(Control):
     """object controlling machines that were not in the sentence, but

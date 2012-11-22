@@ -27,22 +27,7 @@ class AppendOperator(Operator):
 
     def act(self, seq, working_area=None):
         seq[self.X].append(seq[self.Y], self.part)
-        return seq[self.X]
-
-class ExpandOperator(Operator):
-    """Expands an active machine."""
-    def __init__(self, lexicon):
-        """
-        @param lexicon the lexicon.
-        """
-        self.lexicon = lexicon
-
-    def act(self, input, working_area=None):
-        """
-        @param input the machine read by the transition.
-        @param working_area a list.
-        """
-        return self.lexicon.expand(input)
+        return [seq[self.X]]
 
 class FeatChangeOperator(Operator):
     """ Changes one feature of input machines control, that is a dictionary
@@ -60,13 +45,24 @@ class FeatChangeOperator(Operator):
             raise TypeError("Input machine of FeatChangeOperator can only " +
                             "have KRPosControl as its control")
         seq[0].control.kr[self.key] = self.value
-        return seq[0]
+        return [seq[0]]
 
 class AddArbitraryStringOperator(Operator):
     # TODO zseder: I wont implement this before talking to someone about
     # AppendOperator, these two should be integrated to one, maybe Operator
     # later will be changed to have working_area, so postponed until then
-    pass
+    def __init__(self, X, arbitrary_string, part=1):
+        """
+        @param X index of the machine to whose partition arbitrary_string will be appended.
+        @param part the partition index.
+        """
+        self.X = X
+        self.arbitrary_string = arbitrary_string
+        self.part = part
+
+    def act(self, seq, working_area=None):
+        seq[self.X].append(self.arbitrary_string, self.part)
+        return seq
 
 class CreateBinaryOperator(Operator):
     """ Creates a binary machine and adds input machines to its partitions"""
@@ -84,10 +80,25 @@ class CreateBinaryOperator(Operator):
         m = Machine(Monoid(self.what, 2), ConceptControl())
         m.append(self.first, 1)
         m.append(self.second, 2)
-        return m
+        return [m]
 
 class FillArgumentOperator(Operator):
     """Fills the argument of the representation in the working area."""
     # TODO makrai
     def act(self, input, working_area=None):
         pass
+
+class ExpandOperator(Operator):
+    """Expands an active machine."""
+    def __init__(self, lexicon):
+        """
+        @param lexicon the lexicon.
+        """
+        self.lexicon = lexicon
+
+    def act(self, input, working_area=None):
+        """
+        @param input the machine read by the transition.
+        @param working_area a list.
+        """
+        return self.lexicon.expand(input)
