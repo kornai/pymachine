@@ -14,6 +14,7 @@ def parse_rule(rule):
 def main():
     rules = sys.stdin.readlines()
     for rule in rules:
+        if rule[0]=='#' or rule == '\n': continue
         krs_list = parse_rule(rule.strip())    
         for kr in krs_list:
             print kr.pattern
