@@ -10,7 +10,7 @@ except ImportError:
     logging.critical("PyParsing has to be installed on the computer")
     sys.exit(-1)
 
-from langtools.utils.accents import decode_from_proszeky
+from langtools.string.encoding import decode_from_proszeky
 
 from machine import Machine
 from monoid import Monoid
