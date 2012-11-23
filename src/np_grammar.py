@@ -1,6 +1,7 @@
 from construction import NPConstruction
 from operators import AppendOperator, FeatChangeOperator, FeatCopyOperator, \
-                      AddArbitraryStringOperator, CreateBinaryOperator
+                      AddArbitraryStringOperator, CreateBinaryOperator, \
+                      DeleteOperator
 
 np_rules = []
 
@@ -37,9 +38,12 @@ np_rules.append(NPConstruction("",
         []))
 
 #ND a (zo2ld) pingvin, egy (zo2ld) pingvin
-np_rules.append(NPConstruction("",
+np_rules.append(NPConstruction("3F",
         "NOUN<BAR<3>><DEF<@a>> -> ART<DEF<@a>> NOUN<BAR<2>>",
-        []))
+        [
+        FeatCopyOperator(0, 1, "DEF"),
+        DeleteOperator(0)
+        ]))
 
 #PK Eleme1r
 np_rules.append(NPConstruction("",
