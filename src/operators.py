@@ -77,6 +77,15 @@ class FeatCopyOperator(Operator):
                 pass
         return seq
 
+class DeleteOperator(Operator):
+    """Deletes the <tt>n</tt>th machine from the input sequence."""
+    def __init__(self, n):
+        self.n = n
+
+    def act(self, seq, working_area=None):
+        del seq[self.n]
+        return seq
+
 class AddArbitraryStringOperator(Operator):
     # TODO zseder: I wont implement this before talking to someone about
     # AppendOperator, these two should be integrated to one, maybe Operator
