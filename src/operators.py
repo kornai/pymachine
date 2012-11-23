@@ -47,6 +47,36 @@ class FeatChangeOperator(Operator):
         seq[0].control.kr[self.key] = self.value
         return [seq[0]]
 
+class FeatCopyOperator(Operator):
+    """
+    Copies the specified feature from the KR POS control of one machine to the
+    others. This Operator does not change the sequence.
+
+    @note Does not support the copying of embedded (derivational) features.
+    """
+    def __init__(self, from_m, to_m, keys):
+        """
+        @param from_m the index of the machine whose features are copied.
+        @param to_m the index of the machine whose control is updated.
+        @param keys the names of the features to be copied.
+        """
+        self.from_m = from_m
+        self.to_m   = to_m
+        self.keys   = keys
+
+    def act(self, seq, working_area=None):
+        if not (isinstance(seq[self.from_m].control, KRPosControl) and
+                isinstance(seq[self.to_m].control, KRPosControl)):
+            raise TypeError("FeatCopyOperator can only work on machines with " +
+                            "KRPosControl as their controls.")
+        for key in self.keys:
+            try:
+                seq[self.to_m].control.kr[key] = \
+                        seq[self.from_m].control.kr[key]
+            except KeyError:
+                pass
+        return seq
+
 class AddArbitraryStringOperator(Operator):
     # TODO zseder: I wont implement this before talking to someone about
     # AppendOperator, these two should be integrated to one, maybe Operator
