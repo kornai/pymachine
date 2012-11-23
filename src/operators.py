@@ -112,6 +112,14 @@ class CreateBinaryOperator(Operator):
         m.append(self.second, 2)
         return [m]
 
+
+###############################
+###                         ###
+### There be dragons ahead! ###
+###                         ###
+###############################
+
+
 class FillArgumentOperator(Operator):
     """Fills the argument of the representation in the working area."""
     # TODO makrai
