@@ -131,9 +131,18 @@ class CreateBinaryOperator(Operator):
 
 class FillArgumentOperator(Operator):
     """Fills the argument of the representation in the working area."""
-    # TODO makrai
-    def act(self, input, working_area=None):
-        pass
+
+    def __init__(self, case):
+        self.case = case
+
+    def act(self, argm_mach, machine=self.working_area):
+        for part_ind, parti in enumerate(machine.base.partitions[1:]):
+            part_ind += 1
+            for submach_ind, submach in enumerate(parti):
+                if submach.printname() == case:
+                    submach = argm_mach # TODO unify
+                else:
+                    self.act(argm_mach, submach)
 
 class ExpandOperator(Operator):
     """Expands an active machine."""
