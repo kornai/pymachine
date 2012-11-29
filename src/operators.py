@@ -135,14 +135,16 @@ class FillArgumentOperator(Operator):
     def __init__(self, case):
         self.case = case
 
-    def act(self, argm_mach, machine=self.working_area):
-        for part_ind, parti in enumerate(machine.base.partitions[1:]):
+    def act(self, arg_mach, machine=None):
+        if not machine:
+            machine = self.working_area
+        for part_ind, part in enumerate(machine.base.partitions[1:]):
             part_ind += 1
-            for submach_ind, submach in enumerate(parti):
-                if submach.printname() == case:
-                    submach = argm_mach # TODO unify
+            for submach_ind, submach in enumerate(part):
+                if submach.printname() == self.case:
+                    part[submach_ind] = arg_mach  # TODO unify
                 else:
-                    self.act(argm_mach, submach)
+                    self.act(arg_mach, submach)
 
 class ExpandOperator(Operator):
     """Expands an active machine."""
