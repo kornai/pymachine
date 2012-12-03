@@ -9,7 +9,7 @@ from matcher import PrintnameMatcher
 from matcher import PosControlMatcher as PosMatcher
 from machine import Machine
 from monoid import Monoid
-from control import PosControl, ElviraPluginControl
+from control import PosControl, ElviraPluginControl, KRPosControl
 from constants import deep_cases
 from avm import AVM
 from operators import ExpandOperator
@@ -125,6 +125,12 @@ class VerbConstruction(Construction):
     """A default construction for verbs. It reads definitions, discovers
     cases, and builds a control from it. After that, the act() will do the
     linking process, eg. link the verb with other words, object, subject, etc.
+
+    Defines a single Machine as the "working area": the element in X that we
+    follow. An operator represents a relation in phi; however, typically we
+    only care about one element among the potentially infinite number of x's.
+    Hence, it is enough to maintain a single Machine as a placeholder for
+    this element.
     """
     def __init__(self, name, lexicon, supp_dict):
         self.name = name
@@ -137,6 +143,7 @@ class VerbConstruction(Construction):
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
         self.activated = False
+        self.working_area = Machine(Monoid(None), KRPosControl('stem/NOUN'))
 
     def generate_phi(self):
         arguments = self.arg_locations.keys()

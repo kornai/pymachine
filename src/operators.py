@@ -4,20 +4,8 @@ from monoid import Monoid
 from control import KRPosControl, ConceptControl
 
 class Operator(object):
-    """
-    The abstract superclass of the operator hierarchy.
-
-    Defines a single Machine as the "working area": the element in X that we
-    follow. An operator represents a relation in phi; however, typically we
-    only care about one element among the potentially infinite number of x's.
-    Hence, it is enough to maintain a single Machine as a placeholder for
-    this element.
-    """
-    # TODO: working_area must be in the construction
-    def __init__(self):
-        self.working_area = Machine(Monoid(None), KRPosControl('stem/NOUN'))
-
-    def act(self, seq):
+    """The abstract superclass of the operator hierarchy."""
+    def act(self, seq, working_area=None):
         """
         Acts on the machines in the randomly accessible sequence @p seq.
         @note The indices of the machines affected by the operation must be
@@ -38,7 +26,7 @@ class AppendOperator(Operator):
         self.Y = Y
         self.part = part
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         seq[self.X].append(seq[self.Y], self.part)
         return [seq[self.X]]
 
@@ -51,7 +39,7 @@ class FeatChangeOperator(Operator):
         self.key = key
         self.value = value
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         if len(seq) > 1:
             raise ValueError("FeatChangeOperator can now only change " +
                              "one machine as its input")
@@ -79,7 +67,7 @@ class FeatCopyOperator(Operator):
         self.to_m   = to_m
         self.keys   = keys
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         if not (isinstance(seq[self.from_m].control, KRPosControl) and
                 isinstance(seq[self.to_m].control, KRPosControl)):
             raise TypeError("FeatCopyOperator can only work on machines with " +
@@ -98,7 +86,7 @@ class DeleteOperator(Operator):
         Operator.__init__(self)
         self.n = n
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         del seq[self.n]
         return seq
 
@@ -116,7 +104,7 @@ class AddArbitraryStringOperator(Operator):
         self.arbitrary_string = arbitrary_string
         self.part = part
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         seq[self.X].append(self.arbitrary_string, self.part)
         return seq
 
@@ -130,7 +118,7 @@ class CreateBinaryOperator(Operator):
         self.first = first
         self.second = second
 
-    def act(self, seq):
+    def act(self, seq, working_area=None):
         # HACK zseder: I will assume input of act as a sequence even though
         # I know this will be changed later, only in the sake of not seeming
         # LAZY
@@ -154,8 +142,8 @@ class FillArgumentOperator(Operator):
         Operator.__init__(self)
         self.case = case
 
-    def act(self, arg_mach):
-        self._act(arg_mach, self.working_area)
+    def act(self, arg_mach, working_area):
+        self._act(arg_mach, working_area)
 
     def _act(self, arg_mach, machine):
         """Recursive helper method for act()."""
@@ -176,8 +164,9 @@ class ExpandOperator(Operator):
         Operator.__init__(self)
         self.lexicon = lexicon
 
-    def act(self, input):
+    def act(self, input, working_area=None):
         """
         @param input the machine read by the transition.
         """
         return self.lexicon.expand(input)
+
