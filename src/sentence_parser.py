@@ -22,7 +22,7 @@ class SentenceParser:
         machines = []
         for token_or_chunk in sentence:
             # chunk or token?
-            if type(token_or_chunk[0]) == list and token_or_chunk[1] == "NP":
+            if type(token_or_chunk[0]) == list:
                 # chunk
                 chunk, _ = token_or_chunk
                 machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis)) 
