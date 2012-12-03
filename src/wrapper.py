@@ -176,15 +176,16 @@ def test(cfg_filename):
 
     from construction import NPConstruction
     from operators import AppendOperator
-    npc = NPConstruction("1F", "asdf-> ADJ<CAS<NOM>> NOUN", AppendOperator(1, 0))
-    test_np = [
+    from machine import Machine
+    npc = NPConstruction("1F", "asdf-> ADJ<CAS<NOM>> NOUN", [AppendOperator(1, 0)])
+    test_np = [([
          ("piros", "piros", "piros/ADJ"),
-         ("kockat", "kocka", "kocka/NOUN<CAS<ACC>>")]
+         ("kockat", "kocka", "kocka/NOUN<CAS<ACC>>")], "ACC")]
 
     sp = SentenceParser()
-    machines = sp.parse(test_np)
+    machines = sp.parse(test_np)[0]
     if npc.check(machines):
-        print npc.act(machines)
+        print Machine.to_debug_str(npc.act(machines))
     else:
         print "In your face!"
 

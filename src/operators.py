@@ -47,6 +47,45 @@ class FeatChangeOperator(Operator):
         seq[0].control.kr[self.key] = self.value
         return [seq[0]]
 
+class FeatCopyOperator(Operator):
+    """
+    Copies the specified feature from the KR POS control of one machine to the
+    others. This Operator does not change the sequence.
+
+    @note Does not support the copying of embedded (derivational) features.
+    """
+    def __init__(self, from_m, to_m, keys):
+        """
+        @param from_m the index of the machine whose features are copied.
+        @param to_m the index of the machine whose control is updated.
+        @param keys the names of the features to be copied.
+        """
+        self.from_m = from_m
+        self.to_m   = to_m
+        self.keys   = keys
+
+    def act(self, seq, working_area=None):
+        if not (isinstance(seq[self.from_m].control, KRPosControl) and
+                isinstance(seq[self.to_m].control, KRPosControl)):
+            raise TypeError("FeatCopyOperator can only work on machines with " +
+                            "KRPosControl as their controls.")
+        for key in self.keys:
+            try:
+                seq[self.to_m].control.kr[key] = \
+                        seq[self.from_m].control.kr[key]
+            except KeyError:
+                pass
+        return seq
+
+class DeleteOperator(Operator):
+    """Deletes the <tt>n</tt>th machine from the input sequence."""
+    def __init__(self, n):
+        self.n = n
+
+    def act(self, seq, working_area=None):
+        del seq[self.n]
+        return seq
+
 class AddArbitraryStringOperator(Operator):
     # TODO zseder: I wont implement this before talking to someone about
     # AppendOperator, these two should be integrated to one, maybe Operator
@@ -82,11 +121,30 @@ class CreateBinaryOperator(Operator):
         m.append(self.second, 2)
         return [m]
 
+
+###############################
+###                         ###
+### There be dragons ahead! ###
+###                         ###
+###############################
+
+
 class FillArgumentOperator(Operator):
     """Fills the argument of the representation in the working area."""
-    # TODO makrai
-    def act(self, input, working_area=None):
-        pass
+
+    def __init__(self, case):
+        self.case = case
+
+    def act(self, arg_mach, machine=None):
+        if not machine:
+            machine = self.working_area
+        for part_ind, part in enumerate(machine.base.partitions[1:]):
+            part_ind += 1
+            for submach_ind, submach in enumerate(part):
+                if submach.printname() == self.case:
+                    part[submach_ind] = arg_mach  # TODO unify
+                else:
+                    self.act(arg_mach, submach)
 
 class ExpandOperator(Operator):
     """Expands an active machine."""
