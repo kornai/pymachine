@@ -3,7 +3,6 @@ import sys
 from langtools.utils import readkr
 
 import matcher
-import np_grammar
 from machine import Machine
 
 def parse_rule(rule):
@@ -16,6 +15,8 @@ def parse_rule(rule):
     return matchers
 
 def parse_chunk(chunk):
+    # HACK local import to avoid import circle
+    from np_grammar import np_rules
     # Chunk constructions are run here to form the phrase machines.
     change = True
     while change:
@@ -27,7 +28,7 @@ def parse_chunk(chunk):
                     #print begin, end, part
                     #for m in part:
                         #print m.control.kr
-                    for c in np_grammar.np_rules:
+                    for c in np_rules:
                         if c.check(part):
                             print c.name
                             c_res = c.act(part)
