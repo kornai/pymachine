@@ -25,13 +25,13 @@ class SentenceParser:
             if type(token_or_chunk[0]) == list and token_or_chunk[1] == "NP":
                 # chunk
                 chunk, _ = token_or_chunk
-                machines.append([Machine(Monoid(stem), Control(analysis)) 
-                                 for _, stem,  analysis in chunk])
+                machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis)) 
+                                 for _, analysis in chunk])
             else:
                 # token
                 token = token_or_chunk
-                _, stem, analysis = token
-                machines.append([Machine(Monoid(stem), Control(analysis))])
+                _, analysis = token
+                machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis))])
         return machines
 
 if __name__ == "__main__":
