@@ -30,6 +30,7 @@ def parse_chunk(chunk):
                                 raise ValueError  # == break outer
         except ValueError:
             pass
+    return chunk
 
 def _subsequence_index(seq, length):
     """
