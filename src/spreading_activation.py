@@ -2,18 +2,7 @@ from control import PluginControl
 from construction import Construction
 import logging
 import itertools
-
-def subsequence_index(seq, length):
-    """
-    Returns the start and end indices of all subsequences of @p seq of length
-    @p length as an iterator.
-    """
-    l = len(seq)
-    if l < length:
-        return
-    for begin in xrange(0, l - length + 1):
-        yield begin, begin + length
-    return
+from np_parser import parse_chunk
 
 class SpreadingActivation(object):
     """Implements spreading activation (surprise surprise)."""
@@ -42,30 +31,13 @@ class SpreadingActivation(object):
         self.lexicon.add_active(sentence)
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
-        chunk_constructions = set([c for c in self.lexicon.constructions
-                                   if c.type_ == Construction.CHUNK])
         semantic_constructions = set([c for c in self.lexicon.constructions
                                       if c.type_ == Construction.SEMANTIC])
         avm_constructions = set()
 
         # Chunk constructions are run here to form the phrase machines.
         for chunk in filter(lambda c: len(c) > 1, chunks):
-            change = True
-            while change:
-                change = False
-                try:
-                    for length in xrange(2, len(chunk) + 1):
-                        for begin, end in subsequence_index(chunk, length):
-                            part = chunk[begin:end]
-                            for c in chunk_constructions:
-                                if c.check(part):
-                                    c_res = c.act(part)
-                                    if c_res is not None:
-                                        change = True
-                                        chunk[begin:end] = c_res  # c_res should contain a single machine here (?)
-                                        raise ValueError  # == break outer
-                except ValueError:
-                    pass
+            parse_chunk(chunk)
 
         # This condition works for the demo, but we need to find another one for
         # the whole lexicon

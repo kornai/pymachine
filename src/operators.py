@@ -21,6 +21,7 @@ class AppendOperator(Operator):
         @param Y index of the machine to be appended.
         @param part the partition index.
         """
+        Operator.__init__(self)
         self.X = X
         self.Y = Y
         self.part = part
@@ -34,6 +35,7 @@ class FeatChangeOperator(Operator):
         representaion of a KR code
     """
     def __init__(self, key, value):
+        Operator.__init__(self)
         self.key = key
         self.value = value
 
@@ -60,6 +62,7 @@ class FeatCopyOperator(Operator):
         @param to_m the index of the machine whose control is updated.
         @param keys the names of the features to be copied.
         """
+        Operator.__init__(self)
         self.from_m = from_m
         self.to_m   = to_m
         self.keys   = keys
@@ -80,6 +83,7 @@ class FeatCopyOperator(Operator):
 class DeleteOperator(Operator):
     """Deletes the <tt>n</tt>th machine from the input sequence."""
     def __init__(self, n):
+        Operator.__init__(self)
         self.n = n
 
     def act(self, seq, working_area=None):
@@ -95,6 +99,7 @@ class AddArbitraryStringOperator(Operator):
         @param X index of the machine to whose partition arbitrary_string will be appended.
         @param part the partition index.
         """
+        Operator.__init__(self)
         self.X = X
         self.arbitrary_string = arbitrary_string
         self.part = part
@@ -108,6 +113,7 @@ class CreateBinaryOperator(Operator):
     
     def __init__(self, what, first, second):
         # TODO type checking of what to be binary
+        Operator.__init__(self)
         self.what = what 
         self.first = first
         self.second = second
@@ -133,11 +139,14 @@ class FillArgumentOperator(Operator):
     """Fills the argument of the representation in the working area."""
 
     def __init__(self, case):
+        Operator.__init__(self)
         self.case = case
 
-    def act(self, arg_mach, machine=None):
-        if not machine:
-            machine = self.working_area
+    def act(self, arg_mach, working_area):
+        self._act(arg_mach, working_area)
+
+    def _act(self, arg_mach, machine):
+        """Recursive helper method for act()."""
         for part_ind, part in enumerate(machine.base.partitions[1:]):
             part_ind += 1
             for submach_ind, submach in enumerate(part):
@@ -152,11 +161,12 @@ class ExpandOperator(Operator):
         """
         @param lexicon the lexicon.
         """
+        Operator.__init__(self)
         self.lexicon = lexicon
 
     def act(self, input, working_area=None):
         """
         @param input the machine read by the transition.
-        @param working_area a list.
         """
         return self.lexicon.expand(input)
+
