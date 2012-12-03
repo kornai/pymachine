@@ -1,7 +1,10 @@
 import sys
+
 from langtools.utils import readkr
+
 import matcher
 import np_grammar
+from machine import Machine
 
 def parse_rule(rule):
     right = rule.split('->')[1].strip()
@@ -18,11 +21,15 @@ def parse_chunk(chunk):
     while change:
         change = False
         try:
-            for length in xrange(2, len(chunk) + 1):
+            for length in xrange(len(chunk), 0, -1):
                 for begin, end in _subsequence_index(chunk, length):
                     part = chunk[begin:end]
+                    #print begin, end, part
+                    #for m in part:
+                        #print m.control.kr
                     for c in np_grammar.np_rules:
                         if c.check(part):
+                            print c.name
                             c_res = c.act(part)
                             if c_res is not None:
                                 change = True
@@ -48,13 +55,17 @@ def _subsequence_index(seq, length):
 def test_on_something():
     from sentence_parser import SentenceParser
     from langtools.corpustools.bie1_reader import read_bie1_corpus
-    sentences = read_bie1_corpus(file(sys.argv[1]))
+    import codecs
+    sentences = read_bie1_corpus(codecs.open(sys.argv[1], "r", "utf-8"))
     print sentences[0]
     sp = SentenceParser()
     machines = sp.parse(sentences[0])
     for chunk in filter(lambda c: len(c) > 1, machines):
         print chunk
-        print parse_chunk(chunk)
+        res = parse_chunk(chunk)
+        print res
+        for m in res:
+            print Machine.to_debug_str(m)
         print 
 
 def main():
