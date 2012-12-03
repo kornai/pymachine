@@ -10,14 +10,14 @@ np_rules.append(NPConstruction("1F",
 		"NOUN<BAR<1>> -> ADJ NOUN<BAR<0>>",
 		[
 		AppendOperator(1, 0),
-        FeatChangeOperator("BAR", 1)    
+        FeatChangeOperator("BAR", "1")    
 		]))
 
 #PK pingvin
 np_rules.append(NPConstruction("1f",
         "NOUN<BAR<1>> -> NOUN<BAR<0>>",
         [
-        FeatChangeOperator("BAR", 1)
+        FeatChangeOperator("BAR", "1")
         ]))
 
 #PK zo2ld
@@ -25,7 +25,7 @@ np_rules.append(NPConstruction("1G",
         "NOUN<BAR<1>> -> ADJ",
         [
         FeatChangeOperator("CAT", "NOUN"),
-        FeatChangeOperator("BAR", 1)    
+        FeatChangeOperator("BAR", "1")    
         ]))
 
 #PK ha1rom
@@ -33,7 +33,7 @@ np_rules.append(NPConstruction("2H",
         "NOUN<BAR<2>> -> NUM",
         [
         FeatChangeOperator("CAT", "NOUN"),
-        FeatChangeOperator("BAR", 2), 
+        FeatChangeOperator("BAR", "2"), 
         AddArbitraryStringOperator(0, "PLUR")
 
         ]))
@@ -43,7 +43,7 @@ np_rules.append(NPConstruction("2F",
         "NOUN<BAR<2> -> NUM NOUN<BAR<1>>",
         [
         AppendOperator(1, 0),
-        FeatChangeOperator("BAR", 2),
+        FeatChangeOperator("BAR", "2"),
         AddArbitraryStringOperator(0, "PLUR")    
         ]))
 
@@ -51,7 +51,7 @@ np_rules.append(NPConstruction("2F",
 np_rules.append(NPConstruction("2f",
         "NOUN<BAR<2>> -> NOUN<BAR<1>>",
         [
-        FeatChangeOperator("BAR", 2)    
+        FeatChangeOperator("BAR", "2")    
         ]))
 
 #ND a (zo2ld) pingvin, egy (zo2ld) pingvin
@@ -66,18 +66,18 @@ np_rules.append(NPConstruction("3F",
 np_rules.append(NPConstruction("3G",
         "NOUN<BAR<3>><DEF<1>> -> NOUN<BAR<0>><DEF<1>>",
         [
-        FeatChangeOperator("BAR", 3)
+        FeatChangeOperator("BAR", "3")
         ]))
 
 #PK Az
 np_rules.append(NPConstruction("3H",
         "NOUN<BAR<3>> -> ART",
         [
-        FeatChangeOperator("BAR", 3),
+        FeatChangeOperator("BAR", "3"),
         FeatChangeOperator("CAT", "NOUN")    
         ]))
 
-#RG Eleme1r zo2ld pingvine
+#RG Eleme1r ha1rom zo2ld pingvine
 np_rules.append(NPConstruction("",
         "NOUN<BAR<3>><POSS<0>> -> NOUN<BAR<3>><ANP<0>><CAS<NOM>> NOUN<BAR<2>><POSS<1>><DET<1>>",
         []))
