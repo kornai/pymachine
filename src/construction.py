@@ -144,31 +144,6 @@ class VerbConstruction(Construction):
         Construction.__init__(self, name, control)
         self.activated = False
 
-    def generate_phi(self):
-        arguments = self.arg_locations.keys()
-        # creating Matcher objects from arguments
-        self.matchers = {}
-        phi = {}
-
-        # Verb transition will imply no change, we put it into phi
-        # to implement act() easier
-        vm = PatternMatcher("VERB")
-        self.matchers["VERB"] = vm
-        phi[vm] = None
-
-        # normal arguments
-        for arg in arguments:
-            if arg.startswith("$"):
-                pm = self.supp_dict[arg]
-                self.matchers[arg] = pm
-                phi[pm] = self.arg_locations[arg]
-            else:
-                pm = PatternMatcher("CAS<{0}>".format(arg))
-                self.matchers[arg] = pm
-                phi[pm] = self.arg_locations[arg]
-
-        return phi
-
     def generate_control(self):
         arguments = self.matchers.keys()
         
@@ -225,32 +200,6 @@ class VerbConstruction(Construction):
             res = Construction.check(self, seq)
             logging.debug("Result of check is {0} and working area is:\n{1}".format(res, Machine.to_debug_str(self.working_area[0])))
             return res
-
-#    def act(self, seq):
-#        result = []
-#
-#        # put a clear machine into self.machine while verb_machine will be
-#        # the old self.machine, and the references in self.arg_locations
-#        # will point at good locations in verb_machine
-#        clear_machine = copy(self.machine)
-#        verb_machine = self.machine
-#        self.machine = clear_machine
-#        result.append(verb_machine)
-#
-#        for m in seq:
-#            for transition in self.phi:
-#                # skip None transitions (VERB)
-#                if self.phi[transition] is None:
-#                    continue
-#
-#                if transition.match(m):
-#                    # possible multiple places for one machine
-#                    for m_to, m_p_i in self.phi[transition]:
-#                        m_to.append(m, m_p_i)
-#                    break
-#
-#        self.activated = True
-#        return result
 
 class AVMConstruction(Construction):
     """this class will fill the slots in the AVM"""
