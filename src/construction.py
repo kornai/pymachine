@@ -6,7 +6,7 @@ from copy import deepcopy as copy
 
 from fst import FSA, FST
 from matcher import PrintnameMatcher
-from matcher import PosControlMatcher as KRPosMatcher
+from matcher import PatternMatcher
 from machine import Machine
 from monoid import Monoid
 from control import PosControl, ElviraPluginControl, KRPosControl
@@ -138,13 +138,13 @@ class VerbConstruction(Construction):
         self.machine = lexicon.static[name]
         self.supp_dict = supp_dict
         self.matchers = {}
+        self.working_area = [Machine(Monoid(None), KRPosControl('stem/VERB'))]
         self.discover_arguments()
         #self.phi = self.generate_phi()
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
         self.activated = False
-        self.working_area = [Machine(Monoid(None), KRPosControl('stem/VERB'))]
 
     def generate_phi(self):
         arguments = self.arg_locations.keys()
@@ -154,18 +154,18 @@ class VerbConstruction(Construction):
 
         # Verb transition will imply no change, we put it into phi
         # to implement act() easier
-        vm = KRPosMatcher("VERB")
+        vm = PatternMatcher("VERB")
         self.matchers["VERB"] = vm
         phi[vm] = None
 
         # normal arguments
         for arg in arguments:
-            if arg.startswith("@"):
+            if arg.startswith("$"):
                 pm = self.supp_dict[arg]
                 self.matchers[arg] = pm
                 phi[pm] = self.arg_locations[arg]
             else:
-                pm = KRPosMatcher("CAS<{0}>".format(arg))
+                pm = PatternMatcher("CAS<{0}>".format(arg))
                 self.matchers[arg] = pm
                 phi[pm] = self.arg_locations[arg]
 
@@ -189,8 +189,8 @@ class VerbConstruction(Construction):
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition(KRPosMatcher("VERB"),
-                               [ExpandOperator(self.lexicon)], "0", "1")
+        control.add_transition(PatternMatcher("VERB"), [ExpandOperator(
+            self.lexicon, self.working_area)], "0", "1")
 
         # count every transition as an increase in number of state
         for path in permutations(arguments):
@@ -199,8 +199,7 @@ class VerbConstruction(Construction):
                 increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
                 control.add_transition(self.matchers[arg], 
-                                       [FillArgumentOperator(arg)],
-                                       str(actual_state), str(new_state))
+                    [FillArgumentOperator(arg, self.working_area)],                                      str(actual_state), str(new_state))
 
                 actual_state = new_state
         return control
@@ -216,27 +215,29 @@ class VerbConstruction(Construction):
                 pn = part_machine.printname()
                 # we are interested in deep cases and
                 # supplementary regexps
-                if pn in deep_cases or pn.startswith("@"):
+                if pn in deep_cases or pn.startswith("$"):
                     to_remove = mi
 
-                    if pn.startswith("@"):
+                    if pn.startswith("$"):
                         self.matchers[pn] = self.supp_dict[pn]
                     else:
-                        self.matchers[pn] = KRPosMatcher("CAS<{0}>".format(pn))
+                        self.matchers[pn] = PatternMatcher("CAS<{0}>".format(pn))
 
                 # recursive call
                 self.discover_arguments(part_machine)
 
-            if to_remove is not None:
-                p = p[:to_remove] + p[to_remove+1:]
-                machine.base.partitions[pi] = p
+            #if to_remove is not None:
+                #p = p[:to_remove] + p[to_remove+1:]
+                #machine.base.partitions[pi] = p
 
 
     def check(self, seq):
         if self.activated:
             return False
         else:
-            return Construction.check(self, seq)
+            res = Construction.check(self, seq)
+            logging.debug("Result of check is {0} and working area is:\n{1}".format(res, Machine.to_debug_str(self.working_area[0])))
+            return res
 
 #    def act(self, seq):
 #        result = []
@@ -315,7 +316,7 @@ class TheConstruction(Construction):
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
         control.add_transition(PrintnameMatcher("^az?$"), "0", "1")
-        control.add_transition(KRPosMatcher("NOUN"), "1", "2")
+        #control.add_transition(KRPosMatcher("NOUN"), "1", "2")
 
         Construction.__init__(self, "TheConstruction", control,
                               type_=Construction.CHUNK)
@@ -333,8 +334,8 @@ class DummyNPConstruction(Construction):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=True)
-        control.add_transition(KRPosMatcher("ADJ"), "0", "0")
-        control.add_transition(KRPosMatcher("NOUN"), "0", "1")
+        #control.add_transition(KRPosMatcher("ADJ"), "0", "0")
+        #control.add_transition(KRPosMatcher("NOUN"), "0", "1")
 
         Construction.__init__(self, "DummyNPConstruction", control,
                               type_=Construction.CHUNK)
@@ -357,9 +358,9 @@ class MaxNP_InBetweenPostP_Construction(Construction):
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=False)
         control.add_state("3", is_init=False, is_final=True)
-        control.add_transition(KRPosMatcher("NOUN"), "0", "1")
-        control.add_transition(KRPosMatcher("POSTP\[ATTRIB\]\|ADJ", exact=True), "1", "2")
-        control.add_transition(KRPosMatcher("NOUN"), "2", "3")
+        #control.add_transition(KRPosMatcher("NOUN"), "0", "1")
+        #control.add_transition(KRPosMatcher("POSTP\[ATTRIB\]\|ADJ", exact=True), "1", "2")
+        #control.add_transition(KRPosMatcher("NOUN"), "2", "3")
         Construction.__init__(self, "MaxNP_InBetweenPostP_Construction", control,
                               type_=Construction.CHUNK)
 
@@ -381,8 +382,8 @@ class PostPConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition(KRPosMatcher("NOUN*"), "0", "1")
-        control.add_transition(KRPosMatcher("POSTP", exact=True), "1", "2")
+        #control.add_transition(KRPosMatcher("NOUN*"), "0", "1")
+        #control.add_transition(KRPosMatcher("POSTP", exact=True), "1", "2")
         Construction.__init__(self, "PostPConstruction", control, type_=
                               Construction.CHUNK)
 
