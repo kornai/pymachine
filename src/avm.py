@@ -48,7 +48,6 @@ class AVM(object):
     def satisfied(self):
         """Returns @c True, if all required arguments are filled in."""
         if self.bool_expr is not None:
-            logging.debug('OTTTT')
             return self.bool_expr.parseString(self.bool_str)[0]
         else:
             for value in self.__data.values():

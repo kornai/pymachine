@@ -1,5 +1,8 @@
 import re
 import logging
+
+from langtools.utils.readkr import kr_to_dictionary as kr_to_dict
+
 from control import PosControl, ConceptControl
 
 class Matcher(object):
@@ -129,7 +132,12 @@ class SatisfiedAVMMatcher(Matcher):
 class PatternMatcher(Matcher):
     """ Matches a rule. """
     def __init__(self, pattern):
-        self.pattern = pattern
+        if isinstance(pattern, str) or isinstance(pattern, unicode):
+            self.pattern = kr_to_dict("stem/" + pattern)
+        elif isinstance(pattern, dict):
+            self.pattern = pattern
+        else:
+            raise Exception("No allowed type for pattern")
 
     def _subset(self, small, large):
         for key in small:
@@ -146,5 +154,8 @@ class PatternMatcher(Matcher):
         return True             
  
     def _match(self, machine):
-        return self._subset(self.pattern, machine.control.kr) 
+        logging.debug("PatternMatcher[{0}]._match({1})".format(self.pattern, machine.control.kr))
+        res = self._subset(self.pattern, machine.control.kr)
+        logging.debug(res)
+        return res
 
