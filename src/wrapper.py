@@ -12,7 +12,7 @@ from construction import VerbConstruction, DummyNPConstruction,\
         PostPConstruction, TheConstruction, MaxNP_InBetweenPostP_Construction,\
         AVMConstruction
 from matcher import FileContainsMatcher, EnumMatcher, PrintnameMatcher,\
-        PosControlMatcher as PosMatcher, AndMatcher, NotMatcher, ConceptMatcher,\
+        AndMatcher, NotMatcher, ConceptMatcher,\
         SatisfiedAVMMatcher
 
 from spreading_activation import SpreadingActivation
@@ -86,8 +86,8 @@ class Wrapper:
 
         station_matcher = FileContainsMatcher(self.stations_fn)
         ic_name_matcher = AndMatcher(
-                EnumMatcher("ic_name", self.lexicon),
-                PosMatcher("<DET>")
+                EnumMatcher("ic_name", self.lexicon)#,
+                #PosMatcher("<DET>")
                 )
         src_matcher = AndMatcher(self.supp_dict["$HUN_GO_SRC"],
                                  station_matcher)
@@ -98,7 +98,7 @@ class Wrapper:
         ea.add_attribute("menetrend", PrintnameMatcher("schedule"), AVM.RREQ, None)
         ea.add_attribute("src", src_matcher, AVM.RREQ, "Budapest")
         ea.add_attribute("tgt", tgt_matcher, AVM.RREQ, None)
-        ea.add_attribute("date", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
+        #ea.add_attribute("date", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
         ea.set_satisfaction('vonat and menetrend and tgt')
         elvira_const = AVMConstruction(ea)
         self.lexicon.add_avm_construction(elvira_const)
@@ -107,7 +107,7 @@ class Wrapper:
         pta.add_attribute("BKSZ", PrintnameMatcher("bksz"), AVM.ROPT, None)
         pta.add_attribute("CLASS", EnumMatcher("class", self.lexicon),
                           AVM.RREQ, "2")
-        pta.add_attribute("DATE", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
+        #pta.add_attribute("DATE", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
         pta.add_attribute("DEST", tgt_matcher, AVM.RREQ, None)
         pta.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
         pta.add_attribute("RED", EnumMatcher("mav_reduction", self.lexicon),
@@ -136,13 +136,13 @@ class Wrapper:
 
         ita = ic_ticket_avm = AVM('ICTicketAvm')
         ita.add_attribute("CLASS", EnumMatcher("class", self.lexicon), AVM.RREQ, "2")
-        ita.add_attribute("DATE", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
+        #ita.add_attribute("DATE", PosMatcher("\[DATE\]$"), AVM.ROPT, None)
         ita.add_attribute("DEST", tgt_matcher, AVM.RREQ, None)
         ita.add_attribute("INV", PrintnameMatcher("invoice"), AVM.ROPT, None)
         ita.add_attribute("PLACE", EnumMatcher("seat", self.lexicon), AVM.ROPT, None)
         ita.add_attribute("SRC", src_matcher, AVM.RREQ, u"Budapest-Nyugati")
         ita.add_attribute("IC", ic_name_matcher, AVM.ROPT, None)
-        ita.add_attribute("TIME", PosMatcher("\[TIME\]"), AVM.RREQ, None)
+        #ita.add_attribute("TIME", PosMatcher("\[TIME\]"), AVM.RREQ, None)
         ita.set_satisfaction('SRC and CLASS and (IC or (TIME and DEST))')
         it_const = AVMConstruction(ita)
         self.lexicon.add_avm_construction(it_const)
@@ -202,3 +202,4 @@ def test_verb_c(cfg_filename):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     test_verb_c(sys.argv[1]) 
+
