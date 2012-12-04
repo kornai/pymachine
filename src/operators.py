@@ -1,4 +1,7 @@
 """Operator definitions."""
+
+import logging
+
 from machine import Machine
 from monoid import Monoid
 from control import KRPosControl, ConceptControl
@@ -143,6 +146,7 @@ class FillArgumentOperator(Operator):
         self.case = case
 
     def act(self, arg_mach, working_area):
+        logging.debug("FillArgOp acting on input {0} and working area {0}".format(arg_mach, working_area))
         self._act(arg_mach, working_area)
 
     def _act(self, arg_mach, machine):
@@ -168,6 +172,7 @@ class ExpandOperator(Operator):
         """
         @param input the machine read by the transition.
         """
+        logging.debug("ExpandOperator acting on input {0} and working area {0}".format(input, working_area))
         self.lexicon.expand(input)
         working_area[0] = input
 
