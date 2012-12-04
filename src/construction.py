@@ -135,12 +135,10 @@ class VerbConstruction(Construction):
     def __init__(self, name, lexicon, supp_dict):
         self.name = name
         self.lexicon = lexicon
-        self.machine = lexicon.static[name]
         self.supp_dict = supp_dict
         self.matchers = {}
         self.working_area = [Machine(Monoid(None), KRPosControl('stem/VERB'))]
-        self.discover_arguments()
-        #self.phi = self.generate_phi()
+        self.discover_arguments(lexicon.static[name])
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
@@ -204,20 +202,14 @@ class VerbConstruction(Construction):
                 actual_state = new_state
         return control
 
-    def discover_arguments(self, machine=None):
-        if machine is None:
-            machine = self.machine
-
+    def discover_arguments(self, machine):
         for pi, p in enumerate(machine.base.partitions[1:]):
             pi += 1
-            to_remove = None
             for mi, part_machine in enumerate(p):
                 pn = part_machine.printname()
                 # we are interested in deep cases and
                 # supplementary regexps
                 if pn in deep_cases or pn.startswith("$"):
-                    to_remove = mi
-
                     if pn.startswith("$"):
                         self.matchers[pn] = self.supp_dict[pn]
                     else:
@@ -225,11 +217,6 @@ class VerbConstruction(Construction):
 
                 # recursive call
                 self.discover_arguments(part_machine)
-
-            #if to_remove is not None:
-                #p = p[:to_remove] + p[to_remove+1:]
-                #machine.base.partitions[pi] = p
-
 
     def check(self, seq):
         if self.activated:
