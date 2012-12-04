@@ -151,7 +151,7 @@ class FillArgumentOperator(Operator):
 
     def act(self, arg_mach):
         logging.debug("FillArgOp acting on input {0} and working area {0}".format(arg_mach, self.working_area[0]))
-        self._act(arg_mach, self.working_area)
+        self._act(arg_mach, self.working_area[0])
 
     def _act(self, arg_mach, machine):
         """Recursive helper method for act()."""
@@ -161,7 +161,7 @@ class FillArgumentOperator(Operator):
                 if submach.printname() == self.case:
                     part[submach_ind] = arg_mach  # TODO unify
                 else:
-                    self.act(arg_mach, submach)
+                    self._act(arg_mach, submach)
 
 class ExpandOperator(Operator):
     """Expands an active machine."""
