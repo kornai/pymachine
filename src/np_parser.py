@@ -1,7 +1,5 @@
 import sys
 
-from langtools.utils import readkr
-
 import matcher
 from machine import Machine
 
@@ -9,8 +7,9 @@ def parse_rule(rule):
     right = rule.split('->')[1].strip()
     matchers = []
     for kr in right.split():        
-            kr_dict = readkr.kr_to_dictionary('stem/' + kr)
-            pattermatch = matcher.PatternMatcher(kr_dict)
+            #kr_dict = readkr.kr_to_dictionary('stem/' + kr)
+            #pattermatch = matcher.PatternMatcher(kr_dict)
+            pattermatch = matcher.PatternMatcher(kr)
             matchers.append(pattermatch)
     return matchers
 
