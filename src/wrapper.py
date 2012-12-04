@@ -89,9 +89,9 @@ class Wrapper:
                 EnumMatcher("ic_name", self.lexicon),
                 PosMatcher("<DET>")
                 )
-        src_matcher = AndMatcher(self.supp_dict["@HUN_GO_SRC"],
+        src_matcher = AndMatcher(self.supp_dict["$HUN_GO_SRC"],
                                  station_matcher)
-        tgt_matcher = AndMatcher(self.supp_dict["@HUN_GO_TGT"],
+        tgt_matcher = AndMatcher(self.supp_dict["$HUN_GO_TGT"],
                                  station_matcher)
         ea = elvira_avm = AVM('ElviraAVM')
         ea.add_attribute("vonat", PrintnameMatcher("train"), AVM.RREQ, None)
@@ -189,6 +189,16 @@ def test(cfg_filename):
     else:
         print "In your face!"
 
+def test_verb_c(cfg_filename):
+    sentence = [(u'Mikor', u'mikor/ADV'), (u'Megy', u'megy/VERB'), ([(u'Vonat', u'vonat/NOUN')], u'N_1'), ([(u'Budapestr\u0151l', u'budapest/NOUN<CAS<DEL>>')], u'N_1'), ([(u'Szegedre', u'szeged/NOUN<CAS<SBL>>')], u'N_1'), (u'?', u'?/PUNCT')]
+    w = Wrapper(cfg_filename)
+    sp = SentenceParser()
+    machines = sp.parse(sentence)
+    import itertools
+    w.lexicon.add_active(itertools.chain(*machines))
+    vc = VerbConstruction("megy", w.lexicon, w.supp_dict)
+    vc.check(machines)
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    test(sys.argv[1]) 
+    test_verb_c(sys.argv[1]) 
