@@ -29,15 +29,15 @@ class PrintnameMatcher(Matcher):
         str_ = machine.printname()
         return self.input_.search(str_) is not None
 
-class PosControlMatcher(Matcher):
-    def _match(self, machine):
-        if not isinstance(machine.control, PosControl):
-            return False
-        str_ = machine.control.pos
-        logging.debug("matching of {0} in {1} is {2}".format(
-            str_, self.input_.pattern,
-            self.input_.search(str_) is not None))
-        return self.input_.search(str_) is not None
+#class PosControlMatcher(Matcher):
+    #def _match(self, machine):
+        #if not isinstance(machine.control, PosControl):
+            #return False
+        #str_ = machine.control.pos
+        #logging.debug("matching of {0} in {1} is {2}".format(
+            #str_, self.input_.pattern,
+            #self.input_.search(str_) is not None))
+        #return self.input_.search(str_) is not None
 
 class ConceptMatcher(Matcher):
     """Matches concepts (words not in the sentence)."""
@@ -154,8 +154,6 @@ class PatternMatcher(Matcher):
         return True             
  
     def _match(self, machine):
-        logging.debug("PatternMatcher[{0}]._match({1})".format(self.pattern, machine.control.kr))
         res = self._subset(self.pattern, machine.control.kr)
-        logging.debug(res)
         return res
 
