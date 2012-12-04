@@ -8,9 +8,7 @@ import ConfigParser
 
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
-from construction import VerbConstruction, DummyNPConstruction,\
-        PostPConstruction, TheConstruction, MaxNP_InBetweenPostP_Construction,\
-        AVMConstruction
+from construction import VerbConstruction, AVMConstruction
 from matcher import FileContainsMatcher, EnumMatcher, PrintnameMatcher,\
         AndMatcher, NotMatcher, ConceptMatcher,\
         SatisfiedAVMMatcher
@@ -78,11 +76,6 @@ class Wrapper:
         except KeyError:
             pass
         #self.lexicon.add_construction(ElviraConstruction())
-
-        self.lexicon.add_construction(DummyNPConstruction())
-        self.lexicon.add_construction(TheConstruction())
-        self.lexicon.add_construction(MaxNP_InBetweenPostP_Construction())
-        self.lexicon.add_construction(PostPConstruction())
 
         station_matcher = FileContainsMatcher(self.stations_fn)
         ic_name_matcher = AndMatcher(
