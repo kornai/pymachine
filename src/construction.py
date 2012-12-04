@@ -143,7 +143,7 @@ class VerbConstruction(Construction):
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
         self.activated = False
-        self.working_area = Machine(Monoid(None), KRPosControl('stem/NOUN'))
+        self.working_area = [Machine(Monoid(None), KRPosControl('stem/VERB'))]
 
     def generate_phi(self):
         arguments = self.arg_locations.keys()
