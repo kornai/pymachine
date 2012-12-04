@@ -164,9 +164,10 @@ class ExpandOperator(Operator):
         Operator.__init__(self)
         self.lexicon = lexicon
 
-    def act(self, input, working_area=None):
+    def act(self, input, working_area):
         """
         @param input the machine read by the transition.
         """
-        return self.lexicon.expand(input)
+        self.lexicon.expand(input)
+        working_area[0] = input
 
