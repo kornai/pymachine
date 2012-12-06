@@ -6,13 +6,13 @@ from copy import deepcopy as copy
 
 from fst import FSA, FST
 from matcher import PrintnameMatcher
-from matcher import PosControlMatcher as PosMatcher
+from matcher import PatternMatcher
 from machine import Machine
 from monoid import Monoid
-from control import PosControl, ElviraPluginControl
+from control import PosControl, ElviraPluginControl, KRPosControl
 from constants import deep_cases
 from avm import AVM
-from operators import ExpandOperator
+from operators import ExpandOperator, FillArgumentOperator
 from np_parser import parse_rule
 
 class Construction(object):
@@ -125,53 +125,27 @@ class VerbConstruction(Construction):
     """A default construction for verbs. It reads definitions, discovers
     cases, and builds a control from it. After that, the act() will do the
     linking process, eg. link the verb with other words, object, subject, etc.
+
+    Defines a single Machine as the "working area": the element in X that we
+    follow. An operator represents a relation in phi; however, typically we
+    only care about one element among the potentially infinite number of x's.
+    Hence, it is enough to maintain a single Machine as a placeholder for
+    this element.
     """
     def __init__(self, name, lexicon, supp_dict):
         self.name = name
         self.lexicon = lexicon
-        self.machine = lexicon.static[name]
         self.supp_dict = supp_dict
-        self.arg_locations = self.discover_arguments()
-        self.phi = self.generate_phi()
+        self.matchers = {}
+        self.working_area = [Machine(Monoid(None), KRPosControl('stem/VERB'))]
+        self.discover_arguments(lexicon.static[name])
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
         self.activated = False
 
-    def generate_phi(self):
-        arguments = self.arg_locations.keys()
-        # creating Matcher objects from arguments
-        self.matchers = {}
-        phi = {}
-
-        # Verb transition will imply no change, we put it into phi
-        # to implement act() easier
-        vm = PosMatcher("^VERB.*")
-        self.matchers["VERB"] = vm
-        phi[vm] = None
-
-        # normal arguments
-        for arg in arguments:
-            if arg.startswith("@"):
-                pm = self.supp_dict[arg]
-                self.matchers[arg] = pm
-                phi[pm] = self.arg_locations[arg]
-
-            # NOM case is implicit, that is why we need a distinction here
-            elif arg == "NOM":
-                pm = PosMatcher("NOUN(?!.*CAS)".format(arg))
-                self.matchers[arg] = pm
-                phi[pm] = self.arg_locations[arg]
-
-            else:
-                pm = PosMatcher("CAS<{0}>".format(arg))
-                self.matchers[arg] = pm
-                phi[pm] = self.arg_locations[arg]
-        return phi
-
     def generate_control(self):
         arguments = self.matchers.keys()
-        arguments.remove("VERB")
         
         # this will be a hypercube
         control = FST()
@@ -188,8 +162,8 @@ class VerbConstruction(Construction):
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition(self.matchers["VERB"],
-                               [ExpandOperator(self.lexicon)], "0", "1")
+        control.add_transition(PatternMatcher("VERB"), [ExpandOperator(
+            self.lexicon, self.working_area)], "0", "1")
 
         # count every transition as an increase in number of state
         for path in permutations(arguments):
@@ -197,69 +171,35 @@ class VerbConstruction(Construction):
             for arg in path:
                 increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
-                control.add_transition(self.matchers[arg], [],
-                        str(actual_state), str(new_state))
+                control.add_transition(self.matchers[arg], 
+                    [FillArgumentOperator(arg, self.working_area)],                                      str(actual_state), str(new_state))
 
                 actual_state = new_state
         return control
 
-    def discover_arguments(self, machine=None, d=None):
-        if machine is None:
-            machine = self.machine
-        if d is None:
-            d = defaultdict(list)
-
+    def discover_arguments(self, machine):
         for pi, p in enumerate(machine.base.partitions[1:]):
             pi += 1
-            to_remove = None
             for mi, part_machine in enumerate(p):
                 pn = part_machine.printname()
                 # we are interested in deep cases and
                 # supplementary regexps
-                if pn in deep_cases or pn.startswith("@"):
-                    d[pn].append((machine, pi))
-                    to_remove = mi
+                if pn in deep_cases or pn.startswith("$"):
+                    if pn.startswith("$"):
+                        self.matchers[pn] = self.supp_dict[pn]
+                    else:
+                        self.matchers[pn] = PatternMatcher("CAS<{0}>".format(pn))
 
                 # recursive call
-                d.update(self.discover_arguments(part_machine, d))
-
-            if to_remove is not None:
-                p = p[:to_remove] + p[to_remove+1:]
-                machine.base.partitions[pi] = p
-
-        return d
+                self.discover_arguments(part_machine)
 
     def check(self, seq):
         if self.activated:
             return False
         else:
-            return Construction.check(self, seq)
-
-    def act(self, seq):
-        result = []
-
-        # put a clear machine into self.machine while verb_machine will be
-        # the old self.machine, and the references in self.arg_locations
-        # will point at good locations in verb_machine
-        clear_machine = copy(self.machine)
-        verb_machine = self.machine
-        self.machine = clear_machine
-        result.append(verb_machine)
-
-        for m in seq:
-            for transition in self.phi:
-                # skip None transitions (VERB)
-                if self.phi[transition] is None:
-                    continue
-
-                if transition.match(m):
-                    # possible multiple places for one machine
-                    for m_to, m_p_i in self.phi[transition]:
-                        m_to.append(m, m_p_i)
-                    break
-
-        self.activated = True
-        return result
+            res = Construction.check(self, seq)
+            logging.debug("Result of check is {0} and working area is:\n{1}".format(res, Machine.to_debug_str(self.working_area[0])))
+            return res
 
 class AVMConstruction(Construction):
     """this class will fill the slots in the AVM"""
@@ -312,7 +252,7 @@ class TheConstruction(Construction):
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
         control.add_transition(PrintnameMatcher("^az?$"), "0", "1")
-        control.add_transition(PosMatcher("^NOUN.*"), "1", "2")
+        #control.add_transition(KRPosMatcher("NOUN"), "1", "2")
 
         Construction.__init__(self, "TheConstruction", control,
                               type_=Construction.CHUNK)
@@ -330,8 +270,8 @@ class DummyNPConstruction(Construction):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=True)
-        control.add_transition(PosMatcher("^ADJ.*"), "0", "0")
-        control.add_transition(PosMatcher("^NOUN.*"), "0", "1")
+        #control.add_transition(KRPosMatcher("ADJ"), "0", "0")
+        #control.add_transition(KRPosMatcher("NOUN"), "0", "1")
 
         Construction.__init__(self, "DummyNPConstruction", control,
                               type_=Construction.CHUNK)
@@ -354,9 +294,9 @@ class MaxNP_InBetweenPostP_Construction(Construction):
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=False)
         control.add_state("3", is_init=False, is_final=True)
-        control.add_transition(PosMatcher("^NOUN.*"), "0", "1")
-        control.add_transition(PosMatcher("POSTP\[ATTRIB\]\|ADJ", exact=True), "1", "2")
-        control.add_transition(PosMatcher("^NOUN.*"), "2", "3")
+        #control.add_transition(KRPosMatcher("NOUN"), "0", "1")
+        #control.add_transition(KRPosMatcher("POSTP\[ATTRIB\]\|ADJ", exact=True), "1", "2")
+        #control.add_transition(KRPosMatcher("NOUN"), "2", "3")
         Construction.__init__(self, "MaxNP_InBetweenPostP_Construction", control,
                               type_=Construction.CHUNK)
 
@@ -378,8 +318,8 @@ class PostPConstruction(Construction):
         control.add_state("0", is_init=True, is_final=False)
         control.add_state("1", is_init=False, is_final=False)
         control.add_state("2", is_init=False, is_final=True)
-        control.add_transition(PosMatcher("^NOUN.*"), "0", "1")
-        control.add_transition(PosMatcher("POSTP", exact=True), "1", "2")
+        #control.add_transition(KRPosMatcher("NOUN*"), "0", "1")
+        #control.add_transition(KRPosMatcher("POSTP", exact=True), "1", "2")
         Construction.__init__(self, "PostPConstruction", control, type_=
                               Construction.CHUNK)
 

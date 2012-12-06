@@ -1,5 +1,8 @@
 import re
 import logging
+
+from langtools.utils.readkr import kr_to_dictionary as kr_to_dict
+
 from control import PosControl, ConceptControl
 
 class Matcher(object):
@@ -26,15 +29,15 @@ class PrintnameMatcher(Matcher):
         str_ = machine.printname()
         return self.input_.search(str_) is not None
 
-class PosControlMatcher(Matcher):
-    def _match(self, machine):
-        if not isinstance(machine.control, PosControl):
-            return False
-        str_ = machine.control.pos
-        logging.debug("matching of {0} in {1} is {2}".format(
-            str_, self.input_.pattern,
-            self.input_.search(str_) is not None))
-        return self.input_.search(str_) is not None
+#class PosControlMatcher(Matcher):
+    #def _match(self, machine):
+        #if not isinstance(machine.control, PosControl):
+            #return False
+        #str_ = machine.control.pos
+        #logging.debug("matching of {0} in {1} is {2}".format(
+            #str_, self.input_.pattern,
+            #self.input_.search(str_) is not None))
+        #return self.input_.search(str_) is not None
 
 class ConceptMatcher(Matcher):
     """Matches concepts (words not in the sentence)."""
@@ -129,7 +132,12 @@ class SatisfiedAVMMatcher(Matcher):
 class PatternMatcher(Matcher):
     """ Matches a rule. """
     def __init__(self, pattern):
-        self.pattern = pattern
+        if isinstance(pattern, str) or isinstance(pattern, unicode):
+            self.pattern = kr_to_dict("stem/" + pattern)
+        elif isinstance(pattern, dict):
+            self.pattern = pattern
+        else:
+            raise Exception("No allowed type for pattern")
 
     def _subset(self, small, large):
         for key in small:
@@ -146,5 +154,6 @@ class PatternMatcher(Matcher):
         return True             
  
     def _match(self, machine):
-        return self._subset(self.pattern, machine.control.kr) 
+        res = self._subset(self.pattern, machine.control.kr)
+        return res
 

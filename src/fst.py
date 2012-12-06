@@ -96,17 +96,23 @@ class FST(FSA):
         self.transitions[input_state][matcher] = (output_state, operators)
 
     def read_machine(self, machine):
+        logging.debug("FST.read_machine() called with {0}".format(machine))
         self.check_states()
         if self.active_states is None:
             self.init_active_states()
         new_active_states = set() 
+        logging.debug("Old active: {0}".format(self.active_states))
         for active_state in self.active_states:
             for transition, (out_state, operators) in (
                 self.transitions[active_state].iteritems()):
 
                 if transition.match(machine):
                     for op in operators:
-                        op.act()
+                        op.act(machine)
                     new_active_states.add(out_state)
-        self.active_states = new_active_states
+
+        # HACK no sink right now
+        if len(new_active_states) > 0:
+            self.active_states = new_active_states
+        logging.debug("New active: {0}".format(self.active_states))
 

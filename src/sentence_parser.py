@@ -22,16 +22,16 @@ class SentenceParser:
         machines = []
         for token_or_chunk in sentence:
             # chunk or token?
-            if len(token_or_chunk) == 2:
+            if type(token_or_chunk[0]) == list:
                 # chunk
-                chunk, case = token_or_chunk
-                machines.append([Machine(Monoid(stem), Control(analysis)) 
-                                 for _, stem, analysis in chunk])
+                chunk, _ = token_or_chunk
+                machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis)) 
+                                 for _, analysis in chunk])
             else:
                 # token
                 token = token_or_chunk
-                surface, stem, analysis = token
-                machines.append([Machine(Monoid(stem), Control(analysis))])
+                _, analysis = token
+                machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis))])
         return machines
 
 if __name__ == "__main__":
