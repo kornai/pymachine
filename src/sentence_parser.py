@@ -29,7 +29,7 @@ class SentenceParser:
                                  for _, analysis in chunk])
             else:
                 # token
-                token = token_or_chunk
+                token = token_or_chunk[0]
                 _, analysis = token
                 machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis))])
         return machines
