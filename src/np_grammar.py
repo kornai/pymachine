@@ -80,16 +80,26 @@ np_rules.append(NPConstruction("3H",
 #RG Eleme1r zo2ld pingvine
 np_rules.append(NPConstruction("",
         "NOUN<BAR<3>><POSS<0>> -> NOUN<BAR<3>><ANP<0>><CAS<NOM>> NOUN<BAR<2>><POSS<1>><DET<1>>",
-        []))
+        [
+        FeatChangeOperator("BAR", 3),
+        FeatChangeOperator("POSS", 0)
+        ]))
+
 #RG Eleme1rnek a zo2ld pingvine
 np_rules.append(NPConstruction("",
         "NOUN<BAR<4>><POSS<0>> -> NOUN<BAR<3>><CAS<DAT>> NOUN<BAR<3>><POSS<1>><DET<1>>",
-        []))
+        [
+        FeatChangeOperator("BAR", 4),
+        FeatChangeOperator("POSS", 0)
+        ]))
 
 #RG Az e1n pingvinem, az o3 pingvine
 np_rules.append(NPConstruction("",
         "NOUN<BAR<3>><DEF<1>> -> ART [PRON<PER>]/NOUN NOUN<BAR<2>><POSS>",
-        []))
+        [
+        FeatChangeOperator("BAR", 3),
+        FeatChangeOperator("DEF", 1)
+        ]))
 #8F-H are substituted with this rule (because I don't want pronoun features percolating to articles, so there)
 
 #Here ends the original grammar of Kornai 1985
