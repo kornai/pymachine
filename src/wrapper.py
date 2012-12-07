@@ -183,7 +183,7 @@ def test(cfg_filename):
         print "In your face!"
 
 def test_verb_c(cfg_filename):
-    sentence = [(u'Mikor', u'mikor/ADV'), (u'Megy', u'megy/VERB'), ([(u'Vonat', u'vonat/NOUN')], u'N_1'), ([(u'Budapestr\u0151l', u'budapest/NOUN<CAS<DEL>>')], u'N_1'), ([(u'Szegedre', u'szeged/NOUN<CAS<SBL>>')], u'N_1'), (u'?', u'?/PUNCT')]
+    sentence = [((u'Mikor', u'mikor/ADV'), "O"), ((u'Megy', u'megy/VERB'), "O"), ([(u'Vonat', u'vonat/NOUN')], u'N_1'), ([(u'Budapestr\u0151l', u'budapest/NOUN<CAS<DEL>>')], u'N_1'), ([(u'Szegedre', u'szeged/NOUN<CAS<SBL>>')], u'N_1'), ((u'?', u'?/PUNCT'), "O")]
     w = Wrapper(cfg_filename)
     sp = SentenceParser()
     machines = sp.parse(sentence)
