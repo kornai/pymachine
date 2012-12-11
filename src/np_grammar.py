@@ -13,6 +13,13 @@ np_rules.append(NPConstruction("1F",
         FeatChangeOperator("BAR", "1")    
 		]))
 
+#kis zo2ld pingvin -- optimization of 9A for our implementation
+np_rules.append(NPConstruction("1F2",
+		"NOUN<BAR<1>> -> ADJ NOUN<BAR<1>>",
+		[
+		AppendOperator(1, 0)
+		]))
+
 #PK pingvin
 np_rules.append(NPConstruction("1f",
         "NOUN<BAR<1>> -> NOUN<BAR<0>>",
@@ -126,13 +133,22 @@ np_rules.append(NPConstruction("",
 
 #Here ends the grammar of noun phrases
 
+#kis zo2ld -> see 1F2
 #np_rules.append(NPConstruction("", "ADJ -> ADJ ADJ", []))
-#np_rules.append(NPConstruction("", "ADJ -> ADV ADJ", []))
+
+#nagyon kicsi
+np_rules.append(NPConstruction("9B",
+        "ADJ -> ADV ADJ",
+        [
+		AppendOperator(1, 0)
+        ]))
+
+#np_rules.append(NPConstruction("", "NUM -> NUM NUM", []))
+#np_rules.append(NPConstruction("", "NUM -> ADV NUM", []))
+#np_rules.append(NPConstruction("", "NUM -> ADJ NUM", []))
+
 #np_rules.append(NPConstruction("", "ADJ -> NOUN VERB[PERF_PART]/ADJ", []))
 #np_rules.append(NPConstruction("", "ADJ -> NOUN VERB[IMPERF_PART]/ADJ", []))
 #np_rules.append(NPConstruction("", "ADJ -> NUM VERB[PERF_PART]/ADJ", []))
 #np_rules.append(NPConstruction("", "ADJ -> NUM VERB[IMPERF_PART]/ADJ", []))
-#np_rules.append(NPConstruction("", "NUM -> NUM NUM", []))
-#np_rules.append(NPConstruction("", "NUM -> ADV NUM", []))
-#np_rules.append(NPConstruction("", "NUM -> ADJ NUM", []))
 
