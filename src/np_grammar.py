@@ -106,22 +106,22 @@ np_rules.append(NPConstruction("",
 
 #ZSA saja1t pingvinem
 np_rules.append(NPConstruction("",
-        "NOUN -> [PRON<POSS>]/NOUN NOUN<BAR<2>>",
+        "NOUN<BAR<2>> -> [PRON<POSS>]/NOUN NOUN<BAR<2>>",
         []))
 
 #ZSA ez a pingvin
 np_rules.append(NPConstruction("",
-        "NOUN -> [PRON<DEM>]/NOUN<BAR<0>> ART NOUN<BAR<2>><DEF<0>>",
+        "NOUN<BAR<3>> -> [PRON<DEM>]/NOUN<BAR<0>> ART NOUN<BAR<2>><DEF<0>>",
         []))
 
 #ZSA minden pingvin
 np_rules.append(NPConstruction("",
-        "NOUN -> [PRON<GEN>]/NOUN NOUN<BAR<2>>",
+        "NOUN<BAR<3>> -> [PRON<GEN>]/NOUN NOUN<BAR<2>>",
         []))
 
 #ZSA ne1ha1ny pingvin
 np_rules.append(NPConstruction("",
-        "NOUN -> [PRON<INDEF>]/NOUN NOUN<BAR<2>>",
+        "NOUN<BAR<2>> -> [PRON<INDEF>]/NOUN NOUN<BAR<2>>",
         []))
 
 #Here ends the grammar of noun phrases
