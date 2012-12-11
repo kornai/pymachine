@@ -143,8 +143,13 @@ np_rules.append(NPConstruction("9B",
 		AppendOperator(1, 0)
         ]))
 
+#elso3 ha1rom pingvin
 #np_rules.append(NPConstruction("", "NUM -> NUM NUM", []))
+
+#ha1tborzongato1an zo2ld pingvin
 #np_rules.append(NPConstruction("", "NUM -> ADV NUM", []))
+
+#elmu1lt nyolc e1v
 #np_rules.append(NPConstruction("", "NUM -> ADJ NUM", []))
 
 #np_rules.append(NPConstruction("", "ADJ -> NOUN VERB[PERF_PART]/ADJ", []))
