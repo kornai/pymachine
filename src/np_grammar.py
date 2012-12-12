@@ -146,7 +146,7 @@ np_rules.append(NPConstruction("9B",
 #elso3 ha1rom pingvin
 #np_rules.append(NPConstruction("", "NUM -> NUM NUM", []))
 
-#ha1tborzongato1an zo2ld pingvin
+#legala1bb ha1rom pingvin
 #np_rules.append(NPConstruction("", "NUM -> ADV NUM", []))
 
 #elmu1lt nyolc e1v
