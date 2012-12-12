@@ -111,25 +111,38 @@ np_rules.append(NPConstruction("",
 
 #Here ends the original grammar of Kornai 1985
 
-#ZSA saja1t pingvinem
+#ZSA saja1t pingvinem ??
 np_rules.append(NPConstruction("",
         "NOUN<BAR<2>> -> [PRON<POSS>]/NOUN NOUN<BAR<2>>",
         []))
 
 #ZSA ez a pingvin
-np_rules.append(NPConstruction("",
+# HACK only delete
+np_rules.append(NPConstruction("11C",
         "NOUN<BAR<3>> -> [PRON<DEM>]/NOUN<BAR<0>> ART NOUN<BAR<2>><DEF<0>>",
-        []))
+        [
+		DeleteOperator(1),
+		DeleteOperator(0),
+        FeatChangeOperator("BAR", 3),
+        ]))
 
 #ZSA minden pingvin
-np_rules.append(NPConstruction("",
+# HACK only delete
+np_rules.append(NPConstruction("11A",
         "NOUN<BAR<3>> -> [PRON<GEN>]/NOUN NOUN<BAR<2>>",
-        []))
+        [
+        DeleteOperator(0),
+        AddArbitraryStringOperator(0, "PLUR"),
+        FeatChangeOperator("BAR", 3)
+        ]))
 
 #ZSA ne1ha1ny pingvin
-np_rules.append(NPConstruction("",
+# HACK only delete
+np_rules.append(NPConstruction("11B",
         "NOUN<BAR<2>> -> [PRON<INDEF>]/NOUN NOUN<BAR<2>>",
-        []))
+        [
+		DeleteOperator(0)
+        ]))
 
 #Here ends the grammar of noun phrases
 
