@@ -160,10 +160,28 @@ np_rules.append(NPConstruction("9B",
 #np_rules.append(NPConstruction("", "NUM -> NUM NUM", []))
 
 #legala1bb ha1rom pingvin
-#np_rules.append(NPConstruction("", "NUM -> ADV NUM", []))
+np_rules.append(NPConstruction("10B",
+        "NUM -> ADV NUM",
+        [
+        AppendOperator(1, 0)
+        ]))
 
-#elmu1lt nyolc e1v
 #np_rules.append(NPConstruction("", "NUM -> ADJ NUM", []))
+
+#az elmu1lt nyolc e1v: PERF_PART
+#a likvida1lando1 ha1rom miniszter: FUT_PART
+#a felszo1lalo1 ke1t a1llamtitka1r: IMPERF_PART
+#a puccsolhato1 frakcio1vezeto3: MODAL_PART
+#a ta1je1kozatlan ke1t a1llamtitka1r: NEG_PERF_PART
+np_rules.append(NPConstruction("10C1",
+        "NOUN -> DET<DEF<1>> VERB[@a]/ADJ NUM NOUN",
+        [
+        ]))
+#(a) kocsordi ke1t ojjektum
+np_rules.append(NPConstruction("10C2",
+        "NOUN -> DET<DEF<1>> NOUN[MET_ATTRIB]/ADJ NUM NOUN",
+        [
+        ]))
 
 #np_rules.append(NPConstruction("", "ADJ -> NOUN VERB[PERF_PART]/ADJ", []))
 #np_rules.append(NPConstruction("", "ADJ -> NOUN VERB[IMPERF_PART]/ADJ", []))
