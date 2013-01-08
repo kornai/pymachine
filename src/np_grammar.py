@@ -112,9 +112,13 @@ np_rules.append(NPConstruction("",
 #Here ends the original grammar of Kornai 1985
 
 #ZSA saja1t pingvinem ??
-np_rules.append(NPConstruction("",
+#RG HACK
+np_rules.append(NPConstruction("nemtom",
         "NOUN<BAR<2>> -> [PRON<POSS>]/NOUN NOUN<BAR<2>>",
-        []))
+        [
+        DeleteOperator(0),
+        FeatChangeOperator("BAR", 2)
+        ]))
 
 #ZSA ez a pingvin
 # HACK only delete
@@ -157,7 +161,12 @@ np_rules.append(NPConstruction("9B",
         ]))
 
 #elso3 ha1rom pingvin
-#np_rules.append(NPConstruction("", "NUM -> NUM NUM", []))
+#RG
+np_rules.append(NPConstruction("10A", 
+    	"NUM -> NUM NUM",
+	    [
+		AppendOperator(1, 0)
+	    ]))
 
 #legala1bb ha1rom pingvin
 np_rules.append(NPConstruction("10B",
@@ -166,25 +175,54 @@ np_rules.append(NPConstruction("10B",
         AppendOperator(1, 0)
         ]))
 
-#np_rules.append(NPConstruction("", "NUM -> ADJ NUM", []))
+#bo3 ke1t e1ve
+#RG
+np_rules.append(NPConstruction("10C",
+	    "NUM -> ADJ NUM",
+	    [
+	    AppendOperator(1, 0)
+	    ]))
 
 #az elmu1lt nyolc e1v: PERF_PART
 #a likvida1lando1 ha1rom miniszter: FUT_PART
 #a felszo1lalo1 ke1t a1llamtitka1r: IMPERF_PART
 #a puccsolhato1 frakcio1vezeto3: MODAL_PART
 #a ta1je1kozatlan ke1t a1llamtitka1r: NEG_PERF_PART
+
+#TODO This one will need a variable describing the type of derivation
+#RG HACK
 np_rules.append(NPConstruction("10C1",
-        "NOUN -> DET<DEF<1>> VERB[@a]/ADJ NUM NOUN",
+        "NOUN -> DET<DEF<1>> VERB[]/ADJ NUM NOUN",
         [
+        
         ]))
+
+#TODO Why does this need a seperate rule? 1F2 should do it...
 #(a) kocsordi ke1t ojjektum
 np_rules.append(NPConstruction("10C2",
         "NOUN -> DET<DEF<1>> NOUN[MET_ATTRIB]/ADJ NUM NOUN",
         [
+        
         ]))
 
-#np_rules.append(NPConstruction("", "ADJ -> NOUN VERB[PERF_PART]/ADJ", []))
-#np_rules.append(NPConstruction("", "ADJ -> NOUN VERB[IMPERF_PART]/ADJ", []))
-#np_rules.append(NPConstruction("", "ADJ -> NUM VERB[PERF_PART]/ADJ", []))
-#np_rules.append(NPConstruction("", "ADJ -> NUM VERB[IMPERF_PART]/ADJ", []))
+#The next two rules could be summerized as
+# "ADJ -> NOUN VERB[(IM)PERF_PART]/ADJ"
+#and will have a single action for now
 
+AttributeComplementRule = [AppendOperator(1, 0)]
+
+#A pigvinnek o2lto2zo2tt sra1c
+np_rules.append(NPConstruction("",
+        "ADJ -> NOUN VERB[PERF_PART]/ADJ",
+        AttributeComplementRule
+        ))
+
+#A pingvinnek kine1zo3 sra1c
+np_rules.append(NPConstruction("",
+        "ADJ -> NOUN VERB[IMPERF_PART]/ADJ",
+        AttributeComplementRule
+        ))
+
+#It seems we don't really need these:
+#"ADJ -> NUM VERB[PERF_PART]/ADJ"
+#"ADJ -> NUM VERB[IMPERF_PART]/ADJ"
