@@ -16,6 +16,19 @@ class Control(object):
             raise TypeError("machine should be a Machine instance")
         self.machine = machine
 
+    def to_debug_str(self):
+        return self.__to_debug_str(0)
+
+    def __to_debug_str(self, depth, lines=None):
+        if lines is None:
+            lines = list()
+        name = self.__class__.__name__
+        lines.append('{0:>{1}}:{2}'.format(
+            name, 2 * depth + len(str(name)),
+            id(self)))
+        return '\n'.join(lines)
+            
+
 class PosControl(Control):
     def __init__(self, pos, machine=None):
         Control.__init__(self, machine)
@@ -25,6 +38,19 @@ class KRPosControl(Control):
     def __init__(self, pos, machine=None):
         Control.__init__(self, machine)
         self.kr = kr2dict(pos, True)
+
+    def to_debug_str(self):
+        return self.__to_debug_str(0)
+
+    def __to_debug_str(self, depth, lines=None, stop=None):
+        if not lines:
+            lines = list()
+        lines.extend(Control.to_debug_str(self).split('\n'))
+        for k, v in self.kr.items():
+            lines.append('  {0:>{1}}:{2}'.format(
+                    k, 2 * depth + len(str(k)),
+                    str(v)))
+        return '\n'.join(lines)
 
 class ConceptControl(Control):
     """object controlling machines that were not in the sentence, but
