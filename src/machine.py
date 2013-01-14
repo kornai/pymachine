@@ -126,7 +126,7 @@ class Machine(object):
             return machine.__to_debug_str(0)
         else:
             return ('{0:>{1}}'.format(
-                    str(machine), len(str(machine))))
+                    machine.printname(), len(machine.printname())))
 
     def __to_debug_str(self, depth, lines=None, stop=None):
         """Recursive helper method for to_debug_str.
@@ -159,7 +159,7 @@ class Machine(object):
 def test_printname():
     m_unicode = Machine(u"\u00c1")
     print unicode(m_unicode).encode("utf-8")
-    print str(m_unicode)
+    print m_unicode.printname()
     logging.error(unicode(m_unicode).encode("utf-8"))
 
 

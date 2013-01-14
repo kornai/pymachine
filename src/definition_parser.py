@@ -35,7 +35,7 @@ def unify(machine):
 
     def __get_unified(machines):
         prototype = machines[0]
-        res = Machine(Monoid(prototype.printname(), len(prototype.partitions) - 1))
+        res = Machine(prototype.printname(), len(prototype.partitions) - 1)
         for m in machines:
             for p_i, p in enumerate(m.partitions):
                 if p_i == 0:
