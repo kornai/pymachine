@@ -14,23 +14,21 @@ except ImportError:
 from langtools.string.encoding import decode_from_proszeky
 
 from machine import Machine
-from monoid import Monoid
 from constants import deep_cases
 from control import ConceptControl
 
 def create_machine(name, partitions):
-    return Machine(Monoid(decode_from_proszeky(name), partitions),
-                   ConceptControl())
+    return Machine(decode_from_proszeky(name), ConceptControl(), partitions)
 
 def unify(machine):
     def __collect_machines(m, machines):
         machines[m.printname(), __has_other(m)].append(m)
-        for partition in m.base.partitions[1:]:
+        for partition in m.partitions[1:]:
             for m_ in partition:
                 __collect_machines(m_, machines)
 
     def __has_other(m):
-        for m_ in m.base.partitions[1]:
+        for m_ in m.partitions[1]:
             if m_.printname() == "other":
                 return True
         return False

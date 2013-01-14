@@ -1,20 +1,20 @@
 import logging
 import copy
 
-from monoid import Monoid
 import control as ctrl
 
 class Machine(object):
-    def __init__(self, base, control=None):
-        
-        self.set_control(control)
-        
-        # base is a monoid
-        if not isinstance(base, Monoid):
-            raise TypeError("base should be a Monoid instance")
-        self.base = base
+    def __init__(self, name, control=None, part_num=1):
+        self.partitions = []
+        self.partitions.append(name)
+        for _ in xrange(part_num):
+            self.partitions.append([])
 
-        self._child_of = set()
+        self.set_control(control)
+
+        logging.debug(u"{0} created with {1} partitions".format(name, len(self.partitions[1:])))
+        
+        self._parents = set()
 
     def __repr__(self):
         return str(self)
@@ -27,6 +27,7 @@ class Machine(object):
 
     def __eq__(self, other):
         # HACK this is only printname matching
+        # TODO partitions? Orig: self.partitions == other.partitions
         return unicode(self) == unicode(other)
     
     def __hash__(self):
@@ -34,22 +35,22 @@ class Machine(object):
         return hash(self.printname())
 
     def __deepcopy__(self, memo):
-        new_machine = self.__class__(Monoid("anyad"))
+        new_machine = self.__class__(self.partitions[0])
         memo[id(self)] = new_machine
-        new_base = copy.deepcopy(self.base, memo)
+        new_partitions = copy.deepcopy(self.partitions, memo)
         new_control = copy.deepcopy(self.control, memo)
-        new_machine.base = new_base
+        new_machine.partitions = new_partitions
         new_machine.control = new_control
 
-        for part_i, part in enumerate(new_base.partitions[1:]):
+        for part_i, part in enumerate(new_partitions.partitions[1:]):
             part_i += 1
             for m in part:
                 if isinstance(m, Machine):
-                    m.set_child_of(new_machine, part_i)
+                    m.__add_parent_link(new_machine, part_i)
         return new_machine
 
     def printname(self):
-        return self.base.partitions[0]
+        return self.partitions[0]
 
     def set_control(self, control):
         """Sets the control."""
@@ -62,47 +63,60 @@ class Machine(object):
 
     def allNames(self):
         return set([self.__unicode__()]).union(*[partition[0].allNames()
-            for partition in self.base.partitions[1:]])
+            for partition in self.partitions[1:]])
         
     def append(self, what, which_partition=1):
+        """
+        Adds @p what to the specified partition. @p what can either be a
+        Machine, a string, or a list thereof.
+        """
         logging.debug(u"{0}.append({1},{2})".format(self.printname(),
            unicode(what), which_partition).encode("utf-8"))
-        if len(self.base.partitions) > which_partition:
-            if what in self.base.partitions[which_partition]:
+        if len(self.partitions) > which_partition:
+            if what in self.partitions[which_partition]:
                 return
         else:
-            self.base.partitions += [[]] * (which_partition + 1 -
-                len(self.base.partitions))
-        self.base.append(what, which_partition)
+            self.partitions += [[]] * (which_partition + 1 -
+                len(self.partitions))
+
+        self.__append(what, which_partition)
+
+    def __append(self, what, which_partition):
+        """Recursive helper function for append()."""
         if isinstance(what, Machine):
-            what.set_child_of(self, which_partition)
-
-    def set_child_of(self, whose, part):
-        self._child_of.add((whose, part))
-
-    def del_child_of(self, whose, part):
-        self._child_of.remove((whose, part))
+            self.partitions[which_partition].append(what)
+            what.__add_parent_link(self, which_partition)
+        elif isinstance(what, str):
+            self.partitions[which_partition].append(what)
+        elif what is None:
+            pass
+        elif isinstance(what, list):
+            for what_ in what:
+                self.__append(what_, which_partition)
+        else:
+            raise TypeError("Only machines and strings can be added to partitions")
 
     def remove(self, what, which_partition=None):
-        """Removes @p what from the specified partition. If @p which_partition
+        """
+        Removes @p what from the specified partition. If @p which_partition
         is @c None, @p what is removed from all partitions on which it is
-        found."""
-        self.base.remove(what, which_partition)
-        if isinstance(what, Machine):
-            what.del_child_of(self, which_partition)
+        found.
+        """
+        if which_partition is not None:
+            if len(self.partitions) > which_partition:
+                self.partitions[which_partition].remove(what)
+        else:
+            for partition, _ in enumerate(self.partitions):
+                self.partitions[partition].remove(what)
 
-    def search(self, what=None, empty=False):
-        results = []
-        for part_i, part in enumerate(self.base.partitions[1:]):
-            if empty:
-                if len(part) == 0:
-                    results.append((self, part_i + 1))
-            for m in part:
-                if what is not None:
-                    if m.base.partitions[0] == what:
-                        results.append((self, part_i + 1))
-                results += m.search(what=what, empty=empty)
-        return results
+        if isinstance(what, Machine):
+            what.__del_parent_link(self, which_partition)
+
+    def __add_parent_link(self, whose, part):
+        self._parents.add((whose, part))
+
+    def __del_parent_link(self, whose, part):
+        self._parents.remove((whose, part))
 
     @staticmethod
     def to_debug_str(machine):
@@ -132,7 +146,7 @@ class Machine(object):
                 stop.add(self)
                 lines.append('{0:>{1}}:{2}'.format(
                     str(self), 2 * depth + len(str(self)), id(self)))
-                for part in self.base.partitions[1:]:
+                for part in self.partitions[1:]:
                     for m in part:
                         m.__to_debug_str(depth + 1, lines, stop)
         else:
@@ -143,7 +157,7 @@ class Machine(object):
             return "\n".join(lines)
 
 def test_printname():
-    m_unicode = Machine(Monoid(u"\u00c1"))
+    m_unicode = Machine(u"\u00c1")
     print unicode(m_unicode).encode("utf-8")
     print str(m_unicode)
     logging.error(unicode(m_unicode).encode("utf-8"))
@@ -151,3 +165,4 @@ def test_printname():
 
 if __name__ == "__main__":
     test_printname()
+

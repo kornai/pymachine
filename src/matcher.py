@@ -55,14 +55,14 @@ class EnumMatcher(Matcher):
 
     def collect_machines(self, lexicon):
         cm = lexicon.static[self.name]
-        machines_on_type =  set([str(m.base.partitions[1][0])
-            for m in cm.base.partitions[1] if m.printname() == "IS_A"])
+        machines_on_type =  set([str(m.partitions[1][0])
+            for m in cm.partitions[1] if m.printname() == "IS_A"])
 
         all_machines = machines_on_type
         for pn, m in lexicon.static.iteritems():
-            for child in m.base.partitions[1]:
+            for child in m.partitions[1]:
                 if (child.printname() == "IS_A" and
-                    child.base.partitions[2][0] == self.name):
+                    child.partitions[2][0] == self.name):
                     all_machines.add(pn)
                     break
         return all_machines
