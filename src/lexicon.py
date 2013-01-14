@@ -4,7 +4,6 @@ from collections import Iterable
 import copy
 
 from machine import Machine
-from monoid import Monoid
 from control import ElviraPluginControl, ConceptControl
 from construction import Construction, AVMConstruction
 
@@ -113,6 +112,7 @@ class Lexicon:
         machine or a string.
         @param stop the set of machines already unified."""
         if stop is None:
+            # TODO Judit: this is called for the string 'train'
             logging.debug("unify_recursively:\n"
                           + Machine.to_debug_str(static_machine))
             stop = set()
@@ -140,7 +140,7 @@ class Lexicon:
                     self.wake_avm_construction(static_machine)
                     return None
 #                logging.debug('ur activating str')
-                active_machine = Machine(Monoid(static_machine), ConceptControl())
+                active_machine = Machine(static_machine, ConceptControl())
                 self.__add_active_machine(active_machine)
                 return active_machine
         # If it's a machine, we create the corresponding active one
@@ -158,7 +158,7 @@ class Lexicon:
                     self.wake_avm_construction(static_name)
                     return None
 #                logging.debug('ur activating machine')
-                active_machine = Machine(Monoid(static_name))
+                active_machine = Machine(static_name)
                 active_control = copy.deepcopy(static_machine.control)
                 active_machine.set_control(active_control)
                 self.__add_active_machine(active_machine)
@@ -166,7 +166,7 @@ class Lexicon:
             stop.add(static_name)
 
             # Now we have to walk through the tree recursively
-            for i, part in enumerate(static_machine.base.partitions[1:]):
+            for i, part in enumerate(static_machine.partitions[1:]):
                 part_index = i + 1
                 for ss_machine in part:
                     as_machine = self.unify_recursively(ss_machine, stop)
@@ -200,14 +200,14 @@ class Lexicon:
             if printname in self.active:
                 continue
             has_machine = False
-            for machine in chain(*static_machine.base.partitions[1:]):
+            for machine in chain(*static_machine.partitions[1:]):
                 has_machine = True
                 if (not unicode(machine).startswith(u'#') and
                     unicode(machine) not in self.active):
                     break
             else:
                 if has_machine:
-                    m = Machine(Monoid(printname), copy.copy(static_machine.control))
+                    m = Machine(printname, copy.copy(static_machine.control))
                     self.add_active(m)
                     activated.append(m)
         return activated

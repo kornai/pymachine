@@ -3,7 +3,6 @@
 import logging
 
 from machine import Machine
-from monoid import Monoid
 from control import KRPosControl, ConceptControl
 
 class Operator(object):
@@ -129,7 +128,7 @@ class CreateBinaryOperator(Operator):
         # HACK zseder: I will assume input of act as a sequence even though
         # I know this will be changed later, only in the sake of not seeming
         # LAZY
-        m = Machine(Monoid(self.what, 2), ConceptControl())
+        m = Machine(self.what, ConceptControl(), 2)
         m.append(self.first, 1)
         m.append(self.second, 2)
         return [m]
@@ -155,7 +154,7 @@ class FillArgumentOperator(Operator):
 
     def _act(self, arg_mach, machine):
         """Recursive helper method for act()."""
-        for part_ind, part in enumerate(machine.base.partitions[1:]):
+        for part_ind, part in enumerate(machine.partitions[1:]):
             part_ind += 1
             for submach_ind, submach in enumerate(part):
                 if submach.printname() == self.case:

@@ -1,7 +1,4 @@
-import logging
-
 from machine import Machine
-from monoid import Monoid
 from control import KRPosControl as Control
 
 class SentenceParser:
@@ -25,13 +22,13 @@ class SentenceParser:
             if type(token_or_chunk[0]) == list:
                 # chunk
                 chunk, _ = token_or_chunk
-                machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis)) 
+                machines.append([Machine(analysis.split("/")[0], Control(analysis)) 
                                  for _, analysis in chunk])
             else:
                 # token
                 token = token_or_chunk[0]
                 _, analysis = token
-                machines.append([Machine(Monoid(analysis.split("/")[0]), Control(analysis))])
+                machines.append([Machine(analysis.split("/")[0], Control(analysis))])
         return machines
 
 if __name__ == "__main__":
