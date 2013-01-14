@@ -63,7 +63,7 @@ class Machine(object):
         return set([self.__unicode__()]).union(*[partition[0].allNames()
             for partition in self.partitions])
         
-    def append(self, what, which_partition=1):
+    def append(self, what, which_partition=0):
         """
         Adds @p what to the specified partition. @p what can either be a
         Machine, a string, or a list thereof.

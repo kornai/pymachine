@@ -237,23 +237,23 @@ class DefinitionParser:
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
-                m.append(self.__parse_expr(expr[0], m, root), 1)
-                m.append(root, 2)
+                m.append(self.__parse_expr(expr[0], m, root), 0)
+                m.append(root, 1)
                 return m
 
             # BE -> B A
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
-                m.append(self.__parse_expr(expr[1], m, root), 2)
-                m.append(root, 1)
+                m.append(self.__parse_expr(expr[1], m, root), 1)
+                m.append(root, 0)
                 return m
 
             # BE -> 'B
             if (expr[0] == "'" and
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
-                m.append(parent, 2)
+                m.append(parent, 1)
                 # nothing to append to any partitions
                 return None
 
@@ -261,7 +261,7 @@ class DefinitionParser:
             if (is_binary(expr[0]) and
                     expr[1] == "'"):
                 m = create_machine(expr[0], 2)
-                m.append(parent, 1)
+                m.append(parent, 0)
                 # nothing to append to any partitions
                 return None
 
@@ -284,8 +284,8 @@ class DefinitionParser:
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
                 m = create_machine(expr[1], 2)
-                m.append(self.__parse_expr(expr[0], m, root), 1)
-                m.append(self.__parse_expr(expr[2], m, root), 2)
+                m.append(self.__parse_expr(expr[0], m, root), 0)
+                m.append(self.__parse_expr(expr[2], m, root), 1)
                 return m
 
             # A -> [ D ]
@@ -315,7 +315,7 @@ class DefinitionParser:
                     expr[3] == "]"):
                 m = create_machine(expr[0], 1)
                 for parsed_expr in self.__parse_definition(expr[2], m, root):
-                    m.append(parsed_expr, 1)
+                    m.append(parsed_expr, 0)
                 return m
 
             # UE -> U ( U )
@@ -324,7 +324,7 @@ class DefinitionParser:
                     is_unary(expr[2]) and
                     expr[3] == ")"):
                 m = create_machine(expr[2], 1)
-                m.append(create_machine(expr[0], 1), 1)
+                m.append(create_machine(expr[0], 1), 0)
                 return m
 
         if (len(expr) == 6):
@@ -336,8 +336,8 @@ class DefinitionParser:
                     is_tree(expr[4]) and
                     expr[5] == "]"):
                 m = create_machine(expr[0], 2)
-                m.append(self.__parse_expr(expr[2], m, root), 1)
-                m.append(self.__parse_expr(expr[4], m, root), 2)
+                m.append(self.__parse_expr(expr[2], m, root), 0)
+                m.append(self.__parse_expr(expr[4], m, root), 1)
                 return m
 
         pe = ParserException("Unknown expression in definition: "+str(expr))
@@ -355,7 +355,7 @@ class DefinitionParser:
         machine = create_machine(parsed[1][printname_index], 1)
         if len(parsed) > 2:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
-                machine.append(parsed_expr, 1)
+                machine.append(parsed_expr, 0)
 
         unify(machine)
         return machine
