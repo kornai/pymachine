@@ -35,12 +35,35 @@ def unify(machine):
                 return True
         return False
 
-    def __unify_recursively(m):
-        if m:  
-            pass
+    def __get_unified(machines):
+        prototype = machines[0]
+        res = Machine(Monoid(prototype.printname(), len(prototype.partitions) - 1))
+        for m in machines:
+            for p_i, p in enumerate(m.partitions):
+                if p_i == 0:
+                    continue
+                for part_m in p:
+                    if part_m.printname() != "other":
+                        res.partitions[p_i].append(part_m)
+        return res
+
+    def __replace(where, for_what, is_other=False):
+        pn = for_what.printname()
+        for p_i, p in enumerate(where.partitions):
+            if p_i == 0:
+                continue
+
+            for part_m_i, part_m in enumerate(p):
+                if part_m.printname() == pn and __has_other(part_m) == is_other:
+                    p[part_m_i] = for_what
+                __replace(p[part_m_i], for_what, is_other)
 
     machines = defaultdict(list)
     __collect_machines(machine, machines)
+    for k, machines_to_unify in machines.iteritems():
+        printname, is_other = k
+        unified = __get_unified(machines_to_unify)
+        __replace(machine, unified, is_other)
 
 class ParserException(Exception):
     pass
@@ -341,7 +364,7 @@ class DefinitionParser:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 1)
 
-        #unify(machine)
+        unify(machine)
         return machine
 
 def read(f, printname_index=0):
