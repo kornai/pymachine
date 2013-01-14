@@ -76,13 +76,13 @@ class ElviraPluginControl(PluginControl):
 
     def message(self):
         if self.machine is not None:
-            prt = self.machine.partitions[1]
+            prt = self.machine.partitions[0]
             before, after = None, None
             for m in prt:
                 if m.printname() == 'BEFORE_AT':
-                    before = m.partitions[2][0]
+                    before = m.partitions[1][0]
                 elif m.printname() == 'AFTER_AT':
-                    after = m.partitions[2][0]
+                    after = m.partitions[1][0]
             if before is not None and after is not None:
                 logging.debug('Elvira message: {0} -> {1}'.format(before, after))
                 return (self.plugin_url, [unicode(before), unicode(after)])

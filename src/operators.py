@@ -154,8 +154,7 @@ class FillArgumentOperator(Operator):
 
     def _act(self, arg_mach, machine):
         """Recursive helper method for act()."""
-        for part_ind, part in enumerate(machine.partitions[1:]):
-            part_ind += 1
+        for part_ind, part in enumerate(machine.partitions):
             for submach_ind, submach in enumerate(part):
                 if submach.printname() == self.case:
                     part[submach_ind] = arg_mach  # TODO unify

@@ -23,23 +23,21 @@ def create_machine(name, partitions):
 def unify(machine):
     def __collect_machines(m, machines):
         machines[m.printname(), __has_other(m)].append(m)
-        for partition in m.partitions[1:]:
+        for partition in m.partitions:
             for m_ in partition:
                 __collect_machines(m_, machines)
 
     def __has_other(m):
-        for m_ in m.partitions[1]:
+        for m_ in m.partitions[0]:
             if m_.printname() == "other":
                 return True
         return False
 
     def __get_unified(machines):
         prototype = machines[0]
-        res = Machine(prototype.printname(), len(prototype.partitions) - 1)
+        res = Machine(prototype.printname(), len(prototype.partitions))
         for m in machines:
             for p_i, p in enumerate(m.partitions):
-                if p_i == 0:
-                    continue
                 for part_m in p:
                     if part_m.printname() != "other":
                         res.partitions[p_i].append(part_m)
@@ -48,9 +46,6 @@ def unify(machine):
     def __replace(where, for_what, is_other=False):
         pn = for_what.printname()
         for p_i, p in enumerate(where.partitions):
-            if p_i == 0:
-                continue
-
             for part_m_i, part_m in enumerate(p):
                 if part_m.printname() == pn and __has_other(part_m) == is_other:
                     p[part_m_i] = for_what

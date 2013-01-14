@@ -166,12 +166,11 @@ class Lexicon:
             stop.add(static_name)
 
             # Now we have to walk through the tree recursively
-            for i, part in enumerate(static_machine.partitions[1:]):
-                part_index = i + 1
+            for i, part in enumerate(static_machine.partitions):
                 for ss_machine in part:
                     as_machine = self.unify_recursively(ss_machine, stop)
                     if as_machine is not None:
-                        active_machine.append(as_machine, part_index)
+                        active_machine.append(as_machine, i)
             return active_machine
         else:
             raise TypeError('static_machine must be a Machine or a str')
@@ -200,7 +199,7 @@ class Lexicon:
             if printname in self.active:
                 continue
             has_machine = False
-            for machine in chain(*static_machine.partitions[1:]):
+            for machine in chain(*static_machine.partitions):
                 has_machine = True
                 if (not unicode(machine).startswith(u'#') and
                     unicode(machine) not in self.active):
