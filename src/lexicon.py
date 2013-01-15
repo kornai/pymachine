@@ -112,9 +112,6 @@ class Lexicon:
         machine or a string.
         @param stop the set of machines already unified."""
         if stop is None:
-            # TODO Judit: this is called for the string 'train'
-            logging.debug("unify_recursively:\n"
-                          + Machine.to_debug_str(static_machine))
             stop = set()
 
         if unicode(static_machine) == u'IS_A':

@@ -114,15 +114,10 @@ class Machine(object):
     def __del_parent_link(self, whose, part):
         self._parents.remove((whose, part))
 
-    @staticmethod
-    def to_debug_str(machine):
+    def to_debug_str(self, depth=0, lines=None, stop=None):
         """An even more detailed __str__, complete with object ids and
         recursive."""
-        if isinstance(machine, Machine):
-            return machine.__to_debug_str(0)
-        else:
-            return ('{0:>{1}}'.format(
-                    machine.printname(), len(machine.printname())))
+        return machine.__to_debug_str(0)
 
     def __to_debug_str(self, depth, lines=None, stop=None):
         """Recursive helper method for to_debug_str.
@@ -133,21 +128,16 @@ class Machine(object):
         if lines is None:
             lines = []
 
-        # TO BE DELETED
-        if isinstance(self, Machine):
-            if self in stop:
-                lines.append('{0:>{1}}:{2}'.format(
-                    str(self), 2 * depth + len(str(self)), id(self)))
-            else:
-                stop.add(self)
-                lines.append('{0:>{1}}:{2}'.format(
-                    str(self), 2 * depth + len(str(self)), id(self)))
-                for part in self.partitions:
-                    for m in part:
-                        m.__to_debug_str(depth + 1, lines, stop)
+        if self in stop:
+            lines.append('{0:>{1}}:{2}'.format(
+                str(self), 2 * depth + len(str(self)), id(self)))
         else:
-            lines.append('{0:>{1}}'.format(
-                    str(self), 2 * depth + len(str(self))))
+            stop.add(self)
+            lines.append('{0:>{1}}:{2}'.format(
+                str(self), 2 * depth + len(str(self)), id(self)))
+            for part in self.partitions:
+                for m in part:
+                    m.__to_debug_str(depth + 1, lines, stop)
 
         if depth == 0:
             return "\n".join(lines)
