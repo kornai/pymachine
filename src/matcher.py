@@ -3,7 +3,7 @@ import logging
 
 from langtools.utils.readkr import kr_to_dictionary as kr_to_dict
 
-from control import PosControl, ConceptControl
+from control import ConceptControl
 
 class Matcher(object):
     def __init__(self, string, exact=False):
@@ -55,14 +55,14 @@ class EnumMatcher(Matcher):
 
     def collect_machines(self, lexicon):
         cm = lexicon.static[self.name]
-        machines_on_type =  set([str(m.partitions[1][0])
-            for m in cm.partitions[1] if m.printname() == "IS_A"])
+        machines_on_type =  set([m.partitions[0][0].printname()
+            for m in cm.partitions[0] if m.printname() == "IS_A"])
 
         all_machines = machines_on_type
         for pn, m in lexicon.static.iteritems():
-            for child in m.partitions[1]:
+            for child in m.partitions[0]:
                 if (child.printname() == "IS_A" and
-                    child.partitions[2][0] == self.name):
+                    child.partitions[1][0] == self.name):
                     all_machines.add(pn)
                     break
         return all_machines

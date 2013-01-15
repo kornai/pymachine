@@ -177,8 +177,7 @@ class VerbConstruction(Construction):
         return control
 
     def discover_arguments(self, machine):
-        for pi, p in enumerate(machine.partitions[1:]):
-            pi += 1
+        for pi, p in enumerate(machine.partitions):
             for mi, part_machine in enumerate(p):
                 pn = part_machine.printname()
                 # we are interested in deep cases and
@@ -261,7 +260,7 @@ class ElviraConstruction(Construction):
 
     def last_check(self, seq):
         try:
-            if len(seq[2].partitions[2]) > 0 and len(seq[3].partitions[2]) > 0:
+            if len(seq[2].partitions[1]) > 0 and len(seq[3].partitions[1]) > 0:
                 return True
         except:
             pass
@@ -287,15 +286,6 @@ def test():
     m.append(m2)
     m2.append(m)
     m3 = copy(m)
-
-    npc = DummyNPConstruction()
-    thec = TheConstruction()
-
-    res = npc.run([kek, kockat])
-    res = thec.run([a] + res)
-    print res[0]
-    print res[0].control
-    print res[0].partitions[1][0]
 
 if __name__ == "__main__":
     test()
