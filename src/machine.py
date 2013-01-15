@@ -5,7 +5,7 @@ import control as ctrl
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
-        self.printname = name
+        self.printname_ = name
         self.partitions = []
         for _ in xrange(part_num):
             self.partitions.append([])
@@ -35,7 +35,7 @@ class Machine(object):
         return hash(self.printname())
 
     def __deepcopy__(self, memo):
-        new_machine = self.__class__(self.printname)
+        new_machine = self.__class__(self.printname_)
         memo[id(self)] = new_machine
         new_partitions = copy.deepcopy(self.partitions, memo)
         new_control = copy.deepcopy(self.control, memo)
@@ -48,7 +48,7 @@ class Machine(object):
         return new_machine
 
     def printname(self):
-        return self.printname
+        return self.printname_
 
     def set_control(self, control):
         """Sets the control."""
