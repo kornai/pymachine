@@ -57,11 +57,15 @@ class Machine(object):
         return set([self.__unicode__()]).union(*[partition[0].allNames()
             for partition in self.partitions[1:]])
 
+    def children(self):
+        """Returns all direct children of the machine."""
+        return set(chain(*self.partitions))
+
     def unique_machines_in_tree(self):
         """Returns all unique machines under (and including) the current one."""
         def __recur(m):
             visited.add(m)
-            for child in chain(*m.partitions):
+            for child in m.children():
                 if child not in visited:
                     __recur(child, visited)
 
