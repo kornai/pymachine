@@ -117,7 +117,7 @@ class Machine(object):
     def to_debug_str(self, depth=0, lines=None, stop=None):
         """An even more detailed __str__, complete with object ids and
         recursive."""
-        return machine.__to_debug_str(0)
+        return self.__to_debug_str(0)
 
     def __to_debug_str(self, depth, lines=None, stop=None):
         """Recursive helper method for to_debug_str.
