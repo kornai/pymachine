@@ -1,5 +1,6 @@
 import logging
 import copy
+from itertools import chain
 
 import control as ctrl
 
@@ -24,15 +25,6 @@ class Machine(object):
 
     def __unicode__(self):
         return self.printname()
-
-    def __eq__(self, other):
-        # HACK this is only printname matching
-        # TODO partitions? Orig: self.partitions == other.partitions
-        return unicode(self) == unicode(other)
-    
-    def __hash__(self):
-        # HACK
-        return hash(self.printname())
 
     def __deepcopy__(self, memo):
         new_machine = self.__class__(self.printname_)
@@ -62,6 +54,22 @@ class Machine(object):
     def allNames(self):
         return set([self.__unicode__()]).union(*[partition[0].allNames()
             for partition in self.partitions])
+
+    def children(self):
+        """Returns all direct children of the machine."""
+        return set(chain(*self.partitions))
+
+    def unique_machines_in_tree(self):
+        """Returns all unique machines under (and including) the current one."""
+        def __recur(m):
+            visited.add(m)
+            for child in m.children():
+                if child not in visited:
+                    __recur(child, visited)
+
+        visited = set()
+        __recur(self)
+        return visited
         
     def append(self, what, which_partition=0):
         """

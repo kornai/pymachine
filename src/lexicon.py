@@ -45,14 +45,82 @@ class Lexicon:
                           " type")
 
     def add_static(self, what):
-        """adds machines to static collection
+        """
+        adds machines to static collection
         typically called once to add whole background knowledge
-        which is the input of the definition parser"""
+        which is the input of the definition parser
+
+        @note We assume that a machine is added to the static graph only once.
+        """
         if isinstance(what, Machine):
-            self.static[what.printname()] = what
+            whats_already_seen = self.static.get(what.printname(), [])
+            if len(whats_already_seen) == 0:
+                self.static[what.printname()] = [what]
+                placeholder = what
+            else:
+                # Update placeholder with the definition
+                placeholder = whats_already_seen[0]
+                placeholder.partitions = what.partitions
+                placeholder.control    = what.control
+                placeholder._parents.union(what._parents)
+                self.__recursive_replace(placeholder, what, placeholder)
+
+            unique_machines = placeholder.unique_machines_in_tree()
+            for um in unique_machines:
+                um_already_seen = self.static.get(um.printname(), [])
+                # Add placeholder for the new machine
+                if len(um_already_seen) == 0:
+                    if len(um.children()) == 0:
+                        # TODO: what to do with the modified words?
+                        um_already_seen = [um]
+                        self.static[um.printname()] = um_already_seen
+                # Unify all machines
+                self.__recursive_replace(placeholder, um, um_already_seen[0])
+
+        # Add to graph
         elif isinstance(what, Iterable):
             for m in what:
                 self.add_static(m)
+
+    def __recursive_replace(self, root, from_m, to_m, visited=None):
+        """
+        Replaces all instances of @p from_m with @p to_m in the tree under
+        @p root. @p to_m inherits all properties (content of partitions, etc.)
+        of @p from_m. This method cannot replace the root of the tree.
+
+        @param visited the set of already visited roots.
+        """
+        if visited is None:
+            visited = set()
+
+        # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
+        visited.add(root)
+        to_visit = set()
+        for part_i, part in root.partitions:
+            for m_i, m in enumerate(part):
+                if not (m == to_m):
+                    num_children = len(m.children())
+                    if m.printname() == from_m.printname() and m is not to_m:
+                        if num_children == 0:
+                            # TODO Machine.replace()?
+                            part[m_i] = to_m
+                            #root.remove(m, part_i)
+                            #root.append(m, to_m, part_i)
+                            to_m._parents.union(m._parents)
+                            m.__del_parent_link(root, part_i)
+                        else:
+                            # No replacement if from_m is modified
+                            # TODO: w = 0 link from m to to_m
+                            # TODO: test direct recursion
+                            m.append(to_m, 0)
+                    if num_children > 0:
+                        to_visit.add(m)
+        for m in to_visit:
+            self.__recursive_replace(m, from_m, to_m, visited)
+
+    def __unify_static(self, new_machine):
+        """..."""
+        pass
 
     def add_construction(self, what):
         """
