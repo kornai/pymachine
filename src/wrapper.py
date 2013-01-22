@@ -13,6 +13,8 @@ from matcher import FileContainsMatcher, EnumMatcher, PrintnameMatcher,\
         AndMatcher, NotMatcher, ConceptMatcher,\
         SatisfiedAVMMatcher
 
+from control import Control
+
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
 from sup_dic import supplementary_dictionary_reader as sdreader
@@ -169,7 +171,6 @@ def test(cfg_filename):
 
     from construction import NPConstruction
     from operators import AppendOperator
-    from machine import Machine
     npc = NPConstruction("1F", "asdf-> ADJ<CAS<NOM>> NOUN", [AppendOperator(1, 0)])
     test_np = [([
          ("piros", "piros", "piros/ADJ"),
@@ -178,7 +179,7 @@ def test(cfg_filename):
     sp = SentenceParser()
     machines = sp.parse(test_np)[0]
     if npc.check(machines):
-        print Machine.to_debug_str(npc.act(machines))
+        print npc.act(machines).to_debug_str()
     else:
         print "In your face!"
 
@@ -191,6 +192,8 @@ def test_verb_c(cfg_filename):
     w.lexicon.add_active(itertools.chain(*machines))
     vc = VerbConstruction("megy", w.lexicon, w.supp_dict)
     vc.check(machines)
+    for machine in itertools.chain(*machines):
+        print machine.control.to_debug_str()
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

@@ -48,7 +48,7 @@ class SpreadingActivation(object):
                 safety_zone += 1
             active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
             static_dbg_str = ', '.join(k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
-            logging.debug("\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str + "\n\n")
+            logging.debug("\n\nACTIVE:" + last_active.printname() + ' ' + active_dbg_str + "\n\n")
             logging.debug("\n\nSTATIC:" + ' ' + static_dbg_str + "\n\n")
 #            logging.debug('ACTIVE')
 #            from machine import Machine
@@ -101,7 +101,7 @@ class SpreadingActivation(object):
                         for m in c_res:
                             if isinstance(m.control, PluginControl):
                                 plugin_found = True
-                                logging.debug('Plugin found: ' + str(m))
+                                logging.debug('Plugin found: ' + m.printname())
                                 break
                         break
                     else:

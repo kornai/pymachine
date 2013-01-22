@@ -3,7 +3,6 @@
 import logging
 
 from machine import Machine
-from monoid import Monoid
 from control import KRPosControl, ConceptControl
 
 class Operator(object):
@@ -22,7 +21,7 @@ class Operator(object):
 
 class AppendOperator(Operator):
     """Appends a machine to another's partition: <tt>X, Y -> X[Y]</tt>."""
-    def __init__(self, X, Y, part=1, working_area=None):
+    def __init__(self, X, Y, part=0, working_area=None):
         """
         @param X index of the machine to whose partition Y will be appended.
         @param Y index of the machine to be appended.
@@ -101,7 +100,7 @@ class AddArbitraryStringOperator(Operator):
     # TODO zseder: I wont implement this before talking to someone about
     # AppendOperator, these two should be integrated to one, maybe Operator
     # later will be changed to have working_area, so postponed until then
-    def __init__(self, X, arbitrary_string, part=1, working_area=None):
+    def __init__(self, X, arbitrary_string, part=0, working_area=None):
         """
         @param X index of the machine to whose partition arbitrary_string will be appended.
         @param part the partition index.
@@ -129,9 +128,9 @@ class CreateBinaryOperator(Operator):
         # HACK zseder: I will assume input of act as a sequence even though
         # I know this will be changed later, only in the sake of not seeming
         # LAZY
-        m = Machine(Monoid(self.what, 2), ConceptControl())
-        m.append(self.first, 1)
-        m.append(self.second, 2)
+        m = Machine(self.what, ConceptControl(), 2)
+        m.append(self.first, 0)
+        m.append(self.second, 1)
         return [m]
 
 
@@ -155,8 +154,7 @@ class FillArgumentOperator(Operator):
 
     def _act(self, arg_mach, machine):
         """Recursive helper method for act()."""
-        for part_ind, part in enumerate(machine.base.partitions[1:]):
-            part_ind += 1
+        for part_ind, part in enumerate(machine.partitions):
             for submach_ind, submach in enumerate(part):
                 if submach.printname() == self.case:
                     part[submach_ind] = arg_mach  # TODO unify

@@ -14,33 +14,49 @@ except ImportError:
 from langtools.string.encoding import decode_from_proszeky
 
 from machine import Machine
-from monoid import Monoid
 from constants import deep_cases
 from control import ConceptControl
 
 def create_machine(name, partitions):
-    return Machine(Monoid(decode_from_proszeky(name), partitions),
-                   ConceptControl())
+    return Machine(decode_from_proszeky(name), ConceptControl(), partitions)
 
 def unify(machine):
     def __collect_machines(m, machines):
         machines[m.printname(), __has_other(m)].append(m)
-        for partition in m.base.partitions[1:]:
+        for partition in m.partitions:
             for m_ in partition:
                 __collect_machines(m_, machines)
 
     def __has_other(m):
-        for m_ in m.base.partitions[1]:
+        for m_ in m.partitions[0]:
             if m_.printname() == "other":
                 return True
         return False
 
-    def __unify_recursively(m):
-        if m:  
-            pass
+    def __get_unified(machines):
+        prototype = machines[0]
+        res = Machine(prototype.printname(), len(prototype.partitions))
+        for m in machines:
+            for p_i, p in enumerate(m.partitions):
+                for part_m in p:
+                    if part_m.printname() != "other":
+                        res.partitions[p_i].append(part_m)
+        return res
+
+    def __replace(where, for_what, is_other=False):
+        pn = for_what.printname()
+        for p_i, p in enumerate(where.partitions):
+            for part_m_i, part_m in enumerate(p):
+                if part_m.printname() == pn and __has_other(part_m) == is_other:
+                    p[part_m_i] = for_what
+                __replace(p[part_m_i], for_what, is_other)
 
     machines = defaultdict(list)
     __collect_machines(machine, machines)
+    for k, machines_to_unify in machines.iteritems():
+        printname, is_other = k
+        unified = __get_unified(machines_to_unify)
+        __replace(machine, unified, is_other)
 
 class ParserException(Exception):
     pass
@@ -221,23 +237,23 @@ class DefinitionParser:
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
-                m.append(self.__parse_expr(expr[0], m, root), 1)
-                m.append(root, 2)
+                m.append(self.__parse_expr(expr[0], m, root), 0)
+                m.append(root, 1)
                 return m
 
             # BE -> B A
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
-                m.append(self.__parse_expr(expr[1], m, root), 2)
-                m.append(root, 1)
+                m.append(self.__parse_expr(expr[1], m, root), 1)
+                m.append(root, 0)
                 return m
 
             # BE -> 'B
             if (expr[0] == "'" and
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
-                m.append(parent, 2)
+                m.append(parent, 1)
                 # nothing to append to any partitions
                 return None
 
@@ -245,7 +261,7 @@ class DefinitionParser:
             if (is_binary(expr[0]) and
                     expr[1] == "'"):
                 m = create_machine(expr[0], 2)
-                m.append(parent, 1)
+                m.append(parent, 0)
                 # nothing to append to any partitions
                 return None
 
@@ -268,8 +284,8 @@ class DefinitionParser:
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
                 m = create_machine(expr[1], 2)
-                m.append(self.__parse_expr(expr[0], m, root), 1)
-                m.append(self.__parse_expr(expr[2], m, root), 2)
+                m.append(self.__parse_expr(expr[0], m, root), 0)
+                m.append(self.__parse_expr(expr[2], m, root), 1)
                 return m
 
             # A -> [ D ]
@@ -299,7 +315,7 @@ class DefinitionParser:
                     expr[3] == "]"):
                 m = create_machine(expr[0], 1)
                 for parsed_expr in self.__parse_definition(expr[2], m, root):
-                    m.append(parsed_expr, 1)
+                    m.append(parsed_expr, 0)
                 return m
 
             # UE -> U ( U )
@@ -308,7 +324,7 @@ class DefinitionParser:
                     is_unary(expr[2]) and
                     expr[3] == ")"):
                 m = create_machine(expr[2], 1)
-                m.append(create_machine(expr[0], 1), 1)
+                m.append(create_machine(expr[0], 1), 0)
                 return m
 
         if (len(expr) == 6):
@@ -320,8 +336,8 @@ class DefinitionParser:
                     is_tree(expr[4]) and
                     expr[5] == "]"):
                 m = create_machine(expr[0], 2)
-                m.append(self.__parse_expr(expr[2], m, root), 1)
-                m.append(self.__parse_expr(expr[4], m, root), 2)
+                m.append(self.__parse_expr(expr[2], m, root), 0)
+                m.append(self.__parse_expr(expr[4], m, root), 1)
                 return m
 
         pe = ParserException("Unknown expression in definition: "+str(expr))
@@ -339,9 +355,9 @@ class DefinitionParser:
         machine = create_machine(parsed[1][printname_index], 1)
         if len(parsed) > 2:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
-                machine.append(parsed_expr, 1)
+                machine.append(parsed_expr, 0)
 
-        #unify(machine)
+        unify(machine)
         return machine
 
 def read(f, printname_index=0):
