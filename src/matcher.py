@@ -129,7 +129,7 @@ class SatisfiedAVMMatcher(Matcher):
             # Not an avm
             return False
 
-class PatternMatcher(Matcher):
+class KRPosMatcher(Matcher):
     """ Matches a rule. """
     def __init__(self, pattern):
         if isinstance(pattern, str) or isinstance(pattern, unicode):

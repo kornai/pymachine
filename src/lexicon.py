@@ -71,9 +71,11 @@ class Lexicon:
                 # Add placeholder for the new machine
                 if len(um_already_seen) == 0:
                     if len(um.children()) == 0:
-                        # TODO: what to do with the modified words?
                         um_already_seen = [um]
                         self.static[um.printname()] = um_already_seen
+                    else:
+                        # TODO: what to do with the modified words?
+                        pass
                 # Unify all machines
                 self.__recursive_replace(placeholder, um, um_already_seen[0])
 
@@ -82,7 +84,7 @@ class Lexicon:
             for m in what:
                 self.add_static(m)
 
-    def __recursive_replace(self, root, from_m, to_m, visited=None):
+def __recursive_replace(self, root, from_m, to_m, visited=None):
         """
         Replaces all instances of @p from_m with @p to_m in the tree under
         @p root. @p to_m inherits all properties (content of partitions, etc.)
@@ -117,10 +119,6 @@ class Lexicon:
                         to_visit.add(m)
         for m in to_visit:
             self.__recursive_replace(m, from_m, to_m, visited)
-
-    def __unify_static(self, new_machine):
-        """..."""
-        pass
 
     def add_construction(self, what):
         """
@@ -319,4 +317,8 @@ class Lexicon:
             c.avm.clear()
             if c in self.avm_constructions.values():
                 self.constructions.remove(c)
+
+    def test_static_graph_building():
+        """Tests the static graph building procedure."""
+        pass
 

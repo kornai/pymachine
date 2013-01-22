@@ -6,7 +6,7 @@ from copy import deepcopy as copy
 
 from fst import FSA, FST
 from matcher import PrintnameMatcher
-from matcher import PatternMatcher
+from matcher import KRPosMatcher
 from machine import Machine
 from control import PosControl, ElviraPluginControl, KRPosControl
 from constants import deep_cases
@@ -161,7 +161,7 @@ class VerbConstruction(Construction):
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition(PatternMatcher("VERB"), [ExpandOperator(
+        control.add_transition(KRPosMatcher("VERB"), [ExpandOperator(
             self.lexicon, self.working_area)], "0", "1")
 
         # count every transition as an increase in number of state
@@ -186,7 +186,7 @@ class VerbConstruction(Construction):
                     if pn.startswith("$"):
                         self.matchers[pn] = self.supp_dict[pn]
                     else:
-                        self.matchers[pn] = PatternMatcher("CAS<{0}>".format(pn))
+                        self.matchers[pn] = KRPosMatcher("CAS<{0}>".format(pn))
 
                 # recursive call
                 self.discover_arguments(part_machine)
