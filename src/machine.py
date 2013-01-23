@@ -76,8 +76,8 @@ class Machine(object):
         Adds @p what to the specified partition. @p what can either be a
         Machine, a string, or a list thereof.
         """
-        logging.debug(u"{0}.append({1},{2})".format(self.printname(),
-           what.printname(), which_partition).encode("utf-8"))
+        #logging.debug(u"{0}.append({1},{2})".format(self.printname(), # TODO printname
+                                                    #what.printname(), which_partition).encode("utf-8"))
         if len(self.partitions) > which_partition:
             if what in self.partitions[which_partition]:
                 return
