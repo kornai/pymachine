@@ -98,7 +98,7 @@ class Lexicon:
         # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
         visited.add(root)
         to_visit = set()
-        for part_i, part in root.partitions:
+        for part_i, part in enumerate(root.partitions):
             for m_i, m in enumerate(part):
                 if not (m == to_m):
                     num_children = len(m.children())
