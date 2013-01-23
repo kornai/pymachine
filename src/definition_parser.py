@@ -21,8 +21,9 @@ def create_machine(name, partitions):
     return Machine(decode_from_proszeky(name), ConceptControl(), partitions)
 
 def unify(machine):
-    def __collect_machines(m, machines):
-        machines[m.printname(), __has_other(m)].append(m)
+    def __collect_machines(m, machines, is_root=False):
+        if not is_root:
+            machines[m.printname(), __has_other(m)].append(m)
         for partition in m.partitions:
             for m_ in partition:
                 __collect_machines(m_, machines)
@@ -35,7 +36,7 @@ def unify(machine):
 
     def __get_unified(machines):
         prototype = machines[0]
-        res = Machine(prototype.printname(), len(prototype.partitions))
+        res = create_machine(prototype.printname(), len(prototype.partitions))
         for m in machines:
             for p_i, p in enumerate(m.partitions):
                 for part_m in p:
@@ -51,12 +52,14 @@ def unify(machine):
                     p[part_m_i] = for_what
                 __replace(p[part_m_i], for_what, is_other)
 
+    print machine.to_debug_str()
     machines = defaultdict(list)
-    __collect_machines(machine, machines)
+    __collect_machines(machine, machines, is_root=True)
     for k, machines_to_unify in machines.iteritems():
         printname, is_other = k
         unified = __get_unified(machines_to_unify)
         __replace(machine, unified, is_other)
+
 
 class ParserException(Exception):
     pass
@@ -284,6 +287,8 @@ class DefinitionParser:
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
                 m = create_machine(expr[1], 2)
+                logging.debug(expr[0])
+                logging.debug(self.__parse_expr(expr[0], m, root))
                 m.append(self.__parse_expr(expr[0], m, root), 0)
                 m.append(self.__parse_expr(expr[2], m, root), 1)
                 return m
@@ -376,8 +381,6 @@ def read(f, printname_index=0):
         except pyparsing.ParseException, pe:
             print l
             print "Error: ", str(pe)
-        except AttributeError:
-            print "machine.append problem"
 
     return d
 
