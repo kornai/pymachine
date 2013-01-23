@@ -82,7 +82,7 @@ class DefinitionParser:
     dollar = "$"
     hashmark = "#"
     unary_p = re.compile("^[a-z_#\-/0-9]+$")
-    binary_p = re.compile("^[A-Z_]+$")
+    binary_p = re.compile("^[A-Z_0-9]+$")
 
     def __init__(self):
         self.init_parser()
@@ -370,7 +370,7 @@ class DefinitionParser:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 0)
 
-        unify(machine)
+        #unify(machine)
         return machine
 
 def read(f, printname_index=0):
@@ -393,7 +393,6 @@ def read(f, printname_index=0):
     return d
 
 if __name__ == "__main__":
-    #logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
