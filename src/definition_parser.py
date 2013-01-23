@@ -233,24 +233,26 @@ class DefinitionParser:
 
             # UE -> U
             if (is_unary(expr[0])):
-                return create_machine(expr[0], 1)
+                return [create_machine(expr[0], 1)]
 
         if (len(expr) == 2):
             # BE -> A B
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
+                # TODO: append_all later
                 m.append(self.__parse_expr(expr[0], m, root), 0)
                 m.append(root, 1)
-                return m
+                return [m]
 
             # BE -> B A
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
+                # TODO: append_all later
                 m.append(self.__parse_expr(expr[1], m, root), 1)
                 m.append(root, 0)
-                return m
+                return [m]
 
             # BE -> 'B
             if (expr[0] == "'" and
@@ -258,7 +260,7 @@ class DefinitionParser:
                 m = create_machine(expr[1], 2)
                 m.append(parent, 1)
                 # nothing to append to any partitions
-                return None
+                return []
 
             # BE -> B'
             if (is_binary(expr[0]) and
@@ -266,19 +268,19 @@ class DefinitionParser:
                 m = create_machine(expr[0], 2)
                 m.append(parent, 0)
                 # nothing to append to any partitions
-                return None
+                return []
 
             # UE -> SS
             if (expr[0] == cls.dollar):
-                return create_machine(cls.dollar + expr[1], 1)
+                return [create_machine(cls.dollar + expr[1], 1)]
 
             # UE -> AVM
             if (expr[0] == cls.hashmark):
-                return create_machine(cls.hashmark + expr[1], 1)
+                return [create_machine(cls.hashmark + expr[1], 1)]
 
             # UE -> External url
             if (expr[0] == cls.at):
-                return create_machine(cls.at+ expr[1], 1)
+                return [create_machine(cls.at+ expr[1], 1)]
 
 
         if (len(expr) == 3):
@@ -289,9 +291,11 @@ class DefinitionParser:
                 m = create_machine(expr[1], 2)
                 logging.debug(expr[0])
                 logging.debug(self.__parse_expr(expr[0], m, root))
+                # TODO: append_all later
                 m.append(self.__parse_expr(expr[0], m, root), 0)
+                # TODO: append_all later
                 m.append(self.__parse_expr(expr[2], m, root), 1)
-                return m
+                return [m]
 
             # A -> [ D ]
             if (expr[0] == "[" and
@@ -305,13 +309,15 @@ class DefinitionParser:
                     expr[1] == "(" and
                     is_tree(expr[2]) and
                     expr[3] == ")"):
-                m = self.__parse_expr(expr[2], parent, root)
+                ms = self.__parse_expr(expr[2], parent, root)
 
                 # if BE was an expression with an apostrophe, then
                 # return of __parse_expr() is None
-                if m is not None:
-                    m.append(create_machine(expr[1], 1), 0)
-                return m
+                if len(ms) != 0:
+                    ms[0].append(create_machine(expr[1], 1), 0)
+                if len(ms) != 1:
+                    raise ParserException("semantics of U(BE) rule has errors")
+                return ms
 
             # UE -> U [ D ]
             if (is_unary(expr[0]) and
@@ -321,7 +327,7 @@ class DefinitionParser:
                 m = create_machine(expr[0], 1)
                 for parsed_expr in self.__parse_definition(expr[2], m, root):
                     m.append(parsed_expr, 0)
-                return m
+                return [m]
 
             # UE -> U ( U )
             if (is_unary(expr[0]) and
@@ -330,7 +336,7 @@ class DefinitionParser:
                     expr[3] == ")"):
                 m = create_machine(expr[2], 1)
                 m.append(create_machine(expr[0], 1), 0)
-                return m
+                return [m]
 
         if (len(expr) == 6):
             # BE -> B [E; E]
@@ -341,9 +347,11 @@ class DefinitionParser:
                     is_tree(expr[4]) and
                     expr[5] == "]"):
                 m = create_machine(expr[0], 2)
+                # TODO: append_all later
                 m.append(self.__parse_expr(expr[2], m, root), 0)
+                # TODO: append_all later
                 m.append(self.__parse_expr(expr[4], m, root), 1)
-                return m
+                return [m]
 
         pe = ParserException("Unknown expression in definition: "+str(expr))
         logging.debug(str(pe))
