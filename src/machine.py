@@ -65,7 +65,7 @@ class Machine(object):
             visited.add(m)
             for child in m.children():
                 if child not in visited:
-                    __recur(child, visited)
+                    __recur(child)
 
         visited = set()
         __recur(self)
