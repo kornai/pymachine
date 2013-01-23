@@ -84,7 +84,7 @@ class Lexicon:
             for m in what:
                 self.add_static(m)
 
-def __recursive_replace(self, root, from_m, to_m, visited=None):
+    def __recursive_replace(self, root, from_m, to_m, visited=None):
         """
         Replaces all instances of @p from_m with @p to_m in the tree under
         @p root. @p to_m inherits all properties (content of partitions, etc.)
