@@ -68,16 +68,23 @@ class Lexicon:
             unique_machines = placeholder.unique_machines_in_tree()
             for um in unique_machines:
                 um_already_seen = self.static.get(um.printname(), [])
-                # Add placeholder for the new machine
                 if len(um_already_seen) == 0:
+                    # There is no entry for the machine: add it (+ a placeholder
+                    # for the canonical slot, if the machine is modified)
                     if len(um.children()) == 0:
                         um_already_seen = [um]
-                        self.static[um.printname()] = um_already_seen
                     else:
                         # TODO: what to do with the modified words?
-                        pass
-                # Unify all machines
-                self.__recursive_replace(placeholder, um, um_already_seen[0])
+                        um_already_seen = [Machine(um.printname()), um]
+                    self.static[um.printname()] = um_already_seen
+                else:
+                    # Add to the entry list, if modified
+                    if len(um.children()) > 0:
+                        um_already_seen.append(um)
+
+                # Unify with the canonical entry if unmodified 
+                if len(um.children()) == 0:
+                    self.__recursive_replace(placeholder, um, um_already_seen[0])
 
         # Add to graph
         elif isinstance(what, Iterable):
