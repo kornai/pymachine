@@ -62,7 +62,7 @@ class Lexicon:
                 placeholder = whats_already_seen[0]
                 placeholder.partitions = what.partitions
                 placeholder.control    = what.control
-                placeholder._parents.union(what._parents)
+                placeholder.parents.union(what.parents)
                 self.__recursive_replace(placeholder, what, placeholder)
 
             unique_machines = placeholder.unique_machines_in_tree()
@@ -108,8 +108,8 @@ class Lexicon:
                             part[m_i] = to_m
                             #root.remove(m, part_i)
                             #root.append(m, to_m, part_i)
-                            to_m._parents.union(m._parents)
-                            m.__del_parent_link(root, part_i)
+                            to_m.parents.union(m.parents)
+                            m.del_parent_link(root, part_i)
                         else:
                             # No replacement if from_m is modified
                             # TODO: w = 0 link from m to to_m

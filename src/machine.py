@@ -15,7 +15,7 @@ class Machine(object):
 
         logging.debug(u"{0} created with {1} partitions".format(name, len(self.partitions)))
         
-        self._parents = set()
+        self.parents = set()
 
     def __repr__(self):
         return str(self)
@@ -114,13 +114,13 @@ class Machine(object):
                 self.partitions[partition].remove(what)
 
         if isinstance(what, Machine):
-            what.__del_parent_link(self, which_partition)
+            what.del_parent_link(self, which_partition)
 
     def __add_parent_link(self, whose, part):
-        self._parents.add((whose, part))
+        self.parents.add((whose, part))
 
-    def __del_parent_link(self, whose, part):
-        self._parents.remove((whose, part))
+    def del_parent_link(self, whose, part):
+        self.parents.remove((whose, part))
 
     def to_debug_str(self, depth=0, lines=None, stop=None):
         """An even more detailed __str__, complete with object ids and
