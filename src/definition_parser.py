@@ -284,8 +284,8 @@ class DefinitionParser:
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
                 m = create_machine(expr[1], 2)
-                m.append(self.__parse_expr(expr[0], m, root), 0)
-                m.append(self.__parse_expr(expr[2], m, root), 1)
+                m.append_all(self.__parse_expr(expr[0], m, root), 0)
+                m.append_all(self.__parse_expr(expr[2], m, root), 1)
                 return m
 
             # A -> [ D ]

@@ -7,9 +7,7 @@ import control as ctrl
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
         self.printname_ = name
-        self.partitions = []
-        for _ in xrange(part_num):
-            self.partitions.append([])
+        self.partitions = [[]] * part_num
 
         self.set_control(control)
 
@@ -70,11 +68,19 @@ class Machine(object):
         visited = set()
         __recur(self)
         return visited
+
+    def append_all(self, what_iter, which_partition=0):
+        """ Mass append function that calls append() for every object """
+        from collections import Iterable
+        if isinstance(what_iter, Iterable):
+            for what in what_iter:
+                self.append(what, which_partition)
+        else:
+            raise TypeError("append_all only accepts iterable objects.")
         
     def append(self, what, which_partition=0):
         """
-        Adds @p what to the specified partition. @p what can either be a
-        Machine, a string, or a list thereof.
+        Adds @p Machine instance to the specified partition.
         """
         #logging.debug(u"{0}.append({1},{2})".format(self.printname(), # TODO printname
                                                     #what.printname(), which_partition).encode("utf-8"))
@@ -88,17 +94,23 @@ class Machine(object):
         self.__append(what, which_partition)
 
     def __append(self, what, which_partition):
-        """Recursive helper function for append()."""
+        """Helper function for append()."""
         if isinstance(what, Machine):
             self.partitions[which_partition].append(what)
             what.add_parent_link(self, which_partition)
         elif what is None:
             pass
-        elif isinstance(what, list):
-            for what_ in what:
-                self.__append(what_, which_partition)
         else:
             raise TypeError("Only machines and strings can be added to partitions")
+
+    def remove_all(self, what_iter, which_partition=None):
+        """ Mass remove function that calls remove() for every object """
+        from collections import Iterable
+        if isinstance(what_iter, Iterable):
+            for what in what_iter:
+                self.remove(what, which_partition)
+        else:
+            raise TypeError("append_all only accepts iterable objects.")
 
     def remove(self, what, which_partition=None):
         """
