@@ -36,7 +36,7 @@ class Machine(object):
 
         for part_i, part in enumerate(new_partitions.partitions):
             for m in part:
-                m.__add_parent_link(new_machine, part_i)
+                m.add_parent_link(new_machine, part_i)
         return new_machine
 
     def printname(self):
@@ -91,7 +91,7 @@ class Machine(object):
         """Recursive helper function for append()."""
         if isinstance(what, Machine):
             self.partitions[which_partition].append(what)
-            what.__add_parent_link(self, which_partition)
+            what.add_parent_link(self, which_partition)
         elif what is None:
             pass
         elif isinstance(what, list):
@@ -116,7 +116,7 @@ class Machine(object):
         if isinstance(what, Machine):
             what.del_parent_link(self, which_partition)
 
-    def __add_parent_link(self, whose, part):
+    def add_parent_link(self, whose, part):
         self.parents.add((whose, part))
 
     def del_parent_link(self, whose, part):
