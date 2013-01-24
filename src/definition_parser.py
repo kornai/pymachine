@@ -229,10 +229,12 @@ class DefinitionParser:
             # E -> UE | BE
             # A -> UE
             if (is_tree(expr[0])):
+                logging.debug("Parsing {0} as a tree.".format(expr[0]))
                 return self.__parse_expr(expr[0], parent, root)
 
             # UE -> U
             if (is_unary(expr[0])):
+                logging.debug("Parsing {0} as a unary.".format(expr[0]))
                 return [create_machine(expr[0], 1)]
 
         if (len(expr) == 2):
@@ -270,6 +272,7 @@ class DefinitionParser:
 
             # UE -> SS
             if (expr[0] == cls.dollar):
+                logging.debug("Expr ({0}) is a supp_dict expr".format(expr))
                 return [create_machine(cls.dollar + expr[1], 1)]
 
             # UE -> AVM
@@ -297,6 +300,8 @@ class DefinitionParser:
             if (expr[0] == "[" and
                     is_tree(expr[1]) and
                     expr[2] == "]"):
+                logging.debug("Parsing expr {0} as an embedded definition".format(
+                    expr))
                 return list(self.__parse_definition(expr[1], parent, root))
         
         if (len(expr) == 4):
@@ -354,7 +359,7 @@ class DefinitionParser:
 
     def __parse_definition(self, definition, parent, root):
         for d in definition:
-            yield self.__parse_expr(d, parent, root)
+            yield self.__parse_expr(d, parent, root)[0]
     
     def parse_into_machines(self, s, printname_index=0):
         parsed = self.parse(s)
