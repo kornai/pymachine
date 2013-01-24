@@ -61,6 +61,10 @@ class Lexicon:
                 # Update placeholder with the definition
                 placeholder = whats_already_seen[0]
                 placeholder.partitions = what.partitions
+                for part_i, part in enumerate(placeholder.partitions):
+                    for child in part:
+                        child.add_parent_link(placeholder, part_i)
+                        child.del_parent_link(what,        part_i)
                 placeholder.control    = what.control
                 placeholder.parents.union(what.parents)
                 self.__recursive_replace(placeholder, what, placeholder)
@@ -101,6 +105,8 @@ class Lexicon:
         """
         if visited is None:
             visited = set()
+        if root in visited:
+            return
 
         # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
         visited.add(root)
