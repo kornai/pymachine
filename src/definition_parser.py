@@ -240,8 +240,7 @@ class DefinitionParser:
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
-                # TODO: append_all later
-                m.append(self.__parse_expr(expr[0], m, root), 0)
+                m.append_all(self.__parse_expr(expr[0], m, root), 0)
                 m.append(root, 1)
                 return [m]
 
@@ -249,8 +248,7 @@ class DefinitionParser:
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
-                # TODO: append_all later
-                m.append(self.__parse_expr(expr[1], m, root), 1)
+                m.append_all(self.__parse_expr(expr[1], m, root), 1)
                 m.append(root, 0)
                 return [m]
 
@@ -291,10 +289,8 @@ class DefinitionParser:
                 m = create_machine(expr[1], 2)
                 logging.debug(expr[0])
                 logging.debug(self.__parse_expr(expr[0], m, root))
-                # TODO: append_all later
-                m.append(self.__parse_expr(expr[0], m, root), 0)
-                # TODO: append_all later
-                m.append(self.__parse_expr(expr[2], m, root), 1)
+                m.append_all(self.__parse_expr(expr[0], m, root), 0)
+                m.append_all(self.__parse_expr(expr[2], m, root), 1)
                 return [m]
 
             # A -> [ D ]
@@ -347,10 +343,8 @@ class DefinitionParser:
                     is_tree(expr[4]) and
                     expr[5] == "]"):
                 m = create_machine(expr[0], 2)
-                # TODO: append_all later
-                m.append(self.__parse_expr(expr[2], m, root), 0)
-                # TODO: append_all later
-                m.append(self.__parse_expr(expr[4], m, root), 1)
+                m.append_all(self.__parse_expr(expr[2], m, root), 0)
+                m.append_all(self.__parse_expr(expr[4], m, root), 1)
                 return [m]
 
         pe = ParserException("Unknown expression in definition: "+str(expr))
