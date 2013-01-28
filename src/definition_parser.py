@@ -1,5 +1,6 @@
 import logging
 import sys
+import re
 import string
 from collections import defaultdict
 
@@ -13,7 +14,7 @@ except ImportError:
 from langtools.string.encoding import decode_from_proszeky
 
 from machine import Machine
-from constants import deep_cases, binary_pattern, unary_pattern
+from constants import deep_cases
 from control import ConceptControl
 
 def create_machine(name, partitions):
@@ -80,6 +81,8 @@ class DefinitionParser:
     at = "@"
     dollar = "$"
     hashmark = "#"
+    unary_p= re.compile("^[a-z_#\-/0-9]+$")
+    binary_p= re.compile("^[A-Z_0-9]+$")
 
     def __init__(self):
         self.init_parser()
@@ -87,13 +90,13 @@ class DefinitionParser:
     @classmethod
     def _is_binary(cls, s):
         return (type(s) in cls._str and
-               (binary_pattern.match(s) is not None
+               (cls.binary_p.match(s) is not None
                 and not s in deep_cases))
     
     @classmethod
     def _is_unary(cls, s):
         return (type(s) in cls._str and
-               (unary_pattern.match(s) is not None
+               (cls.unary_p.match(s) is not None
                 or s in deep_cases))
     
     @classmethod
