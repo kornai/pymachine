@@ -3,7 +3,6 @@ import copy
 from itertools import chain
 
 import control as ctrl
-from constants import binary_pattern
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
@@ -57,13 +56,6 @@ class Machine(object):
     def children(self):
         """Returns all direct children of the machine."""
         return set(chain(*self.partitions))
-
-    def is_binary(self):
-        """
-        Returns @c True if the machine is binary (i.e. its name matches the
-        'binary' pattern).
-        """
-        return binary_pattern.match(self.printname_) is not None
 
     def unique_machines_in_tree(self):
         """Returns all unique machines under (and including) the current one."""
