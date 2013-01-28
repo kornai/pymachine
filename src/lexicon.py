@@ -113,23 +113,22 @@ class Lexicon:
         to_visit = set()
         for part_i, part in enumerate(root.partitions):
             for m_i, m in enumerate(part):
-                if not (m == to_m):
-                    num_children = len(m.children())
-                    if m.printname() == from_m.printname() and m is not to_m:
-                        if num_children == 0:
-                            # TODO Machine.replace()?
-                            part[m_i] = to_m
-                            #root.remove(m, part_i)
-                            #root.append(m, to_m, part_i)
-                            to_m.parents.union(m.parents)
-                            m.del_parent_link(root, part_i)
-                        else:
-                            # No replacement if from_m is modified
-                            # TODO: w = 0 link from m to to_m
-                            # TODO: test direct recursion
-                            m.append(to_m, 0)
-                    if num_children > 0:
-                        to_visit.add(m)
+                num_children = len(m.children())
+                if m.printname() == from_m.printname() and m is not to_m:
+                    if num_children == 0:
+                        # TODO Machine.replace()?
+                        part[m_i] = to_m
+                        #root.remove(m, part_i)
+                        #root.append(m, to_m, part_i)
+                        to_m.parents.union(m.parents)
+                        m.del_parent_link(root, part_i)
+                    else:
+                        # No replacement if from_m is modified
+                        # TODO: w = 0 link from m to to_m
+                        # TODO: test direct recursion
+                        m.append(to_m, 0)
+                if num_children > 0:
+                    to_visit.add(m)
         for m in to_visit:
             self.__recursive_replace(m, from_m, to_m, visited)
 
