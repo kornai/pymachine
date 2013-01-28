@@ -56,20 +56,20 @@ class Lexicon:
             whats_already_seen = self.static.get(what.printname(), [])
             if len(whats_already_seen) == 0:
                 self.static[what.printname()] = [what]
-                placeholder = what
+                canonical = what
             else:
-                # Update placeholder with the definition
-                placeholder = whats_already_seen[0]
-                placeholder.partitions = what.partitions
-                for part_i, part in enumerate(placeholder.partitions):
+                # Update canonical with the definition
+                canonical = whats_already_seen[0]
+                canonical.partitions = what.partitions
+                for part_i, part in enumerate(canonical.partitions):
                     for child in part:
-                        child.add_parent_link(placeholder, part_i)
+                        child.add_parent_link(canonical, part_i)
                         child.del_parent_link(what,        part_i)
-                placeholder.control    = what.control
-                placeholder.parents.union(what.parents)
-                self.__recursive_replace(placeholder, what, placeholder)
+                canonical.control    = what.control
+                canonical.parents.union(what.parents)
+                self.__recursive_replace(canonical, what, canonical)
 
-            unique_machines = placeholder.unique_machines_in_tree()
+            unique_machines = canonical.unique_machines_in_tree()
             for um in unique_machines:
                 um_already_seen = self.static.get(um.printname(), [])
                 if len(um_already_seen) == 0:
@@ -88,7 +88,7 @@ class Lexicon:
 
                 # Unify with the canonical entry if unmodified 
                 if len(um.children()) == 0:
-                    self.__recursive_replace(placeholder, um, um_already_seen[0])
+                    self.__recursive_replace(canonical, um, um_already_seen[0])
 
         # Add to graph
         elif isinstance(what, Iterable):
