@@ -52,23 +52,32 @@ class Lexicon:
 
         @note We assume that a machine is added to the static graph only once.
         """
+        """
+        Add lexical definition to the static collection 
+        while keeping prior links (parent links).
+        """
         if isinstance(what, Machine):
+            # Does this machine appear in the static tree?
             whats_already_seen = self.static.get(what.printname(), [])
+            # Simply adding the new machine/definition
             if len(whats_already_seen) == 0:
                 self.static[what.printname()] = [what]
                 canonical = what
+            # Adding the canonical definition while keeping parent links
             else:
-                # Update canonical with the definition
+                # Updating canonical with the definition
                 canonical = whats_already_seen[0]
                 canonical.partitions = what.partitions
                 for part_i, part in enumerate(canonical.partitions):
                     for child in part:
+                        # Keeping parent links
                         child.add_parent_link(canonical, part_i)
-                        child.del_parent_link(what,        part_i)
-                canonical.control    = what.control
+                        child.del_parent_link(what, part_i)
+                canonical.control = what.control
                 canonical.parents.union(what.parents)
                 self.__recursive_replace(canonical, what, canonical)
 
+            # Add every unique machine in the canonical's tree to static
             unique_machines = canonical.unique_machines_in_tree()
             for um in unique_machines:
                 um_already_seen = self.static.get(um.printname(), [])
