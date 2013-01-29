@@ -71,6 +71,8 @@ class Lexicon:
 
             unique_machines = canonical.unique_machines_in_tree()
             for um in unique_machines:
+                if um is canonical:
+                    continue
                 um_already_seen = self.static.get(um.printname(), [])
                 if len(um_already_seen) == 0:
                     # There is no entry for the machine: add it (+ a placeholder
