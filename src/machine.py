@@ -73,7 +73,6 @@ class Machine(object):
         """ Mass append function that calls append() for every object """
         from collections import Iterable
         if isinstance(what_iter, Iterable):
-            i = 0
             for what in what_iter:
                 self.append(what, which_partition)
         else:
@@ -92,9 +91,7 @@ class Machine(object):
             self.partitions += [[] for i in range(which_partition + 1 -
                 len(self.partitions))]
 
-        print self.__to_debug_str(0)
         self.__append(what, which_partition)
-        print self.__to_debug_str(0)
 
     def __append(self, what, which_partition):
         """Helper function for append()."""
@@ -168,7 +165,7 @@ class Machine(object):
 def test_printname():
     m_unicode = Machine(u"\u00c1")
     print unicode(m_unicode).encode("utf-8")
-    print m_unicode.printname()
+    print m_unicode.printname().encode("utf-8")
     logging.error(unicode(m_unicode).encode("utf-8"))
 
 
