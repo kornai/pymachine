@@ -7,7 +7,7 @@ import control as ctrl
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
         self.printname_ = name
-        self.partitions = [[]] * part_num
+        self.partitions = [[] for i in range(part_num)]
 
         self.set_control(control)
 
@@ -73,6 +73,7 @@ class Machine(object):
         """ Mass append function that calls append() for every object """
         from collections import Iterable
         if isinstance(what_iter, Iterable):
+            i = 0
             for what in what_iter:
                 self.append(what, which_partition)
         else:
@@ -88,10 +89,12 @@ class Machine(object):
             if what in self.partitions[which_partition]:
                 return
         else:
-            self.partitions += [[]] * (which_partition + 1 -
-                len(self.partitions))
+            self.partitions += [[] for i in range(which_partition + 1 -
+                len(self.partitions))]
 
+        print self.__to_debug_str(0)
         self.__append(what, which_partition)
+        print self.__to_debug_str(0)
 
     def __append(self, what, which_partition):
         """Helper function for append()."""
