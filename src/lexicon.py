@@ -52,32 +52,52 @@ class Lexicon:
 
         @note We assume that a machine is added to the static graph only once.
         """
+        """
+        Add lexical definition to the static collection 
+        while keeping prior links (parent links).
+        """
         if isinstance(what, Machine):
+            # Does this machine appear in the static tree?
             whats_already_seen = self.static.get(what.printname(), [])
+            # Simply adding the new machine/definition
             if len(whats_already_seen) == 0:
                 self.static[what.printname()] = [what]
-                placeholder = what
+                canonical = what
+            # Adding the canonical definition while keeping parent links
             else:
-                # Update placeholder with the definition
-                placeholder = whats_already_seen[0]
-                placeholder.partitions = what.partitions
-                placeholder.control    = what.control
-                placeholder._parents.union(what._parents)
-                self.__recursive_replace(placeholder, what, placeholder)
+                # Updating canonical with the definition
+                canonical = whats_already_seen[0]
+                canonical.partitions = what.partitions
+                for part_i, part in enumerate(canonical.partitions):
+                    for child in part:
+                        # Keeping parent links
+                        child.add_parent_link(canonical, part_i)
+                        child.del_parent_link(what, part_i)
+                canonical.control = what.control
+                canonical.parents.union(what.parents)
+                self.__recursive_replace(canonical, what, canonical)
 
-            unique_machines = placeholder.unique_machines_in_tree()
+            # Add every unique machine in the canonical's tree to static
+            unique_machines = canonical.unique_machines_in_tree()
             for um in unique_machines:
                 um_already_seen = self.static.get(um.printname(), [])
-                # Add placeholder for the new machine
                 if len(um_already_seen) == 0:
+                    # There is no entry for the machine: add it (+ a placeholder
+                    # for the canonical slot, if the machine is modified)
                     if len(um.children()) == 0:
                         um_already_seen = [um]
-                        self.static[um.printname()] = um_already_seen
                     else:
                         # TODO: what to do with the modified words?
-                        pass
-                # Unify all machines
-                self.__recursive_replace(placeholder, um, um_already_seen[0])
+                        um_already_seen = [Machine(um.printname()), um]
+                    self.static[um.printname()] = um_already_seen
+                else:
+                    # Add to the entry list, if modified
+                    if len(um.children()) > 0:
+                        um_already_seen.append(um)
+
+                # Unify with the canonical entry if unmodified 
+                if len(um.children()) == 0:
+                    self.__recursive_replace(canonical, um, um_already_seen[0])
 
         # Add to graph
         elif isinstance(what, Iterable):
@@ -94,29 +114,30 @@ class Lexicon:
         """
         if visited is None:
             visited = set()
+        if root in visited:
+            return
 
         # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
         visited.add(root)
         to_visit = set()
-        for part_i, part in root.partitions:
+        for part_i, part in enumerate(root.partitions):
             for m_i, m in enumerate(part):
-                if not (m == to_m):
-                    num_children = len(m.children())
-                    if m.printname() == from_m.printname() and m is not to_m:
-                        if num_children == 0:
-                            # TODO Machine.replace()?
-                            part[m_i] = to_m
-                            #root.remove(m, part_i)
-                            #root.append(m, to_m, part_i)
-                            to_m._parents.union(m._parents)
-                            m.__del_parent_link(root, part_i)
-                        else:
-                            # No replacement if from_m is modified
-                            # TODO: w = 0 link from m to to_m
-                            # TODO: test direct recursion
-                            m.append(to_m, 0)
-                    if num_children > 0:
-                        to_visit.add(m)
+                num_children = len(m.children())
+                if m.printname() == from_m.printname() and m is not to_m:
+                    if num_children == 0:
+                        # TODO Machine.replace()?
+                        part[m_i] = to_m
+                        #root.remove(m, part_i)
+                        #root.append(m, to_m, part_i)
+                        to_m.parents.union(m.parents)
+                        m.del_parent_link(root, part_i)
+                    else:
+                        # No replacement if from_m is modified
+                        # TODO: w = 0 link from m to to_m
+                        # TODO: test direct recursion
+                        m.append(to_m, 0)
+                if num_children > 0:
+                    to_visit.add(m)
         for m in to_visit:
             self.__recursive_replace(m, from_m, to_m, visited)
 

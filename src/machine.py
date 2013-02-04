@@ -7,15 +7,13 @@ import control as ctrl
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
         self.printname_ = name
-        self.partitions = []
-        for _ in xrange(part_num):
-            self.partitions.append([])
+        self.partitions = [[] for i in range(part_num)]
 
         self.set_control(control)
 
         logging.debug(u"{0} created with {1} partitions".format(name, len(self.partitions)))
         
-        self._parents = set()
+        self.parents = set()
 
     def __repr__(self):
         return str(self)
@@ -36,7 +34,7 @@ class Machine(object):
 
         for part_i, part in enumerate(new_partitions.partitions):
             for m in part:
-                m.__add_parent_link(new_machine, part_i)
+                m.add_parent_link(new_machine, part_i)
         return new_machine
 
     def printname(self):
@@ -65,16 +63,25 @@ class Machine(object):
             visited.add(m)
             for child in m.children():
                 if child not in visited:
-                    __recur(child, visited)
+                    __recur(child)
 
         visited = set()
         __recur(self)
         return visited
+
+    def append_all(self, what_iter, which_partition=0):
+        """ Mass append function that calls append() for every object """
+        from collections import Iterable
+        if isinstance(what_iter, Iterable):
+            i = 0
+            for what in what_iter:
+                self.append(what, which_partition)
+        else:
+            raise TypeError("append_all only accepts iterable objects.")
         
     def append(self, what, which_partition=0):
         """
-        Adds @p what to the specified partition. @p what can either be a
-        Machine, a string, or a list thereof.
+        Adds @p Machine instance to the specified partition.
         """
         #logging.debug(u"{0}.append({1},{2})".format(self.printname(), # TODO printname
                                                     #what.printname(), which_partition).encode("utf-8"))
@@ -82,23 +89,31 @@ class Machine(object):
             if what in self.partitions[which_partition]:
                 return
         else:
-            self.partitions += [[]] * (which_partition + 1 -
-                len(self.partitions))
+            self.partitions += [[] for i in range(which_partition + 1 -
+                len(self.partitions))]
 
+        print self.__to_debug_str(0)
         self.__append(what, which_partition)
+        print self.__to_debug_str(0)
 
     def __append(self, what, which_partition):
-        """Recursive helper function for append()."""
+        """Helper function for append()."""
         if isinstance(what, Machine):
             self.partitions[which_partition].append(what)
-            what.__add_parent_link(self, which_partition)
+            what.add_parent_link(self, which_partition)
         elif what is None:
             pass
-        elif isinstance(what, list):
-            for what_ in what:
-                self.__append(what_, which_partition)
         else:
             raise TypeError("Only machines and strings can be added to partitions")
+
+    def remove_all(self, what_iter, which_partition=None):
+        """ Mass remove function that calls remove() for every object """
+        from collections import Iterable
+        if isinstance(what_iter, Iterable):
+            for what in what_iter:
+                self.remove(what, which_partition)
+        else:
+            raise TypeError("append_all only accepts iterable objects.")
 
     def remove(self, what, which_partition=None):
         """
@@ -114,13 +129,13 @@ class Machine(object):
                 self.partitions[partition].remove(what)
 
         if isinstance(what, Machine):
-            what.__del_parent_link(self, which_partition)
+            what.del_parent_link(self, which_partition)
 
-    def __add_parent_link(self, whose, part):
-        self._parents.add((whose, part))
+    def add_parent_link(self, whose, part):
+        self.parents.add((whose, part))
 
-    def __del_parent_link(self, whose, part):
-        self._parents.remove((whose, part))
+    def del_parent_link(self, whose, part):
+        self.parents.remove((whose, part))
 
     def to_debug_str(self, depth=0, lines=None, stop=None):
         """An even more detailed __str__, complete with object ids and

@@ -1,7 +1,7 @@
 import logging
 import sys
-import string
 import re
+import string
 from collections import defaultdict
 
 try:
@@ -21,8 +21,9 @@ def create_machine(name, partitions):
     return Machine(decode_from_proszeky(name), ConceptControl(), partitions)
 
 def unify(machine):
-    def __collect_machines(m, machines):
-        machines[m.printname(), __has_other(m)].append(m)
+    def __collect_machines(m, machines, is_root=False):
+        if not is_root:
+            machines[m.printname(), __has_other(m)].append(m)
         for partition in m.partitions:
             for m_ in partition:
                 __collect_machines(m_, machines)
@@ -35,7 +36,7 @@ def unify(machine):
 
     def __get_unified(machines):
         prototype = machines[0]
-        res = Machine(prototype.printname(), len(prototype.partitions))
+        res = create_machine(prototype.printname(), len(prototype.partitions))
         for m in machines:
             for p_i, p in enumerate(m.partitions):
                 for part_m in p:
@@ -51,12 +52,14 @@ def unify(machine):
                     p[part_m_i] = for_what
                 __replace(p[part_m_i], for_what, is_other)
 
+    print machine.to_debug_str()
     machines = defaultdict(list)
-    __collect_machines(machine, machines)
+    __collect_machines(machine, machines, is_root=True)
     for k, machines_to_unify in machines.iteritems():
         printname, is_other = k
         unified = __get_unified(machines_to_unify)
         __replace(machine, unified, is_other)
+
 
 class ParserException(Exception):
     pass
@@ -229,28 +232,30 @@ class DefinitionParser:
             # E -> UE | BE
             # A -> UE
             if (is_tree(expr[0])):
+                logging.debug("Parsing {0} as a tree.".format(expr[0]))
                 return self.__parse_expr(expr[0], parent, root)
 
             # UE -> U
             if (is_unary(expr[0])):
-                return create_machine(expr[0], 1)
+                logging.debug("Parsing {0} as a unary.".format(expr[0]))
+                return [create_machine(expr[0], 1)]
 
         if (len(expr) == 2):
             # BE -> A B
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = create_machine(expr[1], 2)
-                m.append(self.__parse_expr(expr[0], m, root), 0)
+                m.append_all(self.__parse_expr(expr[0], m, root), 0)
                 m.append(root, 1)
-                return m
+                return [m]
 
             # BE -> B A
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
-                m.append(self.__parse_expr(expr[1], m, root), 1)
+                m.append_all(self.__parse_expr(expr[1], m, root), 1)
                 m.append(root, 0)
-                return m
+                return [m]
 
             # BE -> 'B
             if (expr[0] == "'" and
@@ -258,7 +263,7 @@ class DefinitionParser:
                 m = create_machine(expr[1], 2)
                 m.append(parent, 1)
                 # nothing to append to any partitions
-                return None
+                return []
 
             # BE -> B'
             if (is_binary(expr[0]) and
@@ -266,24 +271,25 @@ class DefinitionParser:
                 m = create_machine(expr[0], 2)
                 m.append(parent, 0)
                 # nothing to append to any partitions
-                return None
+                return []
 
             # U -> !ACC
             if expr[0] == cls.deep_pre:
-                    return create_machine(cls.deep_pre + expr[1], 1)
+                    return [create_machine(cls.deep_pre + expr[1], 1)]
 
             # U -> SS
             if (expr[0] == cls.dollar):
-                return create_machine(cls.dollar + expr[1], 1)
+                logging.debug("Expr ({0}) is a supp_dict expr".format(expr))
+                return [create_machine(cls.dollar + expr[1], 1)]
 
             # U -> AVM
             if (expr[0] == cls.hashmark):
-                return create_machine(cls.hashmark + expr[1], 1)
+                return [create_machine(cls.hashmark + expr[1], 1)]
+
 
             # U -> External url
             if (expr[0] == cls.ency):
-                return create_machine(cls.ency+ expr[1], 1)
-
+                return [create_machine(cls.ency + expr[1], 1)]
 
         if (len(expr) == 3):
             # UB -> A B A
@@ -291,14 +297,18 @@ class DefinitionParser:
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
                 m = create_machine(expr[1], 2)
-                m.append(self.__parse_expr(expr[0], m, root), 0)
-                m.append(self.__parse_expr(expr[2], m, root), 1)
-                return m
+                logging.debug(expr[0])
+                logging.debug(self.__parse_expr(expr[0], m, root))
+                m.append_all(self.__parse_expr(expr[0], m, root), 0)
+                m.append_all(self.__parse_expr(expr[2], m, root), 1)
+                return [m]
 
             # A -> [ D ]
             if (expr[0] == "[" and
                     is_tree(expr[1]) and
                     expr[2] == "]"):
+                logging.debug("Parsing expr {0} as an embedded definition".format(
+                    expr))
                 return list(self.__parse_definition(expr[1], parent, root))
         
         if (len(expr) == 4):
@@ -307,13 +317,15 @@ class DefinitionParser:
                     expr[1] == "(" and
                     is_tree(expr[2]) and
                     expr[3] == ")"):
-                m = self.__parse_expr(expr[2], parent, root)
+                ms = self.__parse_expr(expr[2], parent, root)
 
                 # if BE was an expression with an apostrophe, then
                 # return of __parse_expr() is None
-                if m is not None:
-                    m.append(create_machine(expr[1], 1), 0)
-                return m
+                if len(ms) != 0:
+                    ms[0].append(create_machine(expr[1], 1), 0)
+                if len(ms) != 1:
+                    raise ParserException("semantics of U(BE) rule has errors")
+                return ms
 
             # UE -> U [ D ]
             if (is_unary(expr[0]) and
@@ -323,7 +335,7 @@ class DefinitionParser:
                 m = create_machine(expr[0], 1)
                 for parsed_expr in self.__parse_definition(expr[2], m, root):
                     m.append(parsed_expr, 0)
-                return m
+                return [m]
 
             # UE -> U ( U )
             if (is_unary(expr[0]) and
@@ -332,7 +344,7 @@ class DefinitionParser:
                     expr[3] == ")"):
                 m = create_machine(expr[2], 1)
                 m.append(create_machine(expr[0], 1), 0)
-                return m
+                return [m]
 
         if (len(expr) == 6):
             # BE -> B [E; E]
@@ -343,9 +355,9 @@ class DefinitionParser:
                     is_tree(expr[4]) and
                     expr[5] == "]"):
                 m = create_machine(expr[0], 2)
-                m.append(self.__parse_expr(expr[2], m, root), 0)
-                m.append(self.__parse_expr(expr[4], m, root), 1)
-                return m
+                m.append_all(self.__parse_expr(expr[2], m, root), 0)
+                m.append_all(self.__parse_expr(expr[4], m, root), 1)
+                return [m]
 
         pe = ParserException("Unknown expression in definition: "+str(expr))
         logging.debug(str(pe))
@@ -354,7 +366,7 @@ class DefinitionParser:
 
     def __parse_definition(self, definition, parent, root):
         for d in definition:
-            yield self.__parse_expr(d, parent, root)
+            yield self.__parse_expr(d, parent, root)[0]
     
     def parse_into_machines(self, s, printname_index=0):
         parsed = self.parse(s)
@@ -383,8 +395,6 @@ def read(f, printname_index=0):
         except pyparsing.ParseException, pe:
             print l
             print "Error: ", str(pe)
-        except AttributeError:
-            print "machine.append problem"
 
     return d
 
