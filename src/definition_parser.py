@@ -92,13 +92,13 @@ class DefinitionParser:
     @classmethod
     def _is_binary(cls, s):
         return ((type(s) in cls._str and cls.binary_p.match(s)) or 
-               ( s[0] == cls.root_pre and cls.binary_p.match(s[1:])))
+               ( s[0] == cls.root_pre and s[1:] == "ROOT"))
     
     @classmethod
     def _is_unary(cls, s):
         return ((type(s) in cls._str and cls.unary_p.match(s) is not None ) or 
                 ( s[0] == cls.deep_pre ) or 
-                ( s[0] == cls.root_pre and cls.unary_p.match(s[1:])))
+                ( s[0] == cls.root_pre and s[1:] == "root"))
         
     @classmethod
     def _is_deep_case(cls, s):
@@ -286,6 +286,9 @@ class DefinitionParser:
             if (expr[0] == cls.hashmark):
                 return [create_machine(cls.hashmark + expr[1], 1)]
 
+            # U -> =root
+            if (expr[0] == cls.root_pre):
+                return [create_machine(cls.root_pre + expr[1], 1)]
 
             # U -> External url
             if (expr[0] == cls.ency):
