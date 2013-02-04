@@ -137,7 +137,8 @@ class VerbConstruction(Construction):
         self.supp_dict = supp_dict
         self.matchers = {}
         self.working_area = [Machine(None, KRPosControl('stem/VERB'))]
-        self.discover_arguments(lexicon.static[name])
+        # indexing 0th element in static because that is the canonical machine
+        self.discover_arguments(lexicon.static[name][0])
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
