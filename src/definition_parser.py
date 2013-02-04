@@ -73,32 +73,33 @@ class DefinitionParser:
     rp = ")"
 
     def_sep = ":"
-    arg_sep = ","
+    clause_sep = ","
     part_sep = ";"
     comment_sep = "%"
     prime = "'"
     hyphen = "-"
-    at = "@"
-    dollar = "$"
+    ency = "@"
+    dollar = "$" # starts langspec deep case
     hashmark = "#"
-    unary_p= re.compile("^[a-z_#\-/0-9]+$")
-    binary_p= re.compile("^[A-Z_0-9]+$")
+    deep_pre = '!'
+    root_pre = '='
+    unary_p = re.compile("^[a-z_#\-/0-9]+$")
+    binary_p = re.compile("^[A-Z_0-9]+$")
 
     def __init__(self):
         self.init_parser()
 
     @classmethod
     def _is_binary(cls, s):
-        return (type(s) in cls._str and
-               (cls.binary_p.match(s) is not None
-                and not s in deep_cases))
+        return (type(s) in cls._str and cls.binary_p.match(s)) or 
+               ( s[0] == cls.root_pre and cls.binary_p.match(s[1:]))
     
-    @classmethod
+        @classmethod
     def _is_unary(cls, s):
-        return (type(s) in cls._str and
-               (cls.unary_p.match(s) is not None
-                or s in deep_cases))
-    
+        return (type(s) in cls._str and cls.unary_p.match(s) is not None ) or 
+               ( s[0] == cls.deep_pre ) or 
+               ( s[0] == cls.root_pre and cls.unary_p.match(s[1:]))
+        
     @classmethod
     def _is_deep_case(cls, s):
         return s in deep_cases
@@ -110,24 +111,26 @@ class DefinitionParser:
         self.rp_lit = Literal(DefinitionParser.rp)
 
         self.def_sep_lit = Literal(DefinitionParser.def_sep)
-        self.arg_sep_lit = Literal(DefinitionParser.arg_sep)
+        self.clause_sep_lit = Literal(DefinitionParser.clause_sep)
         self.part_sep_lit = Literal(DefinitionParser.part_sep)
         self.comment_sep_lit = Literal(DefinitionParser.comment_sep)
         self.prime_lit = Literal(DefinitionParser.prime)
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
-        self.at_lit = Literal(DefinitionParser.at)
+        self.ency_lit = Literal(DefinitionParser.ency)
+        self.deep_pre_lit = Literal(DefinitionParser.deep_pre)
+        self.root_pre_lit = Literal(DefinitionParser.root_pre)
         self.hashmark_lit = Literal(DefinitionParser.hashmark)
         self.dollar_lit = Literal(DefinitionParser.dollar)
         
-        self.deep_cases = reduce(lambda a, b: a | b,
-            (Literal(dc) for dc in deep_cases))
+        self.deep_cases = Group(self.deep_pre_lit + Word(string.uppercase))
         
-        self.unary = Combine(Optional("-") + Word(string.lowercase + "_" + nums) +
-                             Optional(Word(nums))) | self.deep_cases
-        self.binary = Word(string.uppercase + "_" + nums)
+        self.unary = (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(Word(nums))) 
+                      | self.root_pre_lit + Literal('root') 
+                      | self.deep_cases)
+        self.binary = Combine(Optional(self.root_pre_lit) + Word(string.uppercase + "_" + nums))
         self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
         self.syntax_avm = self.hashmark_lit+ Word(string.ascii_letters + "_")
-        self.syntax_exturl = self.at_lit+ Word(string.ascii_letters + "_")
+        self.syntax_exturl = self.ency_lit+ Word(string.ascii_letters + "_")
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -139,7 +142,7 @@ class DefinitionParser:
         # "enumerable expression"
         # D -> E | E, D
         self.definition = Group(delimitedList(self.expression,
-            delim=DefinitionParser.arg_sep))
+            delim=DefinitionParser.clause_sep))
 
         self.expression << Group(
             # E -> UE
@@ -270,19 +273,23 @@ class DefinitionParser:
                 # nothing to append to any partitions
                 return []
 
-            # UE -> SS
+            # U -> !ACC
+            if expr[0] == cls.deep_pre:
+                    return [create_machine(cls.deep_pre + expr[1], 1)]
+
+            # U -> SS
             if (expr[0] == cls.dollar):
                 logging.debug("Expr ({0}) is a supp_dict expr".format(expr))
                 return [create_machine(cls.dollar + expr[1], 1)]
 
-            # UE -> AVM
+            # U -> AVM
             if (expr[0] == cls.hashmark):
                 return [create_machine(cls.hashmark + expr[1], 1)]
 
-            # UE -> External url
-            if (expr[0] == cls.at):
-                return [create_machine(cls.at+ expr[1], 1)]
 
+            # U -> External url
+            if (expr[0] == cls.ency):
+                return [create_machine(cls.ency + expr[1], 1)]
 
         if (len(expr) == 3):
             # UB -> A B A
@@ -392,7 +399,7 @@ def read(f, printname_index=0):
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.WARNING, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
