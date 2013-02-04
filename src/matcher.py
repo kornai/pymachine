@@ -54,17 +54,18 @@ class EnumMatcher(Matcher):
             self.name, u" ".join(self.machine_names)))
 
     def collect_machines(self, lexicon):
-        cm = lexicon.static[self.name]
+        cm = lexicon.static[self.name][0]
         machines_on_type =  set([m.partitions[0][0].printname()
             for m in cm.partitions[0] if m.printname() == "IS_A"])
 
         all_machines = machines_on_type
-        for pn, m in lexicon.static.iteritems():
-            for child in m.partitions[0]:
-                if (child.printname() == "IS_A" and
-                    child.partitions[1][0] == self.name):
-                    all_machines.add(pn)
-                    break
+        for pn, ms in lexicon.static.iteritems():
+            for m in ms:
+                for child in m.partitions[0]:
+                    if (child.printname() == "IS_A" and
+                        child.partitions[1][0] == self.name):
+                        all_machines.add(pn)
+                        break
         return all_machines
 
     def _match(self, machine):
