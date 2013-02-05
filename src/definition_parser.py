@@ -82,8 +82,8 @@ class DefinitionParser:
     prime = "'"
     hyphen = "-"
     ency = "@"
-    dollar = "$" # starts langspec deep case
-    hashmark = "#"
+    langspec_pre = "$" # starts langspec deep case
+    avm_pre = "#"
     deep_pre = '!'
     root_pre = '='
     unary_p = re.compile("^[a-z_#\-/0-9]+$")
@@ -103,7 +103,7 @@ class DefinitionParser:
                 (type(s) is list and (
                     ( s[0] == cls.deep_pre) or
                     ( s[0] == cls.root_pre and s[1] == "root") or
-                    ( s[0] == cls.dollar) or
+                    ( s[0] == cls.langspec_pre) or
                     ( s[0] == cls.ency)
                 )))
         
@@ -126,8 +126,8 @@ class DefinitionParser:
         self.ency_lit = Literal(DefinitionParser.ency)
         self.deep_pre_lit = Literal(DefinitionParser.deep_pre)
         self.root_pre_lit = Literal(DefinitionParser.root_pre)
-        self.hashmark_lit = Literal(DefinitionParser.hashmark)
-        self.dollar_lit = Literal(DefinitionParser.dollar)
+        self.avm_pre_lit = Literal(DefinitionParser.avm_pre)
+        self.langspec_pre_lit = Literal(DefinitionParser.langspec_pre)
         
         self.deep_cases = Group(self.deep_pre_lit + Word(string.uppercase))
         
@@ -135,8 +135,8 @@ class DefinitionParser:
                       | Group(self.root_pre_lit + Literal('root'))
                       | Group(self.deep_cases))
         self.binary = Combine(Optional(self.root_pre_lit) + Word(string.uppercase + "_" + nums))
-        self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
-        self.syntax_avm = self.hashmark_lit+ Word(string.ascii_letters + "_")
+        self.syntax_supp = self.langspec_pre_lit + Word(string.uppercase + "_")
+        self.syntax_avm = self.avm_pre_lit+ Word(string.ascii_letters + "_")
         self.syntax_exturl = self.ency_lit+ Word(string.ascii_letters + "_")
         self.dontcare = SkipTo(LineEnd())
         
@@ -285,12 +285,12 @@ class DefinitionParser:
                 return [create_machine(cls.deep_pre + expr[1], 1)]
 
             # U -> $SS
-            if (expr[0] == cls.dollar):
-                return [create_machine(cls.dollar + expr[1], 1)]
+            if (expr[0] == cls.langspec_pre):
+                return [create_machine(cls.langspec_pre + expr[1], 1)]
 
             # U -> #AVM
-            if (expr[0] == cls.hashmark):
-                return [create_machine(cls.hashmark + expr[1], 1)]
+            if (expr[0] == cls.avm_pre):
+                return [create_machine(cls.avm_pre + expr[1], 1)]
 
             # U -> =root
             if (expr[0] == cls.root_pre):
