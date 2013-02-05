@@ -18,6 +18,9 @@ from constants import deep_cases
 from control import ConceptControl
 
 def create_machine(name, partitions):
+    # we accept lists because of ["=", "ROOT"] or ["!", "ACC"]
+    if type(name) is list:
+        name = "".join(name)
     return Machine(decode_from_proszeky(name), ConceptControl(), partitions)
 
 def unify(machine):
@@ -92,13 +95,17 @@ class DefinitionParser:
     @classmethod
     def _is_binary(cls, s):
         return ((type(s) in cls._str and cls.binary_p.match(s)) or 
-               ( s[0] == cls.root_pre and s[1:] == "ROOT"))
+                ( s[0] == cls.root_pre and s[1] == "ROOT"))
     
     @classmethod
     def _is_unary(cls, s):
         return ((type(s) in cls._str and cls.unary_p.match(s) is not None ) or 
-                ( s[0] == cls.deep_pre ) or 
-                ( s[0] == cls.root_pre and s[1:] == ["root"]))
+                (type(s) is list and (
+                    ( s[0] == cls.deep_pre) or
+                    ( s[0] == cls.root_pre and s[1] == "root") or
+                    ( s[0] == cls.dollar) or
+                    ( s[0] == cls.ency)
+                )))
         
     @classmethod
     def _is_deep_case(cls, s):
@@ -126,7 +133,7 @@ class DefinitionParser:
         
         self.unary = (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(Word(nums))) 
                       | Group(self.root_pre_lit + Literal('root'))
-                      | self.deep_cases)
+                      | Group(self.deep_cases))
         self.binary = Combine(Optional(self.root_pre_lit) + Word(string.uppercase + "_" + nums))
         self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
         self.syntax_avm = self.hashmark_lit+ Word(string.ascii_letters + "_")
@@ -275,14 +282,13 @@ class DefinitionParser:
 
             # U -> !ACC
             if expr[0] == cls.deep_pre:
-                    return [create_machine(cls.deep_pre + expr[1], 1)]
+                return [create_machine(cls.deep_pre + expr[1], 1)]
 
-            # U -> SS
+            # U -> $SS
             if (expr[0] == cls.dollar):
-                logging.debug("Expr ({0}) is a supp_dict expr".format(expr))
                 return [create_machine(cls.dollar + expr[1], 1)]
 
-            # U -> AVM
+            # U -> #AVM
             if (expr[0] == cls.hashmark):
                 return [create_machine(cls.hashmark + expr[1], 1)]
 
@@ -290,7 +296,7 @@ class DefinitionParser:
             if (expr[0] == cls.root_pre):
                 return [create_machine(cls.root_pre + expr[1], 1)]
 
-            # U -> External url
+            # U -> @External_url
             if (expr[0] == cls.ency):
                 return [create_machine(cls.ency + expr[1], 1)]
 
@@ -325,7 +331,7 @@ class DefinitionParser:
                 # if BE was an expression with an apostrophe, then
                 # return of __parse_expr() is None
                 if len(ms) != 0:
-                    ms[0].append(create_machine(expr[1], 1), 0)
+                    ms[0].append(create_machine(expr[0], 1), 0)
                 if len(ms) != 1:
                     raise ParserException("semantics of U(BE) rule has errors")
                 return ms
