@@ -98,7 +98,7 @@ class DefinitionParser:
     def _is_unary(cls, s):
         return ((type(s) in cls._str and cls.unary_p.match(s) is not None ) or 
                 ( s[0] == cls.deep_pre ) or 
-                ( s[0] == cls.root_pre and s[1:] == "root"))
+                ( s[0] == cls.root_pre and s[1:] == ["root"]))
         
     @classmethod
     def _is_deep_case(cls, s):
@@ -125,7 +125,7 @@ class DefinitionParser:
         self.deep_cases = Group(self.deep_pre_lit + Word(string.uppercase))
         
         self.unary = (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(Word(nums))) 
-                      | self.root_pre_lit + Literal('root') 
+                      | Group(self.root_pre_lit + Literal('root'))
                       | self.deep_cases)
         self.binary = Combine(Optional(self.root_pre_lit) + Word(string.uppercase + "_" + nums))
         self.syntax_supp = self.dollar_lit + Word(string.uppercase + "_")
