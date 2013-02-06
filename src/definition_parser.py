@@ -95,7 +95,7 @@ class DefinitionParser:
     @classmethod
     def _is_binary(cls, s):
         return ((type(s) in cls._str and cls.binary_p.match(s)) or 
-                ( s[0] == cls.root_pre and s[1] == "ROOT"))
+                ( type(s) is list and s[0] == cls.root_pre and s[1] == "ROOT"))
     
     @classmethod
     def _is_unary(cls, s):
@@ -136,7 +136,7 @@ class DefinitionParser:
                       | self.deep_cases
                       | Group(self.langspec_pre_lit + Word(string.uppercase + "_"))
                       | Group(self.avm_pre_lit + Word(string.ascii_letters + "_"))
-                      | Group(self.ency_lit + Word(string.ascii_letters + "_"))
+                      | Group(self.ency_lit + Word(alphanums + "_-"))
                       )
 
         self.binary = (Combine(Word(string.uppercase + "_" + nums))
@@ -205,7 +205,7 @@ class DefinitionParser:
             (self.lb_lit + self.definition + self.rb_lit)
         )
         
-        self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_" ),) * 5
+        self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_.'" ),) * 5
         self.defid = Word(nums)
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
 
@@ -265,7 +265,7 @@ class DefinitionParser:
                 m = create_machine(expr[1], 2)
                 m.append(parent, 1)
                 # nothing to append to any partitions
-                return []
+                return [m]
 
             # BE -> B'
             if (is_binary(expr[0]) and
@@ -273,7 +273,7 @@ class DefinitionParser:
                 m = create_machine(expr[0], 2)
                 m.append(parent, 0)
                 # nothing to append to any partitions
-                return []
+                return [m]
 
             # U -> !ACC
             if expr[0] == cls.deep_pre:
