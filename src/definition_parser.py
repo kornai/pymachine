@@ -133,11 +133,15 @@ class DefinitionParser:
         
         self.unary = (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(Word(nums))) 
                       | Group(self.root_pre_lit + Literal('root'))
-                      | Group(self.deep_cases))
-        self.binary = Combine(Optional(self.root_pre_lit) + Word(string.uppercase + "_" + nums))
-        self.syntax_supp = self.langspec_pre_lit + Word(string.uppercase + "_")
-        self.syntax_avm = self.avm_pre_lit+ Word(string.ascii_letters + "_")
-        self.syntax_exturl = self.ency_lit+ Word(string.ascii_letters + "_")
+                      | self.deep_cases
+                      | Group(self.langspec_pre_lit + Word(string.uppercase + "_"))
+                      | Group(self.avm_pre_lit + Word(string.ascii_letters + "_"))
+                      | Group(self.ency_lit + Word(string.ascii_letters + "_"))
+                      )
+
+        self.binary = (Combine(Word(string.uppercase + "_" + nums))
+                       | Group(self.root_pre_lit + Literal('ROOT'))
+                       )
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -185,15 +189,6 @@ class DefinitionParser:
         self.unexpr << Group(
             # UE -> U
             (self.unary) ^
-
-            # UE -> SS
-            (self.syntax_supp) ^
-
-            # UE -> AVM
-            (self.syntax_avm) ^
-
-            # UE -> ExtUrl
-            (self.syntax_exturl) ^
 
             # UE -> U [ D ]
             (self.unary + self.lb_lit + self.definition + self.rb_lit) ^
@@ -284,7 +279,7 @@ class DefinitionParser:
             if expr[0] == cls.deep_pre:
                 return [create_machine(cls.deep_pre + expr[1], 1)]
 
-            # U -> $SS
+            # U -> $HUN_FROM
             if (expr[0] == cls.langspec_pre):
                 return [create_machine(cls.langspec_pre + expr[1], 1)]
 
