@@ -25,6 +25,8 @@ def create_machine(name, partitions):
 
 def unify(machine):
     def __collect_machines(m, machines, is_root=False):
+        if (m.printname(), __has_other(m)) in machines:
+            return
         if not is_root:
             machines[m.printname(), __has_other(m)].append(m)
         for partition in m.partitions:
@@ -47,15 +49,22 @@ def unify(machine):
                         res.partitions[p_i].append(part_m)
         return res
 
-    def __replace(where, for_what, is_other=False):
+    def __replace(where, for_what, is_other=False, visited=None):
+        if visited is None:
+            visited = set()
+        
+        if id(where) in visited:
+            return
+
+        visited.add(id(where))
+
         pn = for_what.printname()
         for p_i, p in enumerate(where.partitions):
             for part_m_i, part_m in enumerate(p):
                 if part_m.printname() == pn and __has_other(part_m) == is_other:
                     p[part_m_i] = for_what
-                __replace(p[part_m_i], for_what, is_other)
+                __replace(p[part_m_i], for_what, is_other, visited)
 
-    print machine.to_debug_str()
     machines = defaultdict(list)
     __collect_machines(machine, machines, is_root=True)
     for k, machines_to_unify in machines.iteritems():
@@ -380,7 +389,7 @@ class DefinitionParser:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 0)
 
-        #unify(machine)
+        unify(machine)
         return machine
 
 def read(f, printname_index=0):
