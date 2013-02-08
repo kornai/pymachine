@@ -148,8 +148,9 @@ class Machine(object):
         if lines is None:
             lines = []
 
-        lines.append('{0:>{1}}:{2}:{3}'.format(at_partition,
-            2 * depth + len(str(self)), str(self), id(self)))
+        pn = self.printname()
+        lines.append(u'{0:>{1}}:{2}:{3}'.format(at_partition,
+            2 * depth + len(str(at_partition)), pn, id(self)))
         if not self in stop:
             stop.add(self)
             for part_i in xrange(len(self.partitions)):
@@ -158,7 +159,7 @@ class Machine(object):
                     m.__to_debug_str(depth + 1, lines, stop, part_i)
 
         if depth == 0:
-            return "\n".join(lines)
+            return u"\n".join(lines)
 
 def test_printname():
     m_unicode = Machine(u"\u00c1")
