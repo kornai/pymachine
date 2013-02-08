@@ -134,12 +134,12 @@ class Machine(object):
     def del_parent_link(self, whose, part):
         self.parents.remove((whose, part))
 
-    def to_debug_str(self, depth=0, lines=None, stop=None):
+    def to_debug_str(self, depth=0):
         """An even more detailed __str__, complete with object ids and
         recursive."""
         return self.__to_debug_str(0)
 
-    def __to_debug_str(self, depth, lines=None, stop=None):
+    def __to_debug_str(self, depth, lines=None, stop=None, at_partition=""):
         """Recursive helper method for to_debug_str.
         @param depth the depth of the recursion.
         @param stop the machines already visited (to detect cycles)."""
@@ -148,16 +148,14 @@ class Machine(object):
         if lines is None:
             lines = []
 
-        if self in stop:
-            lines.append('{0:>{1}}:{2}'.format(
-                str(self), 2 * depth + len(str(self)), id(self)))
-        else:
+        lines.append('{0:>{1}}:{2}:{3}'.format(at_partition,
+            2 * depth + len(str(self)), str(self), id(self)))
+        if not self in stop:
             stop.add(self)
-            lines.append('{0:>{1}}:{2}'.format(
-                str(self), 2 * depth + len(str(self)), id(self)))
-            for part in self.partitions:
+            for part_i in xrange(len(self.partitions)):
+                part = self.partitions[part_i]
                 for m in part:
-                    m.__to_debug_str(depth + 1, lines, stop)
+                    m.__to_debug_str(depth + 1, lines, stop, part_i)
 
         if depth == 0:
             return "\n".join(lines)
