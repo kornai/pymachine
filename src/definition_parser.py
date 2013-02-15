@@ -39,10 +39,16 @@ def unify(machine):
                 return True
         return False
 
-    def __get_unified(machines):
-        prototype = machines[0]
-        res = create_machine(prototype.printname(), len(prototype.partitions))
+    def __get_unified(machines, res=None):
+        # if a return machine is given, don't create a new one
+        if res is None:
+            prototype = machines[0]
+            res = create_machine(prototype.printname(), len(prototype.partitions))
         for m in machines:
+            # if the same machine, don't add anything
+            if id(m) == id(res):
+                continue
+
             for p_i, p in enumerate(m.partitions):
                 for part_m in p:
                     if part_m.printname() != "other":
@@ -69,7 +75,11 @@ def unify(machine):
     __collect_machines(machine, machines, is_root=True)
     for k, machines_to_unify in machines.iteritems():
         printname, is_other = k
-        unified = __get_unified(machines_to_unify)
+        # if unification affects the root (machine), be that the result machine
+        if printname == machine.printname():
+            unified = __get_unified(machines_to_unify, machine)
+        else:
+            unified = __get_unified(machines_to_unify)
         __replace(machine, unified, is_other)
 
 
