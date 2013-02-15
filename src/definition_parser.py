@@ -381,7 +381,7 @@ class DefinitionParser:
         for d in definition:
             yield self.__parse_expr(d, parent, root)[0]
     
-    def parse_into_machines(self, s, printname_index=0):
+    def parse_into_machines(self, s, printname_index=0, add_indices=False):
         parsed = self.parse(s)
         
         machine = create_machine(parsed[1][printname_index], 1)
@@ -389,10 +389,13 @@ class DefinitionParser:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 0)
 
-        unify(machine)
-        return machine
+        #unify(machine)
+        if add_indices:
+            return machine, parsed[0]
+        else:
+            return machine
 
-def read(f, printname_index=0):
+def read(f, printname_index=0, add_indices=False):
     d = {}
     dp = DefinitionParser()
     for line in f:
@@ -403,8 +406,11 @@ def read(f, printname_index=0):
         if l.startswith("%"):
             continue
         try:
-            m = dp.parse_into_machines(l, printname_index)
-            d[m.printname()] = m
+            m, inde = dp.parse_into_machines(l, printname_index, True)
+            if add_indices:
+                d[m.printname(), inde] = m
+            else:
+                d[m.printname()] = m
         except pyparsing.ParseException, pe:
             print l
             print "Error: ", str(pe)
@@ -412,7 +418,7 @@ def read(f, printname_index=0):
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
