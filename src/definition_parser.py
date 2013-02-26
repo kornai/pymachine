@@ -381,7 +381,7 @@ class DefinitionParser:
         for d in definition:
             yield self.__parse_expr(d, parent, root)[0]
     
-    def parse_into_machines(self, s, printname_index=0):
+    def parse_into_machines(self, s, printname_index=0): # 0 HUN
         parsed = self.parse(s)
         
         machine = create_machine(parsed[1][printname_index], 1)
@@ -405,10 +405,10 @@ def read(f, printname_index=0):
         try:
             m = dp.parse_into_machines(l, printname_index)
             d[m.printname()] = m
+            logging.info(m.to_debug_str())
         except pyparsing.ParseException, pe:
             print l
             print "Error: ", str(pe)
-
     return d
 
 if __name__ == "__main__":
