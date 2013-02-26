@@ -39,10 +39,16 @@ def unify(machine):
                 return True
         return False
 
-    def __get_unified(machines):
-        prototype = machines[0]
-        res = create_machine(prototype.printname(), len(prototype.partitions))
+    def __get_unified(machines, res=None):
+        # if a return machine is given, don't create a new one
+        if res is None:
+            prototype = machines[0]
+            res = create_machine(prototype.printname(), len(prototype.partitions))
         for m in machines:
+            # if the same machine, don't add anything
+            if id(m) == id(res):
+                continue
+
             for p_i, p in enumerate(m.partitions):
                 for part_m in p:
                     if part_m.printname() != "other":
@@ -69,7 +75,11 @@ def unify(machine):
     __collect_machines(machine, machines, is_root=True)
     for k, machines_to_unify in machines.iteritems():
         printname, is_other = k
-        unified = __get_unified(machines_to_unify)
+        # if unification affects the root (machine), be that the result machine
+        if printname == machine.printname():
+            unified = __get_unified(machines_to_unify, machine)
+        else:
+            unified = __get_unified(machines_to_unify)
         __replace(machine, unified, is_other)
 
 
@@ -381,7 +391,7 @@ class DefinitionParser:
         for d in definition:
             yield self.__parse_expr(d, parent, root)[0]
     
-    def parse_into_machines(self, s, printname_index=0): # 0 HUN
+    def parse_into_machines(self, s, printname_index=0, add_indices=False):
         parsed = self.parse(s)
         
         machine = create_machine(parsed[1][printname_index], 1)
@@ -389,10 +399,13 @@ class DefinitionParser:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 0)
 
-        unify(machine)
-        return machine
+        #unify(machine)
+        if add_indices:
+            return machine, parsed[0]
+        else:
+            return machine
 
-def read(f, printname_index=0):
+def read(f, printname_index=0, add_indices=False):
     d = {}
     dp = DefinitionParser()
     for line in f:
@@ -403,8 +416,11 @@ def read(f, printname_index=0):
         if l.startswith("%"):
             continue
         try:
-            m = dp.parse_into_machines(l, printname_index)
-            d[m.printname()] = m
+            m, inde = dp.parse_into_machines(l, printname_index, True)
+            if add_indices:
+                d[m.printname(), inde] = m
+            else:
+                d[m.printname()] = m
             logging.info(m.to_debug_str())
         except pyparsing.ParseException, pe:
             print l
@@ -412,7 +428,7 @@ def read(f, printname_index=0):
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
