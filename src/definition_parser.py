@@ -93,6 +93,9 @@ class DefinitionParser:
     rb = "]"
     lp = "("
     rp = ")"
+    left_defa = '<'
+    right_defa = '>'
+
 
     def_sep = ":"
     clause_sep = ","
@@ -123,7 +126,8 @@ class DefinitionParser:
                     ( s[0] == cls.deep_pre) or
                     ( s[0] == cls.root_pre and s[1] == "root") or
                     ( s[0] == cls.langspec_pre) or
-                    ( s[0] == cls.ency)
+                    ( s[0] == cls.ency) or
+                    ( s[0] == cls.left_defa)
                 )))
         
     @classmethod
@@ -135,6 +139,8 @@ class DefinitionParser:
         self.rb_lit = Literal(DefinitionParser.rb)
         self.lp_lit = Literal(DefinitionParser.lp)
         self.rp_lit = Literal(DefinitionParser.rp)
+        self.left_defa_lit = Literal(DefinitionParser.left_defa)
+        self.right_defa_lit = Literal(DefinitionParser.right_defa)
 
         self.def_sep_lit = Literal(DefinitionParser.def_sep)
         self.clause_sep_lit = Literal(DefinitionParser.clause_sep)
@@ -150,12 +156,14 @@ class DefinitionParser:
         
         self.deep_cases = Group(self.deep_pre_lit + Word(string.uppercase))
         
-        self.unary = (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(Word(nums))) 
+        self.unary = Forward()
+        self.unary << (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(Word(nums))) 
                       | Group(self.root_pre_lit + Literal('root'))
                       | self.deep_cases
                       | Group(self.langspec_pre_lit + Word(string.uppercase + "_"))
                       | Group(self.avm_pre_lit + Word(string.ascii_letters + "_"))
                       | Group(self.ency_lit + Word(alphanums + "_-"))
+                      | Group(self.left_defa_lit + self.unary + self.right_defa_lit)
                       )
 
         self.binary = (Combine(Word(string.uppercase + "_" + nums))
@@ -182,7 +190,10 @@ class DefinitionParser:
             (self.binexpr) ^
 
             # E -> U ( BE )
-            (self.unary + self.lp_lit + self.binexpr + self.rp_lit)
+            (self.unary + self.lp_lit + self.binexpr + self.rp_lit) ^
+
+            # E -> < E >
+            (self.left_defa_lit + self.expression + self.right_defa_lit)
         )
 
         self.binexpr << Group(
@@ -221,7 +232,10 @@ class DefinitionParser:
             (self.unexpr) ^
 
             # A -> [ D ]
-            (self.lb_lit + self.definition + self.rb_lit)
+            (self.lb_lit + self.definition + self.rb_lit) ^
+
+            # A -> < A >
+            (self.left_defa_lit + self.argexpr + self.right_defa_lit)
         )
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_.'" ),) * 5
@@ -333,6 +347,12 @@ class DefinitionParser:
                     expr))
                 res =  list(self.__parse_definition(expr[1], parent, root))
                 return res
+
+            # E -> < E >, U -> < U >
+            if expr[0] == '<' and expr[2] == '>':
+                return list(self.__parse_definition(expr[1], parent, root))
+
+               
         
         if (len(expr) == 4):
             # E -> U ( BE )
@@ -428,7 +448,7 @@ def read(f, printname_index=0, add_indices=False):
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.WARNING, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
