@@ -189,8 +189,8 @@ class DefinitionParser:
             # E -> BE
             (self.binexpr) ^
 
-            # E -> U ( BE )
-            (self.unary + self.lp_lit + self.binexpr + self.rp_lit) ^
+            # E -> U ( UE )
+            (self.unary + self.lp_lit + self.unexpr + self.rp_lit) ^
 
             # E -> < E >
             (self.left_defa_lit + self.expression + self.right_defa_lit)
@@ -264,16 +264,15 @@ class DefinitionParser:
         is_tree = lambda r: type(r) == list
 
         if (len(expr) == 1):
-            # E -> UE | BE
-            # A -> UE
-            if (is_tree(expr[0])):
-                logging.debug("Parsing {0} as a tree.".format(expr[0]))
-                return self.__parse_expr(expr[0], parent, root)
-
             # UE -> U
             if (is_unary(expr[0])):
                 logging.debug("Parsing {0} as a unary.".format(expr[0]))
                 return [create_machine(expr[0], 1)]
+
+            # E -> UE | BE, A -> UE
+            if (is_tree(expr[0])):
+                logging.debug("Parsing {0} as a tree.".format(expr[0]))
+                return self.__parse_expr(expr[0], parent, root)
 
         if (len(expr) == 2):
             # BE -> A B
@@ -351,24 +350,16 @@ class DefinitionParser:
             # E -> < E >, U -> < U >
             if expr[0] == '<' and expr[2] == '>':
                 return list(self.__parse_definition(expr[1], parent, root))
-
-               
         
         if (len(expr) == 4):
-            # E -> U ( BE )
+            # UE -> U ( U )
             if (is_unary(expr[0]) and
                     expr[1] == "(" and
-                    is_tree(expr[2]) and
+                    is_unary(expr[2]) and
                     expr[3] == ")"):
-                ms = self.__parse_expr(expr[2], parent, root)
-
-                # if BE was an expression with an apostrophe, then
-                # return of __parse_expr() is None
-                if len(ms) != 0:
-                    ms[0].append(create_machine(expr[0], 1), 0)
-                if len(ms) != 1:
-                    raise ParserException("semantics of U(BE) rule has errors")
-                return ms
+                m = create_machine(expr[2], 1)
+                m.append(create_machine(expr[0], 1), 0)
+                return [m]
 
             # UE -> U [ D ]
             if (is_unary(expr[0]) and
@@ -380,14 +371,22 @@ class DefinitionParser:
                     m.append(parsed_expr, 0)
                 return [m]
 
-            # UE -> U ( U )
-            if (is_unary(expr[0]) and
-                    expr[1] == "(" and
-                    is_unary(expr[2]) and
-                    expr[3] == ")"):
-                m = create_machine(expr[2], 1)
-                m.append(create_machine(expr[0], 1), 0)
-                return [m]
+            # E -> U ( BE )
+            #if (is_unary(expr[0]) and
+            #        expr[1] == "(" and
+            #        is_tree(expr[2]) and
+            #        expr[3] == ")"):
+            #    ms = self.__parse_expr(expr[2], parent, root)
+            #    # if BE was an expression with an apostrophe, then
+            #    # return of __parse_expr() is None
+            #    if len(ms) != 0:
+            #        ms[0].append(create_machine(expr[0], 1), 0)
+            #    # if len(ms) == 3 and ms[0] == '<':
+            #    #        ms = ms[1]
+            #    if len(ms) != 1:
+            #        logging.warning("0th partition of binary machines is not implemented "+str(ms))
+            #    return ms
+            logging.warning('machine cannot be built '+str(expr))
 
         if (len(expr) == 6):
             # BE -> B [E; E]
@@ -402,7 +401,7 @@ class DefinitionParser:
                 m.append_all(self.__parse_expr(expr[4], m, root), 1)
                 return [m]
 
-        pe = ParserException("Unknown expression in definition: "+str(expr))
+        pe = ParserException("Unknown expression in definition: "+str(expr)+' '+str(parent)+' '+str(root))
         logging.debug(str(pe))
         logging.debug(expr)
         raise pe
