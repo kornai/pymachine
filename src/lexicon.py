@@ -71,8 +71,8 @@ class Lexicon:
                 for part_i, part in enumerate(canonical.partitions):
                     for child in part:
                         # Keeping parent links
-                        child.add_parent_link(canonical, part_i)
                         child.del_parent_link(what, part_i)
+                        child.add_parent_link(canonical, part_i)
                 canonical.control = what.control
                 canonical.parents.union(what.parents)
                 self.__recursive_replace(canonical, what, canonical)
@@ -98,7 +98,7 @@ class Lexicon:
                         um_already_seen.append(um)
 
                 # Unify with the canonical entry if unmodified 
-                if len(um.children()) == 0:
+                if len(um.children()) == 0 and um is not um_already_seen[0]:
                     self.__recursive_replace(canonical, um, um_already_seen[0])
 
         # Add to graph
@@ -131,7 +131,7 @@ class Lexicon:
                         part[m_i] = to_m
                         #root.remove(m, part_i)
                         #root.append(m, to_m, part_i)
-                        to_m.parents.union(m.parents)
+                        to_m.parents |= m.parents
                         m.del_parent_link(root, part_i)
                     else:
                         # No replacement if from_m is modified
