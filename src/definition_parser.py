@@ -68,8 +68,10 @@ def unify(machine):
         for p_i, p in enumerate(where.partitions):
             for part_m_i, part_m in enumerate(p):
                 if part_m.printname() == pn and __has_other(part_m) == is_other:
-                    p[part_m_i] = for_what
-                __replace(p[part_m_i], for_what, is_other, visited)
+                    where.partitions[p_i][part_m_i] = for_what
+                    for_what.add_parent_link(where, p_i)
+                __replace(where.partitions[p_i][part_m_i], for_what, is_other,
+                          visited)
 
     machines = defaultdict(list)
     __collect_machines(machine, machines, is_root=True)
@@ -81,7 +83,6 @@ def unify(machine):
         else:
             unified = __get_unified(machines_to_unify)
         __replace(machine, unified, is_other)
-
 
 class ParserException(Exception):
     pass
@@ -418,7 +419,7 @@ class DefinitionParser:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 0)
 
-        #unify(machine)
+        unify(machine)
         if add_indices:
             return machine, parsed[0]
         else:
