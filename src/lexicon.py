@@ -106,6 +106,15 @@ class Lexicon:
             for m in what:
                 self.add_static(m)
 
+    def finalize_static(self):
+        """
+        Must be called after all words have been added to the static graph.
+        Links the modified nodes to the canonical one.
+        """
+        for print_name, nodes in self.static.iteritems():
+            for node in nodes[1:]:
+                node.append(nodes[0])
+
     def __recursive_replace(self, root, from_m, to_m, visited=None):
         """
         Replaces all instances of @p from_m with @p to_m in the tree under
