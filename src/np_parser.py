@@ -57,16 +57,17 @@ def test_on_something():
     from langtools.corpustools.bie1_reader import read_bie1_corpus
     import codecs
     sentences = read_bie1_corpus(codecs.open(sys.argv[1], "r", "utf-8"))
-    print sentences[0]
-    sp = SentenceParser()
-    machines = sp.parse(sentences[0])
-    for chunk in filter(lambda c: len(c) > 1, machines):
-        print chunk
-        res = parse_chunk(chunk)
-        print res
-        for m in res:
-            print Machine.to_debug_str(m)
-        print 
+    for sen in sentences:
+        print sen
+        sp = SentenceParser()
+        machines = sp.parse(sen)
+        for chunk in filter(lambda c: len(c) > 1, machines):
+            print chunk
+            res = parse_chunk(chunk)
+            print res
+            for m in res:
+                print Machine.to_debug_str(m)
+            print 
 
 def main():
     rules = sys.stdin.readlines()

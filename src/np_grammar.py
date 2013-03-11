@@ -194,15 +194,17 @@ np_rules.append(NPConstruction("10C",
 np_rules.append(NPConstruction("10C1",
         "NOUN -> DET<DEF<1>> VERB[]/ADJ NUM NOUN",
         [
-        
+        DeleteOperator(1),
+        DeleteOperator(0)
         ]))
 
-#TODO Why does this need a seperate rule? 1F2 should do it...
+#RG HACK
 #(a) kocsordi ke1t ojjektum
 np_rules.append(NPConstruction("10C2",
         "NOUN -> DET<DEF<1>> NOUN[MET_ATTRIB]/ADJ NUM NOUN",
         [
-        
+        DeleteOperator(1),
+        DeleteOperator(0)
         ]))
 
 #The next two rules could be summerized as
