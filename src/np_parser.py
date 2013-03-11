@@ -8,8 +8,8 @@ def parse_rule(rule):
     matchers = []
     for kr in right.split():        
             #kr_dict = readkr.kr_to_dictionary('stem/' + kr)
-            #pattermatch = matcher.PatternMatcher(kr_dict)
-            pattermatch = matcher.PatternMatcher(kr)
+            #pattermatch = matcher.KRPosMatcher(kr_dict)
+            pattermatch = matcher.KRPosMatcher(kr)
             matchers.append(pattermatch)
     return matchers
 

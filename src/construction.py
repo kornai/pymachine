@@ -6,9 +6,8 @@ from copy import deepcopy as copy
 
 from fst import FSA, FST
 from matcher import PrintnameMatcher
-from matcher import PatternMatcher
+from matcher import KRPosMatcher
 from machine import Machine
-from monoid import Monoid
 from control import PosControl, ElviraPluginControl, KRPosControl
 from constants import deep_cases
 from avm import AVM
@@ -137,8 +136,9 @@ class VerbConstruction(Construction):
         self.lexicon = lexicon
         self.supp_dict = supp_dict
         self.matchers = {}
-        self.working_area = [Machine(Monoid(None), KRPosControl('stem/VERB'))]
-        self.discover_arguments(lexicon.static[name])
+        self.working_area = [Machine(None, KRPosControl('stem/VERB'))]
+        # indexing 0th element in static because that is the canonical machine
+        self.discover_arguments(lexicon.static[name][0])
         control = self.generate_control()
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
@@ -162,7 +162,7 @@ class VerbConstruction(Construction):
                               is_init=False, is_final=True)
 
         # first transition
-        control.add_transition(PatternMatcher("VERB"), [ExpandOperator(
+        control.add_transition(KRPosMatcher("VERB"), [ExpandOperator(
             self.lexicon, self.working_area)], "0", "1")
 
         # count every transition as an increase in number of state
@@ -178,8 +178,7 @@ class VerbConstruction(Construction):
         return control
 
     def discover_arguments(self, machine):
-        for pi, p in enumerate(machine.base.partitions[1:]):
-            pi += 1
+        for pi, p in enumerate(machine.partitions):
             for mi, part_machine in enumerate(p):
                 pn = part_machine.printname()
                 # we are interested in deep cases and
@@ -188,7 +187,7 @@ class VerbConstruction(Construction):
                     if pn.startswith("$"):
                         self.matchers[pn] = self.supp_dict[pn]
                     else:
-                        self.matchers[pn] = PatternMatcher("CAS<{0}>".format(pn))
+                        self.matchers[pn] = KRPosMatcher("CAS<{0}>".format(pn))
 
                 # recursive call
                 self.discover_arguments(part_machine)
@@ -262,7 +261,7 @@ class ElviraConstruction(Construction):
 
     def last_check(self, seq):
         try:
-            if len(seq[2].base.partitions[2]) > 0 and len(seq[3].base.partitions[2]) > 0:
+            if len(seq[2].partitions[1]) > 0 and len(seq[3].partitions[1]) > 0:
                 return True
         except:
             pass
@@ -273,30 +272,21 @@ class ElviraConstruction(Construction):
         if not self.last_check(seq):
             return None
 
-        elvira_machine = Machine(Monoid("elvira"), ElviraPluginControl())
+        elvira_machine = Machine("elvira", ElviraPluginControl())
         for m in seq:
             elvira_machine.append(m)
 
         return [elvira_machine]
         
 def test():
-    a = Machine(Monoid("the"), PosControl("DET"))
-    kek = Machine(Monoid("kek"), PosControl("ADJ"))
-    kockat = Machine(Monoid("kockat"), PosControl("NOUN<CAS<ACC>>"))
-    m = Machine(Monoid("vonat"))
-    m2 = Machine(Monoid("tb"))
+    a = Machine("the", PosControl("DET"))
+    kek = Machine("kek", PosControl("ADJ"))
+    kockat = Machine("kockat", PosControl("NOUN<CAS<ACC>>"))
+    m = Machine("vonat")
+    m2 = Machine("tb")
     m.append(m2)
     m2.append(m)
     m3 = copy(m)
-
-    npc = DummyNPConstruction()
-    thec = TheConstruction()
-
-    res = npc.run([kek, kockat])
-    res = thec.run([a] + res)
-    print res[0]
-    print res[0].control
-    print res[0].base.partitions[1][0]
 
 if __name__ == "__main__":
     test()
