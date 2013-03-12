@@ -40,6 +40,10 @@ def unify(machine):
         return False
 
     def __get_unified(machines, res=None):
+        # if nothing to unify, don't
+        if len(machines) == 1:
+            return machines[0]
+
         # if a return machine is given, don't create a new one
         if res is None:
             prototype = machines[0]
@@ -288,6 +292,7 @@ class DefinitionParser:
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = create_machine(expr[0], 2)
+                logging.debug(expr)
                 m.append_all(self.__parse_expr(expr[1], m, root), 1)
                 m.append(root, 0)
                 return [m]
@@ -454,7 +459,7 @@ def read(f, printname_index=0, add_indices=False):
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
