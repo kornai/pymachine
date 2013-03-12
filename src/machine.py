@@ -149,8 +149,9 @@ class Machine(object):
             lines = []
 
         pn = self.printname()
-        lines.append(u'{0:>{1}}:{2}:{3}'.format(at_partition,
-            2 * depth + len(str(at_partition)), pn, id(self)))
+        lines.append(u'{0:>{1}}:{2}:{3} p[{4}]'.format(at_partition,
+            2 * depth + len(str(at_partition)), pn, id(self),
+            ','.join(m.printname() for m in self.parents)))
         if not self in stop:
             stop.add(self)
             for part_i in xrange(len(self.partitions)):

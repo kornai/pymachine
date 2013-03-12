@@ -80,6 +80,8 @@ class Lexicon:
             # Add every unique machine in the canonical's tree to static
             unique_machines = canonical.unique_machines_in_tree()
             for um in unique_machines:
+                if um.printname().isupper():
+                    um.printname_ = um.printname().lower()
                 if um is canonical:
                     continue
                 um_already_seen = self.static.get(um.printname(), [])
@@ -89,7 +91,8 @@ class Lexicon:
                     if len(um.children()) == 0:
                         um_already_seen = [um]
                     else:
-                        # TODO: what to do with the modified words?
+                        # Modified words are linked to the canonical entry in
+                        # finalize_static
                         um_already_seen = [Machine(um.printname()), um]
                     self.static[um.printname()] = um_already_seen
                 else:

@@ -1,0 +1,7 @@
+1 vet N # # #: [vet] HEAL [animal], [vet] HAS [hair]
+%1 vet N # # #: [vet] HEAL [!ACC?[animal]], [vet] HAS [hair]
+2 horse N # # #: animal, EAT grass
+3 animal N # # #: %
+4 zebra N # # #: animal[wild]
+5 grass N # # #: %
+6 hair N # # #: %
