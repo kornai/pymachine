@@ -190,8 +190,8 @@ class DefinitionParser:
             # E -> BE
             (self.binexpr) ^
 
-            # E -> U ( UE )
-            (self.unary + self.lp_lit + self.unexpr + self.rp_lit) ^
+            # E -> U ( E )
+            (self.unary + self.lp_lit + self.expression + self.rp_lit) ^
 
             # E -> < E >
             (self.left_defa_lit + self.expression + self.right_defa_lit)
@@ -350,15 +350,21 @@ class DefinitionParser:
 
             # E -> < E >, U -> < U >
             if expr[0] == '<' and expr[2] == '>':
-                return list(self.__parse_definition(expr[1], parent, root))
+                logging.debug('E -> < E >'+str(expr[1]))
+                return list(self.__parse_expr(expr[1], parent, root))
         
         if (len(expr) == 4):
             # UE -> U ( U )
+            # E -> U ( BE ) provisional
             if (is_unary(expr[0]) and
                     expr[1] == "(" and
-                    is_unary(expr[2]) and
                     expr[3] == ")"):
-                m = create_machine(expr[2], 1)
+                logging.debug('X -> U ( Y )')
+                if is_unary(expr[2]):
+                    m = create_machine(expr[2], 1)
+                else:
+                    m = self.__parse_expr(expr[2], parent, root)[0]
+                    logging.warning("0th partition of binary machines is not implemented, "+str(expr))
                 m.append(create_machine(expr[0], 1), 0)
                 return [m]
 
@@ -402,7 +408,7 @@ class DefinitionParser:
                 m.append_all(self.__parse_expr(expr[4], m, root), 1)
                 return [m]
 
-        pe = ParserException("Unknown expression in definition: "+str(expr)+' '+str(parent)+' '+str(root))
+        pe = ParserException("Unknown expression in definition: "+str(expr))
         logging.debug(str(pe))
         logging.debug(expr)
         raise pe
