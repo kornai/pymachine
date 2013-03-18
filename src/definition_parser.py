@@ -131,8 +131,7 @@ class DefinitionParser:
                     ( s[0] == cls.deep_pre) or
                     ( s[0] == cls.root_pre and s[1] == "root") or
                     ( s[0] == cls.langspec_pre) or
-                    ( s[0] == cls.ency) or
-                    ( s[0] == cls.left_defa)
+                    ( s[0] == cls.ency) 
                 )))
         
     @classmethod
@@ -356,7 +355,7 @@ class DefinitionParser:
             # E -> < E >, U -> < U >
             if expr[0] == '<' and expr[2] == '>':
                 logging.debug('E -> < E >'+str(expr[1]))
-                return list(self.__parse_expr(expr[1], parent, root))
+                return list(self.__parse_expr([expr[1]], parent, root))
         
         if (len(expr) == 4):
             # UE -> U ( U )
