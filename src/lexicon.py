@@ -102,8 +102,11 @@ class Lexicon:
 
                 # Unify with the canonical entry if unmodified 
                 if len(um.children()) == 0 and um is not um_already_seen[0]:
-                    self.__recursive_replace(canonical, um, um_already_seen[0])
-
+                    try:
+                        self.__recursive_replace(canonical, um, um_already_seen[0])
+                    except KeyError:
+                        logging.error("KeyError: canonical: {0}, um: {1}".format(canonical, um))
+                        logging.error(canonical.to_debug_str())
         # Add to graph
         elif isinstance(what, Iterable):
             for m in what:
