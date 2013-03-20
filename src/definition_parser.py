@@ -80,6 +80,10 @@ def unify(machine):
     machines = defaultdict(list)
     __collect_machines(machine, machines, is_root=True)
     for k, machines_to_unify in machines.iteritems():
+
+        if len(machines_to_unify[0].partitions) > 1:
+            continue
+
         printname, is_other = k
         # if unification affects the root (machine), be that the result machine
         if printname == machine.printname():
