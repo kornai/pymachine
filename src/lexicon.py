@@ -4,8 +4,9 @@ from collections import Iterable, defaultdict
 import copy
 
 from machine import Machine
-from control import ElviraPluginControl, ConceptControl
+from control import ConceptControl
 from construction import Construction, AVMConstruction
+from definition_parser import DefinitionParser as DP
 
 class Lexicon:
     """THE machine repository."""
@@ -122,7 +123,7 @@ class Lexicon:
 
     def __add_to_disambig(self, print_name):
         """Adds @p print_name to the static_disambig."""
-        self.static_disambig[print_name.split('/')[0]].add(print_name)
+        self.static_disambig[print_name.split(DP.id_sep)[0]].add(print_name)
 
     def finalize_static(self):
         """
@@ -131,10 +132,10 @@ class Lexicon:
         """
         for print_name, nodes in self.static.iteritems():
             # We don't care about deep cases here
-            if print_name[0] != '!':
+            if not nodes[0].fancy():
                 for node in nodes[1:]:
                     # HACK don't insert for binaries
-                    if len(node.partitions) == 1:
+                    if node.unary():
                         node.append(nodes[0])
         # defaultdict is not safe, so convert it to a regular dict
         self.static_disambig = dict(self.static_disambig)

@@ -3,6 +3,7 @@ import copy
 from itertools import chain
 
 import control as ctrl
+from definition_parser import DefinitionParser
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
@@ -133,6 +134,29 @@ class Machine(object):
 
     def del_parent_link(self, whose, part):
         self.parents.remove((whose, part))
+
+###################################
+### Machine-type-related methods 
+
+    def unary(self):
+        return len(self.partitions) == 1
+
+    def binary(self):
+        return len(self.partitions) >= 2
+
+    def deep_case(self):
+        return self.printname[0] == DefinitionParser.deep_pre
+
+    def named_entity(self):
+        return self.printname[0] == DefinitionParser.ency
+
+    def avm(self):
+        return self.printname[0] == DefinitionParser.avm_pre
+
+    # TODO: langspec
+
+    def fancy(self):
+        return self.deep_case() or self.avm() or self.name_entity()
 
     def to_debug_str(self, depth=0):
         """An even more detailed __str__, complete with object ids and
