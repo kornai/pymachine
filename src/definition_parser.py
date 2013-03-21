@@ -22,9 +22,6 @@ def create_machine(name, partitions):
     if type(name) is list:
         name = "".join(name)
 
-    # HACK TODO XXX
-    name = re.sub(r"_([0-9])*$", r"/\1", name)
-
     return Machine(decode_from_proszeky(name), ConceptControl(), partitions)
 
 def unify(machine):
@@ -121,8 +118,8 @@ class DefinitionParser:
     hyphen = "-"
     langspec_pre = "$" # starts langspec deep case
     root_pre = '='
-    unary_p = re.compile("^[a-z_#\-/0-9]+$")
-    binary_p = re.compile("^[A-Z_0-9]+$")
+    unary_p = re.compile("^[a-z_#\-/0-9]+(/[0-9]+)?$")
+    binary_p = re.compile("^[A-Z_0-9]+(/[0-9]+)?$")
 
     def __init__(self):
         self.init_parser()
@@ -166,13 +163,14 @@ class DefinitionParser:
         self.root_pre_lit = Literal(DefinitionParser.root_pre)
         self.avm_pre_lit = Literal(avm_pre)
         self.langspec_pre_lit = Literal(DefinitionParser.langspec_pre)
-        # TODO self.id_sep_lit = Literal(id_sep)
-        self.id_sep_lit = Literal("_")
+        self.id_sep_lit = Literal(id_sep)
+
+        self.disambig_id = self.id_sep_lit + Word(nums)
         
         self.deep_cases = Group(self.deep_pre_lit + Word(string.uppercase))
         
         self.unary = Forward()
-        self.unary << (Combine(Optional("-") + Word(string.lowercase + self.id_sep_lit + nums) + Optional(Word(nums))) 
+        self.unary << (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(self.disambig_id)) 
                       | Group(self.root_pre_lit + Literal('root'))
                       | self.deep_cases
                       | Group(self.langspec_pre_lit + Word(string.uppercase + "_"))
@@ -181,7 +179,7 @@ class DefinitionParser:
                       | Group(self.left_defa_lit + self.unary + self.right_defa_lit)
                       )
 
-        self.binary = (Combine(Word(string.uppercase + self.id_sep_lit + nums))
+        self.binary = (Combine(Word(string.uppercase + "_" + nums) + Optional(self.disambig_id))
                        | Group(self.root_pre_lit + Literal('ROOT'))
                        )
         self.dontcare = SkipTo(LineEnd())
@@ -436,15 +434,16 @@ class DefinitionParser:
         parsed = self.parse(s)
         
         machine = create_machine(parsed[1][printname_index], 1)
+
+        if add_indices:
+            machine.printname_ = machine.printname() + id_sep + parsed[0]
+
         if len(parsed) > 2:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 0)
 
         unify(machine)
-        if add_indices:
-            return machine, parsed[0]
-        else:
-            return machine
+        return machine
 
 def read(f, printname_index=0, add_indices=False):
     d = {}
@@ -457,11 +456,8 @@ def read(f, printname_index=0, add_indices=False):
         if l.startswith("%"):
             continue
         try:
-            m, inde = dp.parse_into_machines(l, printname_index, True)
-            if add_indices:
-                d[m.printname() + id_sep + inde] = m
-            else:
-                d[m.printname()] = m
+            m = dp.parse_into_machines(l, printname_index, add_indices)
+            d[m.printname()] = m
             logging.info(m.to_debug_str())
         except pyparsing.ParseException, pe:
             print l
