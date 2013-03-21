@@ -1,11 +1,12 @@
 import logging
 from itertools import chain
-from collections import Iterable
+from collections import Iterable, defaultdict
 import copy
 
 from machine import Machine
-from control import ElviraPluginControl, ConceptControl
+from control import ConceptControl
 from construction import Construction, AVMConstruction
+from definition_parser import DefinitionParser as DP
 
 class Lexicon:
     """THE machine repository."""
@@ -13,6 +14,8 @@ class Lexicon:
         # static will store only one machine per printname (key),
         # while active can store more
         self.static = {}
+        # e.g. {'in': {'in_2758', 'in_13'}}, where in_XXXs are keys in static
+        self.static_disambig = defaultdict(set)
         # TODO: map: {active_machine : is it expanded?}
         self.active = {}
         # Constructions
@@ -57,6 +60,7 @@ class Lexicon:
         while keeping prior links (parent links).
         """
         if isinstance(what, Machine):
+            print what.to_debug_str() + "\n"
             # Does this machine appear in the static tree?
             whats_already_seen = self.static.get(what.printname(), [])
             # Simply adding the new machine/definition
@@ -76,6 +80,8 @@ class Lexicon:
                 canonical.control = what.control
                 canonical.parents.union(what.parents)
                 self.__recursive_replace(canonical, what, canonical)
+
+            self.__add_to_disambig(what.printname())
 
             # Add every unique machine in the canonical's tree to static
             unique_machines = canonical.unique_machines_in_tree()
@@ -102,15 +108,22 @@ class Lexicon:
 
                 # Unify with the canonical entry if unmodified 
                 if len(um.children()) == 0 and um is not um_already_seen[0]:
-                    try:
-                        self.__recursive_replace(canonical, um, um_already_seen[0])
-                    except KeyError:
-                        logging.error("KeyError: canonical: {0}, um: {1}".format(canonical, um))
-                        logging.error(canonical.to_debug_str())
+                    self.__recursive_replace(canonical, um, um_already_seen[0])
+
+            machines = self.static.get('in', [])
+            print 'in:'
+            for m in machines:
+                print m.to_debug_str()
+            print
+
         # Add to graph
         elif isinstance(what, Iterable):
             for m in what:
                 self.add_static(m)
+
+    def __add_to_disambig(self, print_name):
+        """Adds @p print_name to the static_disambig."""
+        self.static_disambig[print_name.split(DP.id_sep)[0]].add(print_name)
 
     def finalize_static(self):
         """
@@ -119,11 +132,13 @@ class Lexicon:
         """
         for print_name, nodes in self.static.iteritems():
             # We don't care about deep cases here
-            if print_name[0] != '!':
+            if not nodes[0].fancy():
                 for node in nodes[1:]:
                     # HACK don't insert for binaries
-                    if len(node.partitions) == 1:
+                    if node.unary():
                         node.append(nodes[0])
+        # defaultdict is not safe, so convert it to a regular dict
+        self.static_disambig = dict(self.static_disambig)
 
     def __recursive_replace(self, root, from_m, to_m, visited=None):
         """
