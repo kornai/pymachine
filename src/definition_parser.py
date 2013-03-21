@@ -82,9 +82,7 @@ def unify(machine):
 
     machines = defaultdict(list)
     __collect_machines(machine, machines, is_root=True)
-    print machines
     for k, machines_to_unify in machines.iteritems():
-        #print k, machines_to_unify
 
         if len(machines_to_unify[0].partitions) > 1:
             continue
@@ -95,7 +93,6 @@ def unify(machine):
             unified = __get_unified(machines_to_unify, machine)
         else:
             unified = __get_unified(machines_to_unify)
-        #print unified.to_debug_str()
         __replace(machine, unified, is_other)
 
 class ParserException(Exception):
@@ -364,9 +361,9 @@ class DefinitionParser:
                 return res
 
             # E -> < E >, U -> < U >
-            #if expr[0] == '<' and expr[2] == '>':
-                #logging.debug('E -> < E >' + str(expr[1]))
-                #return list(self.__parse_expr(expr[1], parent, root))
+            if expr[0] == '<' and expr[2] == '>':
+                logging.debug('E -> < E >' + str(expr[1]))
+                return list(self.__parse_expr(expr[1], parent, root))
         
         if (len(expr) == 4):
             # UE -> U ( U )
