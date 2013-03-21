@@ -14,7 +14,7 @@ except ImportError:
 from langtools.string.encoding import decode_from_proszeky
 
 from machine import Machine
-from constants import deep_cases, avm_pre, deep_pre, enc_pre
+from constants import deep_cases, avm_pre, deep_pre, enc_pre, id_sep
 from control import ConceptControl
 
 def create_machine(name, partitions):
@@ -121,7 +121,6 @@ class DefinitionParser:
     hyphen = "-"
     langspec_pre = "$" # starts langspec deep case
     root_pre = '='
-    id_sep = '/'
     unary_p = re.compile("^[a-z_#\-/0-9]+$")
     binary_p = re.compile("^[A-Z_0-9]+$")
 
@@ -167,7 +166,7 @@ class DefinitionParser:
         self.root_pre_lit = Literal(DefinitionParser.root_pre)
         self.avm_pre_lit = Literal(avm_pre)
         self.langspec_pre_lit = Literal(DefinitionParser.langspec_pre)
-        # TODO self.id_sep_lit = Literal(DefinitionParser.id_sep)
+        # TODO self.id_sep_lit = Literal(id_sep)
         self.id_sep_lit = Literal("_")
         
         self.deep_cases = Group(self.deep_pre_lit + Word(string.uppercase))
@@ -460,7 +459,7 @@ def read(f, printname_index=0, add_indices=False):
         try:
             m, inde = dp.parse_into_machines(l, printname_index, True)
             if add_indices:
-                d[m.printname() + DefinitionParser.id_sep + inde] = m
+                d[m.printname() + id_sep + inde] = m
             else:
                 d[m.printname()] = m
             logging.info(m.to_debug_str())
