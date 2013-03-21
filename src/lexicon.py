@@ -6,7 +6,7 @@ import copy
 from machine import Machine
 from control import ConceptControl
 from construction import Construction, AVMConstruction
-from definition_parser import DefinitionParser as DP
+from constants import id_sep
 
 class Lexicon:
     """THE machine repository."""
@@ -123,7 +123,7 @@ class Lexicon:
 
     def __add_to_disambig(self, print_name):
         """Adds @p print_name to the static_disambig."""
-        self.static_disambig[print_name.split(DP.id_sep)[0]].add(print_name)
+        self.static_disambig[print_name.split(id_sep)[0]].add(print_name)
 
     def finalize_static(self):
         """

@@ -3,7 +3,7 @@ import copy
 from itertools import chain
 
 import control as ctrl
-from definition_parser import DefinitionParser
+from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
@@ -145,13 +145,13 @@ class Machine(object):
         return len(self.partitions) >= 2
 
     def deep_case(self):
-        return self.printname[0] == DefinitionParser.deep_pre
+        return self.printname[0] == deep_pre
 
     def named_entity(self):
-        return self.printname[0] == DefinitionParser.ency
+        return self.printname[0] == enc_pre
 
     def avm(self):
-        return self.printname[0] == DefinitionParser.avm_pre
+        return self.printname[0] == avm_pre
 
     # TODO: langspec
 

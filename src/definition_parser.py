@@ -14,7 +14,7 @@ except ImportError:
 from langtools.string.encoding import decode_from_proszeky
 
 from machine import Machine
-from constants import deep_cases
+from constants import deep_cases, avm_pre, deep_pre, enc_pre
 from control import ConceptControl
 
 def create_machine(name, partitions):
@@ -115,10 +115,7 @@ class DefinitionParser:
     comment_sep = "%"
     prime = "'"
     hyphen = "-"
-    ency = "@"
     langspec_pre = "$" # starts langspec deep case
-    avm_pre = "#"
-    deep_pre = '!'
     root_pre = '='
     unary_p = re.compile("^[a-z_#\-/0-9]+$")
     binary_p = re.compile("^[A-Z_0-9]+$")
@@ -135,10 +132,10 @@ class DefinitionParser:
     def _is_unary(cls, s):
         return ((type(s) in cls._str and cls.unary_p.match(s) is not None ) or 
                 (type(s) is list and (
-                    ( s[0] == cls.deep_pre) or
+                    ( s[0] == deep_pre) or
                     ( s[0] == cls.root_pre and s[1] == "root") or
                     ( s[0] == cls.langspec_pre) or
-                    ( s[0] == cls.ency) or
+                    ( s[0] == enc_pre) or
                     ( s[0] == cls.left_defa)
                 )))
         
@@ -160,10 +157,10 @@ class DefinitionParser:
         self.comment_sep_lit = Literal(DefinitionParser.comment_sep)
         self.prime_lit = Literal(DefinitionParser.prime)
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
-        self.ency_lit = Literal(DefinitionParser.ency)
-        self.deep_pre_lit = Literal(DefinitionParser.deep_pre)
+        self.enc_pre_lit = Literal(enc_pre)
+        self.deep_pre_lit = Literal(deep_pre)
         self.root_pre_lit = Literal(DefinitionParser.root_pre)
-        self.avm_pre_lit = Literal(DefinitionParser.avm_pre)
+        self.avm_pre_lit = Literal(avm_pre)
         self.langspec_pre_lit = Literal(DefinitionParser.langspec_pre)
         
         self.deep_cases = Group(self.deep_pre_lit + Word(string.uppercase))
@@ -174,7 +171,7 @@ class DefinitionParser:
                       | self.deep_cases
                       | Group(self.langspec_pre_lit + Word(string.uppercase + "_"))
                       | Group(self.avm_pre_lit + Word(string.ascii_letters + "_"))
-                      | Group(self.ency_lit + Word(alphanums + "_-"))
+                      | Group(self.enc_pre_lit + Word(alphanums + "_-"))
                       | Group(self.left_defa_lit + self.unary + self.right_defa_lit)
                       )
 
@@ -321,24 +318,24 @@ class DefinitionParser:
                 return [m]
 
             # U -> !ACC
-            if expr[0] == cls.deep_pre:
-                return [create_machine(cls.deep_pre + expr[1], 1)]
+            if expr[0] == deep_pre:
+                return [create_machine(deep_pre + expr[1], 1)]
 
             # U -> $HUN_FROM
             if (expr[0] == cls.langspec_pre):
                 return [create_machine(cls.langspec_pre + expr[1], 1)]
 
             # U -> #AVM
-            if (expr[0] == cls.avm_pre):
-                return [create_machine(cls.avm_pre + expr[1], 1)]
+            if (expr[0] == avm_pre):
+                return [create_machine(avm_pre + expr[1], 1)]
 
             # U -> =root
             if (expr[0] == cls.root_pre):
                 return [create_machine(cls.root_pre + expr[1], 1)]
 
             # U -> @External_url
-            if (expr[0] == cls.ency):
-                return [create_machine(cls.ency + expr[1], 1)]
+            if (expr[0] == enc_pre):
+                return [create_machine(enc_pre + expr[1], 1)]
 
         if (len(expr) == 3):
             # UB -> A B A
