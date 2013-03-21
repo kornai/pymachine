@@ -25,8 +25,11 @@ def create_machine(name, partitions):
 
 def unify(machine):
     def __collect_machines(m, machines, is_root=False):
-        if (m.printname(), __has_other(m)) in machines:
+        # cut the recursion
+        key = m.printname(), __has_other(m)
+        if (key in machines and m in machines[key]):
             return
+
         if not is_root:
             machines[m.printname(), __has_other(m)].append(m)
         for partition in m.partitions:
@@ -80,6 +83,10 @@ def unify(machine):
     machines = defaultdict(list)
     __collect_machines(machine, machines, is_root=True)
     for k, machines_to_unify in machines.iteritems():
+
+        if len(machines_to_unify[0].partitions) > 1:
+            continue
+
         printname, is_other = k
         # if unification affects the root (machine), be that the result machine
         if printname == machine.printname():
@@ -355,7 +362,7 @@ class DefinitionParser:
 
             # E -> < E >, U -> < U >
             if expr[0] == '<' and expr[2] == '>':
-                logging.debug('E -> < E >'+str(expr[1]))
+                logging.debug('E -> < E >' + str(expr[1]))
                 return list(self.__parse_expr(expr[1], parent, root))
         
         if (len(expr) == 4):
