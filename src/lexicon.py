@@ -80,7 +80,7 @@ class Lexicon:
             # Add every unique machine in the canonical's tree to static
             unique_machines = canonical.unique_machines_in_tree()
             for um in unique_machines:
-                if um.printname().isupper():
+                if um.printname().isupper() and not um.printname()[0] == '!':
                     um.printname_ = um.printname().lower()
                 if um is canonical:
                     continue
@@ -118,8 +118,12 @@ class Lexicon:
         Links the modified nodes to the canonical one.
         """
         for print_name, nodes in self.static.iteritems():
-            for node in nodes[1:]:
-                node.append(nodes[0])
+            # We don't care about deep cases here
+            if print_name[0] != '!':
+                for node in nodes[1:]:
+                    # HACK don't insert for binaries
+                    if len(node.partitions) == 1:
+                        node.append(nodes[0])
 
     def __recursive_replace(self, root, from_m, to_m, visited=None):
         """
