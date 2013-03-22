@@ -2,7 +2,7 @@ import logging
 import copy
 from itertools import chain
 
-import control as ctrl
+from pymachine.src.control import Control
 from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
@@ -44,7 +44,7 @@ class Machine(object):
     def set_control(self, control):
         """Sets the control."""
         # control will be an FST representation later
-        if not isinstance(control, ctrl.Control) and control is not None:
+        if not isinstance(control, Control) and control is not None:
             raise TypeError("control should be a Control instance")
         self.control = control
         if control is not None:
@@ -145,13 +145,13 @@ class Machine(object):
         return len(self.partitions) >= 2
 
     def deep_case(self):
-        return self.printname[0] == deep_pre
+        return self.printname_[0] == deep_pre
 
     def named_entity(self):
-        return self.printname[0] == enc_pre
+        return self.printname_[0] == enc_pre
 
     def avm(self):
-        return self.printname[0] == avm_pre
+        return self.printname_[0] == avm_pre
 
     # TODO: langspec
 

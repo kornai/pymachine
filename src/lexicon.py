@@ -3,10 +3,10 @@ from itertools import chain
 from collections import Iterable, defaultdict
 import copy
 
-from machine import Machine
-from control import ConceptControl
-from construction import Construction, AVMConstruction
-from constants import id_sep
+from pymachine.src.machine import Machine
+from pymachine.src.control import Control
+from pymachine.src.construction import Construction, AVMConstruction
+from pymachine.src.constants import id_sep
 
 class Lexicon:
     """THE machine repository."""
@@ -240,7 +240,8 @@ class Lexicon:
         if unicode(static_machine) == u'IS_A':
             return None
         # If we have already unified this machine: just return
-        if not isinstance(static_machine, str) and not isinstance(static_machine, unicode):
+        if (not isinstance(static_machine, str) and
+            not isinstance(static_machine, unicode)):
             static_printname = static_machine.printname()
         else:
             static_printname = static_machine
@@ -260,7 +261,8 @@ class Lexicon:
                     self.wake_avm_construction(static_machine)
                     return None
 #                logging.debug('ur activating str')
-                active_machine = Machine(static_machine, ConceptControl())
+                active_machine = Machine(static_machine,
+                                                 ConceptControl())
                 self.__add_active_machine(active_machine)
                 return active_machine
         # If it's a machine, we create the corresponding active one
@@ -302,7 +304,8 @@ class Lexicon:
         """
         avm_construction = self.avm_constructions.get(avm_name[1:])
         # TODO
-        if avm_construction is not None and avm_construction not in self.constructions:
+        if (avm_construction is not None and
+            avm_construction not in self.constructions):
             self.constructions.append(avm_construction)
 
     def activate(self):
@@ -326,7 +329,8 @@ class Lexicon:
                     break
             else:
                 if has_machine:
-                    m = Machine(printname, copy.copy(static_machine.control))
+                    m = machine.Machine(printname,
+                                        copy.copy(static_machine.control))
                     self.add_active(m)
                     activated.append(m)
         return activated

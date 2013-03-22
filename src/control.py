@@ -3,7 +3,6 @@ control does syntax-related things"""
 
 import logging
 
-import machine as mach
 from langtools.utils.readkr import kr_to_dictionary as kr2dict
 
 class Control(object):
@@ -12,7 +11,8 @@ class Control(object):
 
     def set_machine(self, machine):
         """Sets the machine the control controls."""
-        if not isinstance(machine, mach.Machine) and machine is not None:
+        from pymachine.src.machine import Machine
+        if not isinstance(machine, Machine) and machine is not None:
             raise TypeError("machine should be a Machine instance")
         self.machine = machine
 

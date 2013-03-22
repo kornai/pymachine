@@ -3,7 +3,6 @@ import logging
 import sys
 
 from pymachine.src.lexicon import Lexicon
-from pymachine.src.machine import Machine
 from pymachine.src.definition_parser import read as read_defs
 
 def dump(argv):
@@ -12,7 +11,7 @@ def dump(argv):
 
 def test_static(argv):
     fn = "/home/zseder/Proj/machine/pymachine/src/definitions.dump"
-    if len(argv) > 1:
+    if len(argv) > 0:
         fn = argv[0]
     definitions = pickle.load(open(fn))
     l = Lexicon()

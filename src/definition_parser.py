@@ -13,16 +13,17 @@ except ImportError:
 
 from langtools.string.encoding import decode_from_proszeky
 
-from machine import Machine
 from constants import deep_cases, avm_pre, deep_pre, enc_pre, id_sep
-from control import ConceptControl
+from pymachine.src.machine import Machine
+from pymachine.src.control import ConceptControl
 
 def create_machine(name, partitions):
     # we accept lists because of ["=", "ROOT"] or ["!", "ACC"]
     if type(name) is list:
         name = "".join(name)
 
-    return Machine(decode_from_proszeky(name), ConceptControl(), partitions)
+    return Machine(decode_from_proszeky(name),
+                           ConceptControl(), partitions)
 
 def unify(machine):
     def __collect_machines(m, machines, is_root=False):
