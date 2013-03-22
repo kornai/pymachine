@@ -4,7 +4,7 @@ from collections import Iterable, defaultdict
 import copy
 
 from pymachine.src.machine import Machine
-from pymachine.src.control import Control
+from pymachine.src.control import ConceptControl
 from pymachine.src.construction import Construction, AVMConstruction
 from pymachine.src.constants import id_sep
 
