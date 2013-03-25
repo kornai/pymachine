@@ -156,7 +156,7 @@ class Machine(object):
     # TODO: langspec
 
     def fancy(self):
-        return self.deep_case() or self.avm() or self.name_entity()
+        return self.deep_case() or self.avm() or self.named_entity()
 
     def to_debug_str(self, depth=0):
         """An even more detailed __str__, complete with object ids and
