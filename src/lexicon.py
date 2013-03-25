@@ -6,7 +6,7 @@ import copy
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from pymachine.src.construction import Construction, AVMConstruction
-from pymachine.src.constants import id_sep
+from pymachine.src.constants import id_sep, deep_pre
 
 class Lexicon:
     """THE machine repository."""
@@ -86,29 +86,32 @@ class Lexicon:
             # Add every unique machine in the canonical's tree to static
             unique_machines = canonical.unique_machines_in_tree()
             for um in unique_machines:
-                if um.printname().isupper() and not um.printname()[0] == '!':
-                    um.printname_ = um.printname().lower()
-                if um is canonical:
-                    continue
-                um_already_seen = self.static.get(um.printname(), [])
-                if len(um_already_seen) == 0:
-                    # There is no entry for the machine: add it (+ a placeholder
-                    # for the canonical slot, if the machine is modified)
-                    if len(um.children()) == 0:
-                        um_already_seen = [um]
+                # Deep cases are not canonized
+                if not um.deep_case():
+                    if um.printname().isupper():
+                        um.printname_ = um.printname().lower()
+                    if um is canonical:
+                        continue
+                    um_already_seen = self.static.get(um.printname(), [])
+                    if len(um_already_seen) == 0:
+                        # There is no entry for the machine: add it (+ a
+                        # placeholder for the canonical slot, if the machine
+                        # is modified)
+                        if len(um.children()) == 0:
+                            um_already_seen = [um]
+                        else:
+                            # Modified words are linked to the canonical entry
+                            # in finalize_static
+                            um_already_seen = [Machine(um.printname()), um]
+                        self.static[um.printname()] = um_already_seen
                     else:
-                        # Modified words are linked to the canonical entry in
-                        # finalize_static
-                        um_already_seen = [Machine(um.printname()), um]
-                    self.static[um.printname()] = um_already_seen
-                else:
-                    # Add to the entry list, if modified
-                    if len(um.children()) > 0:
-                        um_already_seen.append(um)
+                        # Add to the entry list, if modified
+                        if len(um.children()) > 0:
+                            um_already_seen.append(um)
 
-                # Unify with the canonical entry if unmodified 
-                if len(um.children()) == 0 and um is not um_already_seen[0]:
-                    self.__recursive_replace(canonical, um, um_already_seen[0])
+                    # Unify with the canonical entry if unmodified 
+                    if len(um.children()) == 0 and um is not um_already_seen[0]:
+                        self.__recursive_replace(canonical, um, um_already_seen[0])
 
             machines = self.static.get('in', [])
             print 'in:'
@@ -153,10 +156,13 @@ class Lexicon:
         if root in visited:
             return
 
+        print "__rr: ", root, from_m, to_m
+
         # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
         visited.add(root)
         to_visit = set()
         for part_i, part in enumerate(root.partitions):
+            print "part", part_i, part
             for m_i, m in enumerate(part):
                 num_children = len(m.children())
                 if m.printname() == from_m.printname() and m is not to_m:
