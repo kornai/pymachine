@@ -22,6 +22,9 @@ def create_machine(name, partitions):
     if type(name) is list:
         name = "".join(name)
 
+    # HACK until we find a good solution for defaults
+    name = name.strip('<>')
+
     return Machine(decode_from_proszeky(name),
                            ConceptControl(), partitions)
 
@@ -65,6 +68,7 @@ def unify(machine):
 
                         part_m.del_parent_link(m, p_i)
                         part_m.add_parent_link(res, p_i)
+
         return res
 
     def __replace(where, for_what, is_other=False, visited=None):
@@ -85,6 +89,10 @@ def unify(machine):
                     for_what.add_parent_link(where, p_i)
                 __replace(where.partitions[p_i][part_m_i], for_what, is_other,
                           visited)
+
+            # unification if there is a machine more than once on the same
+            # partition
+            where.partitions[p_i] = list(set(p))
 
     machines = defaultdict(list)
     __collect_machines(machine, machines, is_root=True)
