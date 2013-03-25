@@ -62,6 +62,9 @@ def unify(machine):
                 for part_m in p:
                     if part_m.printname() != "other":
                         res.partitions[p_i].append(part_m)
+
+                        part_m.del_parent_link(m, p_i)
+                        part_m.add_parent_link(res, p_i)
         return res
 
     def __replace(where, for_what, is_other=False, visited=None):
@@ -75,6 +78,7 @@ def unify(machine):
 
         pn = for_what.printname()
         for p_i, p in enumerate(where.partitions):
+            # change the partition machines
             for part_m_i, part_m in enumerate(p):
                 if part_m.printname() == pn and __has_other(part_m) == is_other:
                     where.partitions[p_i][part_m_i] = for_what
