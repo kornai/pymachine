@@ -158,12 +158,13 @@ class Machine(object):
     def fancy(self):
         return self.deep_case() or self.avm() or self.named_entity()
 
-    def to_debug_str(self, depth=0):
+    def to_debug_str(self, depth=0, parents_to_display=3):
         """An even more detailed __str__, complete with object ids and
         recursive."""
-        return self.__to_debug_str(0)
+        return self.__to_debug_str(0, parents_to_display)
 
-    def __to_debug_str(self, depth, lines=None, stop=None, at_partition=""):
+    def __to_debug_str(self, depth, parents_to_display=3,
+                       lines=None, stop=None, at_partition=""):
         """Recursive helper method for to_debug_str.
         @param depth the depth of the recursion.
         @param stop the machines already visited (to detect cycles)."""
@@ -173,16 +174,24 @@ class Machine(object):
             lines = []
 
         pn = self.printname()
+        if self in stop:
+            prnts_str = '...'
+        else:
+            prnts = [m[0].printname() + ':' + str(id(m[0])) + ':' + str(m[1])
+                     for m in self.parents]
+            prnts_str = ','.join(prnts[:parents_to_display])
+            if len(prnts) > parents_to_display:
+                prnts_str += ', ..'
         lines.append(u'{0:>{1}}:{2}:{3} p[{4}]'.format(at_partition,
             2 * depth + len(str(at_partition)), pn, id(self),
-            ','.join(m[0].printname() + ':' + str(id(m[0])) + ':' + 
-            str(m[1]) for m in self.parents)))
+            prnts_str))
         if not self in stop:
             stop.add(self)
             for part_i in xrange(len(self.partitions)):
                 part = self.partitions[part_i]
                 for m in part:
-                    m.__to_debug_str(depth + 1, lines, stop, part_i)
+                    m.__to_debug_str(depth + 1, parents_to_display, lines,
+                                     stop, part_i)
 
         if depth == 0:
             return u"\n".join(lines)
