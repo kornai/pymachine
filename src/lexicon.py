@@ -60,7 +60,7 @@ class Lexicon:
         while keeping prior links (parent links).
         """
         if isinstance(what, Machine):
-            print what.to_debug_str() + "\n"
+            #print what.to_debug_str() + "\n"
             # Does this machine appear in the static tree?
             whats_already_seen = self.static.get(what.printname(), [])
             # Simply adding the new machine/definition
@@ -113,12 +113,6 @@ class Lexicon:
                     if len(um.children()) == 0 and um is not um_already_seen[0]:
                         self.__recursive_replace(canonical, um, um_already_seen[0])
 
-            machines = self.static.get('in', [])
-            print 'in:'
-            for m in machines:
-                print m.to_debug_str()
-            print
-
         # Add to graph
         elif isinstance(what, Iterable):
             for m in what:
@@ -156,13 +150,10 @@ class Lexicon:
         if root in visited:
             return
 
-        print "__rr: ", root, from_m, to_m
-
         # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
         visited.add(root)
         to_visit = set()
         for part_i, part in enumerate(root.partitions):
-            print "part", part_i, part
             for m_i, m in enumerate(part):
                 num_children = len(m.children())
                 if m.printname() == from_m.printname() and m is not to_m:
