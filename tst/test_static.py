@@ -6,7 +6,7 @@ from pymachine.src.lexicon import Lexicon
 from pymachine.src.definition_parser import read as read_defs
 
 def dump(argv):
-    definitions = read_defs(file(argv[0]), 0, add_indices=True)
+    definitions = read_defs(file(argv[0]), 2, add_indices=True)
     pickle.dump(definitions, open(argv[1], "w"))
 
 def test_static(argv):
