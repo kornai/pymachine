@@ -15,14 +15,17 @@ def test_static(argv):
         fn = argv[0]
     definitions = pickle.load(open(fn))
     l = Lexicon()
-    l.add_static(definitions.itervalues())
+    try:
+        l.add_static(definitions.itervalues())
+    except KeyError as ke:
+        print "KeyError", ke
     l.finalize_static()
 
-    #for pn, machines in w.lexicon.static.iteritems():
-        #print pn
-        #for m in machines:
-            #print m.to_debug_str()
-        #print
+    for pn, machines in l.static.iteritems():
+        print pn
+        for m in machines:
+            print m.to_debug_str()
+        print
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format=
