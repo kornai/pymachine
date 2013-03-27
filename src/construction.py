@@ -243,41 +243,6 @@ class AVMConstruction(Construction):
 
         return [self.avm]
 
-class ElviraConstruction(Construction):
-    def __init__(self):
-        control = FSA()
-        # TODO: to hypercube
-        control.add_state("0", is_init=True, is_final=False)
-        control.add_state("1", is_init=False, is_final=False)
-        control.add_state("2", is_init=False, is_final=False)
-        control.add_state("3", is_init=False, is_final=False)
-        control.add_state("4", is_init=False, is_final=True)
-        control.add_transition(PrintnameMatcher("vonat"), "0", "1")
-        control.add_transition(PrintnameMatcher("menetrend"), "1", "2")
-        control.add_transition(PrintnameMatcher("BEFORE_AT"), "2", "3")
-        control.add_transition(PrintnameMatcher("AFTER_AT"), "3", "4")
-
-        Construction.__init__(self, self.__class__.__name__, control)
-
-    def last_check(self, seq):
-        try:
-            if len(seq[2].partitions[1]) > 0 and len(seq[3].partitions[1]) > 0:
-                return True
-        except:
-            pass
-        return False
-
-    def act(self, seq):
-        #TODO: implement
-        if not self.last_check(seq):
-            return None
-
-        elvira_machine = Machine("elvira", ElviraPluginControl())
-        for m in seq:
-            elvira_machine.append(m)
-
-        return [elvira_machine]
-        
 def test():
     a = Machine("the", PosControl("DET"))
     kek = Machine("kek", PosControl("ADJ"))
