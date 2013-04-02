@@ -60,9 +60,21 @@ class Lexicon:
         while keeping prior links (parent links).
         """
         if isinstance(what, Machine):
-            #print what.to_debug_str() + "\n"
+#            if len(self.static) % 10 == 0:
+#                print "STATIC"
+#                for pn, machines in self.static.iteritems():
+#                    print pn
+#                    for m in machines:
+#                        print m.to_debug_str()
+#                    print
+#                print "STATIC_DISAMBIG"
+#                for a, u in self.static_disambig.iteritems():
+#                    print a, u
+#                print
+#            print "WHAT\n", what.to_debug_str() + "\n"
             # Does this machine appear in the static tree?
-            whats_already_seen = self.static.get(what.printname(), [])
+            #whats_already_seen = self.static.get(what.printname(), [])
+            whats_already_seen = self.__get_disambig_incomplete(what.printname())
             # Simply adding the new machine/definition
             if len(whats_already_seen) == 0:
                 self.static[what.printname()] = [what]
@@ -140,11 +152,13 @@ class Lexicon:
         however, we can replace ambiguous name with the fully qualified one.
         """
         if print_name in self.static:
+#            print "XXX: printname", print_name, "in static"
             # in static: everything's OK, just return
             return self.static[print_name]
         else:
             ambig_name = print_name.split(id_sep)[0]
             names = self.static_disambig.get(ambig_name, [])
+#            print "XXX: len(names:", ambig_name, ") ==", len(names), names
             if len(names) == 0:
                 # Not in static_disambig: we haven't heard of this word at all
                 return []
@@ -153,6 +167,7 @@ class Lexicon:
                 # fully qualified names, or is there an ambiguous placeholder?
                 if ambig_name in names:
                     # Ambiguous name alert!
+#                    print "XXX: ambiguous name alert!"
                     names.remove(ambig_name)
                     already_seen = self.static[ambig_name]
                     del self.static[ambig_name]
@@ -169,9 +184,10 @@ class Lexicon:
         ambig_name = print_name.split(id_sep)[0]
         # Full name was passed with id
         if ambig_name != print_name:
-            return self.static[print_name]
+            return self.static.get(print_name, [])
         else:
             static_keys = self.static_disambig.get(ambig_name, [])
+#            print "YYY", print_name, len(static_keys), static_keys
             if len(static_keys) == 1:
                 for static_key in static_keys:      # why no peek()?
                     return self.static[static_key]
