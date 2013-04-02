@@ -71,6 +71,7 @@ class Lexicon:
             else:
                 # Updating canonical with the definition
                 canonical = whats_already_seen[0]
+                canonical.printname_ = what.printname()
                 canonical.partitions = what.partitions
                 for part_i, part in enumerate(canonical.partitions):
                     for child in part:
@@ -105,6 +106,7 @@ class Lexicon:
                             # in finalize_static
                             um_already_seen = [Machine(um.printname()), um]
                         self.static[um.printname()] = um_already_seen
+                        self.__add_to_disambig(um.printname())
                     else:
                         # Add to the entry list, if modified
                         if len(um.children()) > 0:
@@ -122,6 +124,42 @@ class Lexicon:
     def __add_to_disambig(self, print_name):
         """Adds @p print_name to the static_disambig."""
         self.static_disambig[print_name.split(id_sep)[0]].add(print_name)
+
+    def __get_disambig_incomplete(self, print_name):
+        """
+        Returns the machine by its unique name. If the name is not in static,
+        but static_disambig contains the ambiguous name, which points to itself,
+        (and only itself,) then we replace the value in the mapping with the
+        unique name.
+
+        The above is needed because it is possible to encounter a word in the
+        definition of another before we get to the word in the lexicon. If our
+        word is referred to with its ambiguous name in the definition, we don't
+        know the id yet, so we have to insert the ambiguous name to static as
+        a placeholder. Once we see the definition of the word in question,
+        however, we can replace ambiguous name with the fully qualified one.
+        """
+        if print_name in self.static:
+            # in static: everything's OK, just return
+            return self.static[print_name]
+        else:
+            ambig_name = print_name.split(id_sep)[0]
+            names = self.static_disambig.get(ambig_name, [])
+            if len(names) == 0:
+                # Not in static_disambig: we haven't heard of this word at all
+                return []
+            else:
+                # The ambiguous word is in static_disambig, but is mapped to
+                # fully qualified names, or is there an ambiguous placeholder?
+                if ambig_name in names:
+                    # Ambiguous name alert!
+                    names.remove(ambig_name)
+                    already_seen = self.static[ambig_name]
+                    del self.static[ambig_name]
+                    self.static[print_name] = already_seen
+                    return already_seen
+                else:
+                    return []
 
     def __get_disambig(self, print_name):
         """
@@ -156,6 +194,7 @@ class Lexicon:
                         node.append(nodes[0])
         # defaultdict is not safe, so convert it to a regular dict
         self.static_disambig = dict(self.static_disambig)
+        # TODO: remove the id from the print name of unambiguous machines
 
     def __recursive_replace(self, root, from_m, to_m, visited=None):
         """
