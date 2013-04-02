@@ -78,7 +78,7 @@ class Lexicon:
                         child.del_parent_link(what, part_i)
                         child.add_parent_link(canonical, part_i)
                 canonical.control = what.control
-                canonical.parents.union(what.parents)
+                canonical.parents.union(what.parents)  # Do we even need this?
                 self.__recursive_replace(canonical, what, canonical)
 
             self.__add_to_disambig(what.printname())
@@ -92,7 +92,8 @@ class Lexicon:
                         um.printname_ = um.printname().lower()
                     if um is canonical:
                         continue
-                    um_already_seen = self.static.get(um.printname(), [])
+                    um_already_seen = self.__get_disambig(um.printname())
+# XXX                    um_already_seen = self.static.get(um.printname(), [])
                     if len(um_already_seen) == 0:
                         # There is no entry for the machine: add it (+ a
                         # placeholder for the canonical slot, if the machine
@@ -121,6 +122,20 @@ class Lexicon:
     def __add_to_disambig(self, print_name):
         """Adds @p print_name to the static_disambig."""
         self.static_disambig[print_name.split(id_sep)[0]].add(print_name)
+
+    def __get_disambig(self, print_name):
+        """
+        Returns the machine by its ambiguous name (i.e. the name before id_sep).
+        Throws an exception if the word is ambiguous.
+        """
+        ambig_name = print_name.split(id_sep)[0]
+        static_keys = self.static_disambig.get(ambig_name, [])
+        if len(static_keys) == 1:
+            return self.static[static_keys[0]]
+        elif len(static_keys) == 0:
+            return []
+        else:
+            raise ValueError('{0} is ambiguous'.format(print_name))
 
     def finalize_static(self):
         """
