@@ -131,7 +131,8 @@ class Lexicon:
         ambig_name = print_name.split(id_sep)[0]
         static_keys = self.static_disambig.get(ambig_name, [])
         if len(static_keys) == 1:
-            return self.static[static_keys[0]]
+            for static_key in static_keys:      # why no peek()?
+                return self.static[static_key]
         elif len(static_keys) == 0:
             return []
         else:
