@@ -129,14 +129,18 @@ class Lexicon:
         Throws an exception if the word is ambiguous.
         """
         ambig_name = print_name.split(id_sep)[0]
-        static_keys = self.static_disambig.get(ambig_name, [])
-        if len(static_keys) == 1:
-            for static_key in static_keys:      # why no peek()?
-                return self.static[static_key]
-        elif len(static_keys) == 0:
-            return []
+        # Full name was passed with id
+        if ambig_name != print_name:
+            return self.static[print_name]
         else:
-            raise ValueError('{0} is ambiguous'.format(print_name))
+            static_keys = self.static_disambig.get(ambig_name, [])
+            if len(static_keys) == 1:
+                for static_key in static_keys:      # why no peek()?
+                    return self.static[static_key]
+            elif len(static_keys) == 0:
+                return []
+            else:
+                raise ValueError('{0} is ambiguous'.format(print_name))
 
     def finalize_static(self):
         """
