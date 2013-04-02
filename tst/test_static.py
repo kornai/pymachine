@@ -1,6 +1,7 @@
 import pickle
 import logging
 import sys
+import traceback
 
 from pymachine.src.lexicon import Lexicon
 from pymachine.src.definition_parser import read as read_defs
@@ -17,9 +18,11 @@ def test_static(argv):
     l = Lexicon()
     try:
         l.add_static(definitions.itervalues())
-    except KeyError as ke:
-        print "KeyError", ke
+    except Exception as e:
+        print "Exception", e
+        print traceback.print_exc(file=sys.stdout)
     l.finalize_static()
+    print "\n\n===========\n\n"
 
     for pn, machines in l.static.iteritems():
         print pn
