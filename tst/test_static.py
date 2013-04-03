@@ -21,6 +21,7 @@ def test_static(argv):
     except Exception as e:
         print "Exception", e
         print traceback.print_exc(file=sys.stdout)
+        print traceback.print_exc(file=sys.stderr)
     l.finalize_static()
     print "\n\n===========\n\n"
 
