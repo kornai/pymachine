@@ -471,7 +471,6 @@ def read(f, printname_index=0, add_indices=False):
         try:
             m = dp.parse_into_machines(l, printname_index, add_indices)
             if m.partitions[0] == []:
-                print m.to_debug_str()
                 continue
             d[m.printname()] = m
             logging.info(m.to_debug_str())
