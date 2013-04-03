@@ -470,6 +470,9 @@ def read(f, printname_index=0, add_indices=False):
             continue
         try:
             m = dp.parse_into_machines(l, printname_index, add_indices)
+            if m.partitions[0] == []:
+                print m.to_debug_str()
+                continue
             d[m.printname()] = m
             logging.info(m.to_debug_str())
         except pyparsing.ParseException, pe:
@@ -478,7 +481,7 @@ def read(f, printname_index=0, add_indices=False):
     return d
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.WARNING, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     dp = DefinitionParser()
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
