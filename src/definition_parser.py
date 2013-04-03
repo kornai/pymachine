@@ -446,7 +446,7 @@ class DefinitionParser:
     def parse_into_machines(self, s, printname_index=0, add_indices=False):
         parsed = self.parse(s)
         
-        machine = create_machine(parsed[1][printname_index], 1)
+        machine = create_machine(parsed[1][printname_index].lower(), 1)
 
         if add_indices:
             machine.printname_ = machine.printname() + id_sep + parsed[0]
