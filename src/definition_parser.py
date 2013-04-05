@@ -17,102 +17,10 @@ from constants import deep_cases, avm_pre, deep_pre, enc_pre, id_sep
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 
-def create_machine(name, partitions):
-    # we accept lists because of ["=", "ROOT"] or ["!", "ACC"]
-    if type(name) is list:
-        name = "".join(name)
-
-    # HACK until we find a good solution for defaults
-    name = name.strip('<>')
-
-    return Machine(decode_from_proszeky(name),
-                           ConceptControl(), partitions)
-
-def unify(machine):
-    def __collect_machines(m, machines, is_root=False):
-        # cut the recursion
-        key = m.printname(), __has_other(m)
-        if (key in machines and m in machines[key]):
-            return
-
-        if not is_root:
-            machines[m.printname(), __has_other(m)].append(m)
-        for partition in m.partitions:
-            for m_ in partition:
-                __collect_machines(m_, machines)
-
-    def __has_other(m):
-        for m_ in m.partitions[0]:
-            if m_.printname() == "other":
-                return True
-        return False
-
-    def __get_unified(machines, res=None):
-        # if nothing to unify, don't
-        if len(machines) == 1:
-            return machines[0]
-
-        # if a return machine is given, don't create a new one
-        if res is None:
-            prototype = machines[0]
-            res = create_machine(prototype.printname(), len(prototype.partitions))
-        for m in machines:
-            # if the same machine, don't add anything
-            if id(m) == id(res):
-                continue
-
-            for p_i, p in enumerate(m.partitions):
-                for part_m in p:
-                    if part_m.printname() != "other":
-                        res.partitions[p_i].append(part_m)
-
-                        part_m.del_parent_link(m, p_i)
-                        part_m.add_parent_link(res, p_i)
-
-        return res
-
-    def __replace(where, for_what, is_other=False, visited=None):
-        if visited is None:
-            visited = set()
-        
-        if id(where) in visited:
-            return
-
-        visited.add(id(where))
-
-        pn = for_what.printname()
-        for p_i, p in enumerate(where.partitions):
-            # change the partition machines
-            for part_m_i, part_m in enumerate(p):
-                if part_m.printname() == pn and __has_other(part_m) == is_other:
-                    where.partitions[p_i][part_m_i] = for_what
-                    for_what.add_parent_link(where, p_i)
-                __replace(where.partitions[p_i][part_m_i], for_what, is_other,
-                          visited)
-
-            # unification if there is a machine more than once on the same
-            # partition
-            where.partitions[p_i] = list(set(p))
-
-    machines = defaultdict(list)
-    __collect_machines(machine, machines, is_root=True)
-    for k, machines_to_unify in machines.iteritems():
-
-        if len(machines_to_unify[0].partitions) > 1:
-            continue
-
-        printname, is_other = k
-        # if unification affects the root (machine), be that the result machine
-        if printname == machine.printname():
-            unified = __get_unified(machines_to_unify, machine)
-        else:
-            unified = __get_unified(machines_to_unify)
-        __replace(machine, unified, is_other)
-
 class ParserException(Exception):
     pass
 
-class DefinitionParser:
+class DefinitionParser(object):
     _str = set([str, unicode])
 
     lb = "["
@@ -134,7 +42,8 @@ class DefinitionParser:
     unary_p = re.compile("^[a-z_#\-/0-9]+(/[0-9]+)?$")
     binary_p = re.compile("^[A-Z_0-9]+(/[0-9]+)?$")
 
-    def __init__(self):
+    def __init__(self, plur_dict):
+        self.plur_dict = plur_dict
         self.init_parser()
 
     @classmethod
@@ -274,6 +183,106 @@ class DefinitionParser:
     def parse(self, s):
         return self.sen.parseString(s).asList()
         
+    def create_machine(self, name, partitions):
+        # we accept lists because of ["=", "ROOT"] or ["!", "ACC"]
+        if type(name) is list:
+            name = "".join(name)
+
+        # HACK until we find a good solution for defaults
+        name = name.strip('<>')
+
+        is_plur = name in self.plur_dict
+        if is_plur:
+            name = self.plur_dict[name]
+
+        m = Machine(decode_from_proszeky(name),
+                               ConceptControl(), partitions)
+        if is_plur:
+            m.append(self.create_machine('more',1),0)
+
+        return m
+
+    def unify(self, machine):
+        def __collect_machines(m, machines, is_root=False):
+            # cut the recursion
+            key = m.printname(), __has_other(m)
+            if (key in machines and m in machines[key]):
+                return
+
+            if not is_root:
+                machines[m.printname(), __has_other(m)].append(m)
+            for partition in m.partitions:
+                for m_ in partition:
+                    __collect_machines(m_, machines)
+
+        def __has_other(m):
+            for m_ in m.partitions[0]:
+                if m_.printname() == "other":
+                    return True
+            return False
+
+        def __get_unified(machines, res=None):
+            # if nothing to unify, don't
+            if len(machines) == 1:
+                return machines[0]
+
+            # if a return machine is given, don't create a new one
+            if res is None:
+                prototype = machines[0]
+                res = self.create_machine(prototype.printname(), len(prototype.partitions))
+            for m in machines:
+                # if the same machine, don't add anything
+                if id(m) == id(res):
+                    continue
+
+                for p_i, p in enumerate(m.partitions):
+                    for part_m in p:
+                        if part_m.printname() != "other":
+                            res.partitions[p_i].append(part_m)
+
+                            part_m.del_parent_link(m, p_i)
+                            part_m.add_parent_link(res, p_i)
+
+            return res
+
+        def __replace(where, for_what, is_other=False, visited=None):
+            if visited is None:
+                visited = set()
+            
+            if id(where) in visited:
+                return
+
+            visited.add(id(where))
+
+            pn = for_what.printname()
+            for p_i, p in enumerate(where.partitions):
+                # change the partition machines
+                for part_m_i, part_m in enumerate(p):
+                    if part_m.printname() == pn and __has_other(part_m) == is_other:
+                        where.partitions[p_i][part_m_i] = for_what
+                        for_what.add_parent_link(where, p_i)
+                    __replace(where.partitions[p_i][part_m_i], for_what, is_other,
+                              visited)
+
+                # unification if there is a machine more than once on the same
+                # partition
+                where.partitions[p_i] = list(set(p))
+
+        machines = defaultdict(list)
+        __collect_machines(machine, machines, is_root=True)
+        for k, machines_to_unify in machines.iteritems():
+
+            if len(machines_to_unify[0].partitions) > 1:
+                continue
+
+            printname, is_other = k
+            # if unification affects the root (machine), be that the result machine
+            if printname == machine.printname():
+                unified = __get_unified(machines_to_unify, machine)
+            else:
+                unified = __get_unified(machines_to_unify)
+            __replace(machine, unified, is_other)
+
     def __parse_expr(self, expr, parent, root):
         """
         creates machines from a parse node and its children
@@ -293,7 +302,7 @@ class DefinitionParser:
             # UE -> U
             if (is_unary(expr[0])):
                 logging.debug("Parsing {0} as a unary.".format(expr[0]))
-                return [create_machine(expr[0], 1)]
+                return [self.create_machine(expr[0], 1)]
 
             # E -> UE | BE, A -> UE
             if (is_tree(expr[0])):
@@ -304,7 +313,7 @@ class DefinitionParser:
             # BE -> A B
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
-                m = create_machine(expr[1], 2)
+                m = self.create_machine(expr[1], 2)
                 m.append_all(self.__parse_expr(expr[0], m, root), 0)
                 m.append(root, 1)
                 return [m]
@@ -312,7 +321,7 @@ class DefinitionParser:
             # BE -> B A
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
-                m = create_machine(expr[0], 2)
+                m = self.create_machine(expr[0], 2)
                 logging.debug(expr)
                 m.append_all(self.__parse_expr(expr[1], m, root), 1)
                 m.append(root, 0)
@@ -321,7 +330,7 @@ class DefinitionParser:
             # BE -> 'B
             if (expr[0] == "'" and
                     is_binary(expr[1])):
-                m = create_machine(expr[1], 2)
+                m = self.create_machine(expr[1], 2)
                 m.append(parent, 1)
                 # nothing to append to any partitions
                 return [m]
@@ -329,37 +338,37 @@ class DefinitionParser:
             # BE -> B'
             if (is_binary(expr[0]) and
                     expr[1] == "'"):
-                m = create_machine(expr[0], 2)
+                m = self.create_machine(expr[0], 2)
                 m.append(parent, 0)
                 # nothing to append to any partitions
                 return [m]
 
             # U -> !ACC
             if expr[0] == deep_pre:
-                return [create_machine(deep_pre + expr[1], 1)]
+                return [self.create_machine(deep_pre + expr[1], 1)]
 
             # U -> $HUN_FROM
             if (expr[0] == cls.langspec_pre):
-                return [create_machine(cls.langspec_pre + expr[1], 1)]
+                return [self.create_machine(cls.langspec_pre + expr[1], 1)]
 
             # U -> #AVM
             if (expr[0] == avm_pre):
-                return [create_machine(avm_pre + expr[1], 1)]
+                return [self.create_machine(avm_pre + expr[1], 1)]
 
             # U -> =root
             if (expr[0] == cls.root_pre):
-                return [create_machine(cls.root_pre + expr[1], 1)]
+                return [self.create_machine(cls.root_pre + expr[1], 1)]
 
             # U -> @External_url
             if (expr[0] == enc_pre):
-                return [create_machine(enc_pre + expr[1], 1)]
+                return [self.create_machine(enc_pre + expr[1], 1)]
 
         if (len(expr) == 3):
             # UB -> A B A
             if (is_tree(expr[0]) and
                     is_binary(expr[1]) and
                     is_tree(expr[2])):
-                m = create_machine(expr[1], 2)
+                m = self.create_machine(expr[1], 2)
                 logging.debug(expr[1])
                 m.append_all(self.__parse_expr(expr[0], m, root), 0)
                 m.append_all(self.__parse_expr(expr[2], m, root), 1)
@@ -387,11 +396,11 @@ class DefinitionParser:
                     expr[3] == ")"):
                 logging.debug('X -> U ( Y )')
                 if is_unary(expr[2]):
-                    m = create_machine(expr[2], 1)
+                    m = self.create_machine(expr[2], 1)
                 else:
                     m = self.__parse_expr(expr[2], parent, root)[0]
                     logging.warning("0th partition of binary machines is not implemented, "+str(expr))
-                m.append(create_machine(expr[0], 1), 0)
+                m.append(self.create_machine(expr[0], 1), 0)
                 return [m]
 
             # UE -> U [ D ]
@@ -399,7 +408,7 @@ class DefinitionParser:
                     expr[1] == "[" and
                     is_tree(expr[2]) and
                     expr[3] == "]"):
-                m = create_machine(expr[0], 1)
+                m = self.create_machine(expr[0], 1)
                 for parsed_expr in self.__parse_definition(expr[2], m, root):
                     m.append(parsed_expr, 0)
                 return [m]
@@ -413,7 +422,7 @@ class DefinitionParser:
             #    # if BE was an expression with an apostrophe, then
             #    # return of __parse_expr() is None
             #    if len(ms) != 0:
-            #        ms[0].append(create_machine(expr[0], 1), 0)
+            #        ms[0].append(self.create_machine(expr[0], 1), 0)
             #    # if len(ms) == 3 and ms[0] == '<':
             #    #        ms = ms[1]
             #    if len(ms) != 1:
@@ -429,7 +438,7 @@ class DefinitionParser:
                     expr[3] == ";" and
                     is_tree(expr[4]) and
                     expr[5] == "]"):
-                m = create_machine(expr[0], 2)
+                m = self.create_machine(expr[0], 2)
                 m.append_all(self.__parse_expr(expr[2], m, root), 0)
                 m.append_all(self.__parse_expr(expr[4], m, root), 1)
                 return [m]
@@ -446,7 +455,7 @@ class DefinitionParser:
     def parse_into_machines(self, s, printname_index=0, add_indices=False):
         parsed = self.parse(s)
         
-        machine = create_machine(parsed[1][printname_index].lower(), 1)
+        machine = self.create_machine(parsed[1][printname_index].lower(), 1)
 
         if add_indices:
             machine.printname_ = machine.printname() + id_sep + parsed[0]
@@ -455,12 +464,12 @@ class DefinitionParser:
             for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
                 machine.append(parsed_expr, 0)
 
-        unify(machine)
+        self.unify(machine)
         return machine
 
 def read(f, printname_index=0, add_indices=False):
     d = {}
-    dp = DefinitionParser()
+    dp = DefinitionParser(plur_dict)
     for line in f:
         l = line.strip()
         logging.info("Parsing: {0}".format(l))
@@ -479,9 +488,17 @@ def read(f, printname_index=0, add_indices=False):
             print "Error: ", str(pe)
     return d
 
+def read_plur(_file):
+    plur_dict = {}
+    for line in _file:
+        plur, sg = line.split()
+        plur_dict[plur] = sg
+    return plur_dict
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
-    dp = DefinitionParser()
+    plur_dict = read_plur(open('../../res/4lang/4lang.plural'))
+    dp = DefinitionParser(plur_dict)
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
         print Machine.to_debug_str(dp.parse_into_machines(pstr))
