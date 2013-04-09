@@ -467,8 +467,9 @@ class DefinitionParser(object):
         self.unify(machine)
         return machine
 
-def read(f, printname_index=0, add_indices=False):
+def read(f, plur_filn, printname_index=0, add_indices=False):
     d = {}
+    plur_dict = read_plur(open(plur_filn))
     dp = DefinitionParser(plur_dict)
     for line in f:
         l = line.strip()
@@ -480,6 +481,7 @@ def read(f, printname_index=0, add_indices=False):
         try:
             m = dp.parse_into_machines(l, printname_index, add_indices)
             if m.partitions[0] == []:
+                logging.debug('dropping empty definition of '+m.printname())
                 continue
             d[m.printname()] = m
             logging.info(m.to_debug_str())
@@ -503,7 +505,7 @@ if __name__ == "__main__":
     if sys.argv[1] == "-d":
         print Machine.to_debug_str(dp.parse_into_machines(pstr))
     elif sys.argv[1] == "-f":
-        lexicon = read(file(sys.argv[2]))
+        lexicon = read(file(sys.argv[2]),'../../res/4lang/4lang.plural')
     else:
         print dp.parse(pstr)
 
