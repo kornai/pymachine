@@ -7,7 +7,7 @@ from pymachine.src.lexicon import Lexicon
 from pymachine.src.definition_parser import read as read_defs
 
 def dump(argv):
-    definitions = read_defs(file(argv[0]), 2, add_indices=True)
+    definitions = read_defs(file(argv[0]), '../../res/4lang/4lang.plural', 2, add_indices=True)
     pickle.dump(definitions, open(argv[1], "w"))
 
 def test_static(argv):
@@ -32,7 +32,7 @@ def test_static(argv):
         print
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format=
+    logging.basicConfig(level=logging.WARNING, format=
             "%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
 
     command = sys.argv[1]
