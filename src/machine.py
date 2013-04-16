@@ -158,15 +158,16 @@ class Machine(object):
     def fancy(self):
         return self.deep_case() or self.avm() or self.named_entity()
 
-    def to_debug_str(self, depth=0, parents_to_display=3):
+    def to_debug_str(self, depth=0, max_depth=3, parents_to_display=3):
         """An even more detailed __str__, complete with object ids and
         recursive."""
-        return self.__to_debug_str(0, parents_to_display)
+        return self.__to_debug_str(0, max_depth, parents_to_display)
 
-    def __to_debug_str(self, depth, parents_to_display=3,
+    def __to_debug_str(self, depth, max_depth=3, parents_to_display=3,
                        lines=None, stop=None, at_partition=""):
         """Recursive helper method for to_debug_str.
         @param depth the depth of the recursion.
+        @param max_depth the maximum recursion depth.
         @param stop the machines already visited (to detect cycles)."""
         if stop is None:
             stop = set()
@@ -174,7 +175,7 @@ class Machine(object):
             lines = []
 
         pn = self.printname()
-        if self in stop:
+        if self in stop or depth == max_depth:
             prnts_str = '...'
         else:
             prnts = [m[0].printname() + ':' + str(id(m[0])) + ':' + str(m[1])
@@ -185,13 +186,13 @@ class Machine(object):
         lines.append(u'{0:>{1}}:{2}:{3} p[{4}]'.format(at_partition,
             2 * depth + len(str(at_partition)), pn, id(self),
             prnts_str))
-        if not self in stop:
+        if not (self in stop or depth == max_depth):
             stop.add(self)
             for part_i in xrange(len(self.partitions)):
                 part = self.partitions[part_i]
                 for m in part:
-                    m.__to_debug_str(depth + 1, parents_to_display, lines,
-                                     stop, part_i)
+                    m.__to_debug_str(depth + 1, max_depth, parents_to_display,
+                                     lines, stop, part_i)
 
         if depth == 0:
             return u"\n".join(lines)
