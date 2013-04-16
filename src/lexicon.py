@@ -50,114 +50,18 @@ class Lexicon:
 
     def add_static(self, what):
         """
-        adds machines to static collection
-        typically called once to add whole background knowledge
-        which is the input of the definition parser
-
-        @note We assume that a machine is added to the static graph only once.
-        """
-        """
         Add lexical definition to the static collection 
         while keeping prior links (parent links).
+        @note We assume that a machine is added to the static graph only once.
         """
         if isinstance(what, Machine):
-#            if len(self.static) % 10 == 0:
-#                print "STATIC"
-#                for pn, machines in self.static.iteritems():
-#                    print pn
-#                    for m in machines:
-#                        print m.to_debug_str()
-#                    print
-#                print "STATIC_DISAMBIG"
-#                for a, u in self.static_disambig.iteritems():
-#                    print a, u
-#                print
-            if what.printname().split('/')[0] == 'good':
-                print "WHAT\n", what.to_debug_str() + "\n"
-            # Does this machine appear in the static tree?
-            #whats_already_seen = self.static.get(what.printname(), [])
-            whats_already_seen = self.__get_disambig_incomplete(what.printname())
-            if what.printname().split('/')[0] == 'good':
-                print "already seen:"
-                for m in whats_already_seen:
-                    print m.to_debug_str(max_depth=1)
-
-            # Simply adding the new machine/definition
-            if len(whats_already_seen) == 0:
-                self.static[what.printname()] = [what]
-                canonical = what
-            # Adding the canonical definition while keeping parent links
-            else:
-                # Updating canonical with the definition
-                canonical = whats_already_seen[0]
-                if what.printname().split('/')[0] == 'good':
-                    print "canonical before"
-                    print canonical.to_debug_str()
-                canonical.printname_ = what.printname()
-                canonical.partitions = what.partitions
-                for part_i, part in enumerate(canonical.partitions):
-                    for child in part:
-                        # Keeping parent links
-                        child.del_parent_link(what, part_i)
-                        child.add_parent_link(canonical, part_i)
-                canonical.control = what.control
-                canonical.parents.union(what.parents)  # Do we even need this?
-                if what.printname().split('/')[0] == 'good':
-                    print "canonical after"
-                    print canonical.to_debug_str()
-
-                print
-                print
-                self.__recursive_replace(canonical, what, canonical, always=True)
-
-            self.__add_to_disambig(what.printname())
-
-            # Add every unique machine in the canonical's tree to static
-            unique_machines = canonical.unique_machines_in_tree()
-            for um in unique_machines:
-                # Deep cases are not canonized
-                if not um.deep_case():
-                    if um.printname().isupper():
-                        um.printname_ = um.printname().lower()
-                    if um is canonical:
-                        continue
-                    um_already_seen = self.__get_disambig(um.printname())
-# XXX                    um_already_seen = self.static.get(um.printname(), [])
-                    if len(um_already_seen) == 0:
-                        # There is no entry for the machine: add it (+ a
-                        # placeholder for the canonical slot, if the machine
-                        # is modified)
-                        if len(um.children()) == 0:
-                            um_already_seen = [um]
-                        else:
-                            # Modified words are linked to the canonical entry
-                            # in finalize_static
-                            um_already_seen = [Machine(um.printname()), um]
-                        self.static[um.printname()] = um_already_seen
-                        self.__add_to_disambig(um.printname())
-                    else:
-                        # Add to the entry list, if modified
-                        if len(um.children()) > 0:
-                            um_already_seen.append(um)
-
-                    # Unify with the canonical entry if unmodified 
-                    if len(um.children()) == 0 and um is not um_already_seen[0]:
-                        self.__recursive_replace(canonical, um, um_already_seen[0])
-
-        # Add to graph
+            self.__add_static_recursive(what)
+        # Call for each item in an iterable
         elif isinstance(what, Iterable):
             for m in what:
                 self.add_static(m)
 
     # TODO: dog canonical == dog[faithfule]!
-    def __replacement_map(self, uniques):
-        """
-        Creates the replacement map for use in add_static(). The mapping is
-        as follows:
-        - machines that have a canonical form are replaced with it
-        """
-        pass
-
     def __add_static_recursive(self, curr_from, replacement=None):
         if replacement == None:
             replacement = {}
@@ -173,8 +77,8 @@ class Lexicon:
                     curr_from.printname_ = curr_from.printname().lower()
                 #print "Not in replacement"
                 # Does this machine appear in the static tree?
-                from_already_seen = self.__get_disambig(curr_from.printname())
-                print "from already seen", curr_from.printname(), from_already_seen
+                from_already_seen = self.__get_disambig_incomplete(curr_from.printname())
+#                print "from already seen", curr_from.printname(), from_already_seen
                 # If not: simply adding the new machine/definition...
                 if len(from_already_seen) == 0:
                     #print "from already seen = 0"
@@ -233,25 +137,6 @@ class Lexicon:
 
         return replacement[curr_from]
 
-    def add_static2(self, what):
-        """
-        adds machines to static collection
-        typically called once to add whole background knowledge
-        which is the input of the definition parser
-
-        @note We assume that a machine is added to the static graph only once.
-        """
-        """
-        Add lexical definition to the static collection 
-        while keeping prior links (parent links).
-        """
-        if isinstance(what, Machine):
-            self.__add_static_recursive(what)
-        # Add to graph
-        elif isinstance(what, Iterable):
-            for m in what:
-                self.add_static2(m)
-
     def __add_to_disambig(self, print_name):
         """Adds @p print_name to the static_disambig."""
         self.static_disambig[print_name.split(id_sep)[0]].add(print_name)
@@ -276,44 +161,41 @@ class Lexicon:
             return self.static[print_name]
         else:
             ambig_name = print_name.split(id_sep)[0]
-            names = self.static_disambig.get(ambig_name, [])
+            names = self.static_disambig.get(ambig_name, set())
 #            print "XXX: len(names:", ambig_name, ") ==", len(names), names
             if len(names) == 0:
+#                print "len names == 0"
                 # Not in static_disambig: we haven't heard of this word at all
                 return []
             else:
-                # The ambiguous word is in static_disambig, but is mapped to
+                # The ambiguous word is in static_disambig, but is it mapped to
                 # fully qualified names, or is there an ambiguous placeholder?
                 if ambig_name in names:
-                    # Ambiguous name alert!
+#                    print "ambig_name in names"
+                    # Ambiguous name -- we have not yet seen the definition.
+                    assert len(names) == 1
 #                    print "XXX: ambiguous name alert!"
-                    names.remove(ambig_name)
-                    already_seen = self.static[ambig_name]
-                    del self.static[ambig_name]
-                    self.static[print_name] = already_seen
-                    return already_seen
+                    # We see a fully specified form: replace the ambiguous one
+                    if ambig_name != print_name:
+                        names.remove(ambig_name)
+                        names.add(print_name)
+                        already_seen = self.static[ambig_name]
+                        del self.static[ambig_name]
+                        self.static[print_name] = already_seen
+                        return already_seen
+                    else:
+                        return self.static[ambig_name]
+                # Only fully qualified names. Our ambig is a valid reference, if
+                # there is only one.
                 else:
-                    return []
-
-    def __get_disambig(self, print_name):
-        """
-        Returns the machine by its ambiguous name (i.e. the name before id_sep).
-        Throws an exception if the word is ambiguous.
-        """
-        ambig_name = print_name.split(id_sep)[0]
-        # Full name was passed with id
-        if ambig_name != print_name:
-            return self.static.get(print_name, [])
-        else:
-            static_keys = self.static_disambig.get(ambig_name, [])
-#            print "YYY", print_name, len(static_keys), static_keys
-            if len(static_keys) == 1:
-                for static_key in static_keys:      # why no peek()?
-                    return self.static[static_key]
-            elif len(static_keys) == 0:
-                return []
-            else:
-                raise ValueError('{0} is ambiguous'.format(print_name))
+#                    print "else"
+#                    print ambig_name, print_name, len(names), names
+                    if ambig_name == print_name and len(names) == 1:
+                        for name in names:      # why no peek()?
+                            return self.static[name]
+                    else:
+#                        print "returning empty-handed"
+                        return []
 
     def finalize_static(self):
         """
