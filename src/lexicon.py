@@ -7,6 +7,7 @@ from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from pymachine.src.construction import Construction, AVMConstruction
 from pymachine.src.constants import id_sep, deep_pre
+import sys
 
 class Lexicon:
     """THE machine repository."""
@@ -71,10 +72,16 @@ class Lexicon:
 #                for a, u in self.static_disambig.iteritems():
 #                    print a, u
 #                print
-#            print "WHAT\n", what.to_debug_str() + "\n"
+            if what.printname().split('/')[0] == 'good':
+                print "WHAT\n", what.to_debug_str() + "\n"
             # Does this machine appear in the static tree?
             #whats_already_seen = self.static.get(what.printname(), [])
             whats_already_seen = self.__get_disambig_incomplete(what.printname())
+            if what.printname().split('/')[0] == 'good':
+                print "already seen:"
+                for m in whats_already_seen:
+                    print m.to_debug_str(max_depth=1)
+
             # Simply adding the new machine/definition
             if len(whats_already_seen) == 0:
                 self.static[what.printname()] = [what]
@@ -83,6 +90,9 @@ class Lexicon:
             else:
                 # Updating canonical with the definition
                 canonical = whats_already_seen[0]
+                if what.printname().split('/')[0] == 'good':
+                    print "canonical before"
+                    print canonical.to_debug_str()
                 canonical.printname_ = what.printname()
                 canonical.partitions = what.partitions
                 for part_i, part in enumerate(canonical.partitions):
@@ -92,7 +102,13 @@ class Lexicon:
                         child.add_parent_link(canonical, part_i)
                 canonical.control = what.control
                 canonical.parents.union(what.parents)  # Do we even need this?
-                self.__recursive_replace(canonical, what, canonical)
+                if what.printname().split('/')[0] == 'good':
+                    print "canonical after"
+                    print canonical.to_debug_str()
+
+                print
+                print
+                self.__recursive_replace(canonical, what, canonical, always=True)
 
             self.__add_to_disambig(what.printname())
 
@@ -132,6 +148,99 @@ class Lexicon:
         elif isinstance(what, Iterable):
             for m in what:
                 self.add_static(m)
+
+    # TODO: dog canonical == dog[faithfule]!
+    def __replacement_map(self, uniques):
+        """
+        Creates the replacement map for use in add_static(). The mapping is
+        as follows:
+        - machines that have a canonical form are replaced with it
+        """
+        pass
+
+    def __add_static_recursive(self, curr_from, replacement=None):
+        if replacement == None:
+            replacement = {}
+        #print "Processing word ", curr_from
+        sys.stdout.flush()
+
+        if curr_from not in replacement:
+            #print "Not in replacement"
+            # Does this machine appear in the static tree?
+            from_already_seen = self.__get_disambig_incomplete(curr_from.printname())
+            # If not: simply adding the new machine/definition...
+            if len(from_already_seen) == 0:
+                #print "from already seen = 0"
+                # This is the definition word, or no children: accept as
+                # canonical / placeholder
+                if len(curr_from.children()) == 0 or len(replacement) == 0:
+                    #print "adding as canoncical"
+                    from_already_seen = [curr_from]
+                # Otherwise add a placeholder + itself to static
+                else:
+                    #print "adding as placeholder"
+                    from_already_seen = [Machine(curr_from.printname()), curr_from]
+
+                self.static[curr_from.printname()] = from_already_seen
+                self.__add_to_disambig(curr_from.printname())
+                replacement[curr_from] = curr_from
+                    
+            else:
+                #print "in static"
+                # Definitions: the word is the canonical one, regardless of
+                # the number of children
+                if len(replacement) == 0:
+                    #print "definition"
+                    canonical = from_already_seen[0]
+                    canonical.printname_ = curr_from.printname()
+                    canonical.control = curr_from.control
+                    replacement[curr_from] = canonical
+                # Handling non-definition words
+                else:
+                    #print "not definition"
+                    canonical = from_already_seen[0]
+                    # No children: replace with the canonical
+                    if len(curr_from.children()) == 0:
+                        #print "no children"
+                        replacement[curr_from] = canonical
+                    # Otherwise: add the new machine to static, and keep it
+                    else:
+                        #print "children"
+                        replacement[curr_from] = curr_from
+                        from_already_seen.append(curr_from)
+
+            curr_to = replacement[curr_from]
+            from_partitions = [[m for m in p] for p in curr_from.partitions]
+            for part_i, part in enumerate(from_partitions):
+                for child in part:
+            #        print "found child", child
+                    # Remove to delete any parent links
+            #        print "part before", part, curr_from.partitions[part_i]
+                    curr_from.remove(child, part_i)
+            #        print "part after", part, curr_from.partitions[part_i]
+                    curr_to.append(self.__add_static_recursive(child, replacement),
+                                   part_i)
+
+        return replacement[curr_from]
+
+    def add_static2(self, what):
+        """
+        adds machines to static collection
+        typically called once to add whole background knowledge
+        which is the input of the definition parser
+
+        @note We assume that a machine is added to the static graph only once.
+        """
+        """
+        Add lexical definition to the static collection 
+        while keeping prior links (parent links).
+        """
+        if isinstance(what, Machine):
+            self.__add_static_recursive(what)
+        # Add to graph
+        elif isinstance(what, Iterable):
+            for m in what:
+                self.add_static2(m)
 
     def __add_to_disambig(self, print_name):
         """Adds @p print_name to the static_disambig."""
@@ -212,18 +321,29 @@ class Lexicon:
         self.static_disambig = dict(self.static_disambig)
         # TODO: remove the id from the print name of unambiguous machines
 
-    def __recursive_replace(self, root, from_m, to_m, visited=None):
+    def __recursive_replace(self, root, from_m, to_m, always=False, visited=None):
         """
         Replaces all instances of @p from_m with @p to_m in the tree under
         @p root. @p to_m inherits all properties (content of partitions, etc.)
         of @p from_m. This method cannot replace the root of the tree.
 
+        @param always if @p False (the default), only replaces unmodified
+                      machines; i.e. machines with empty partitions. @p True
+                      when dealing with the definiendum.
         @param visited the set of already visited roots.
         """
         if visited is None:
             visited = set()
         if root in visited:
             return
+
+        if to_m.printname().split('/')[0] == 'good':
+            print "root"
+            print root.to_debug_str(max_depth=1)
+            print "visited"
+            for m in visited:
+                print m.to_debug_str(max_depth=1)
+
 
         # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
         visited.add(root)
@@ -239,6 +359,25 @@ class Lexicon:
                         #root.append(m, to_m, part_i)
                         to_m.parents |= m.parents
                         m.del_parent_link(root, part_i)
+                    elif always and to_m.printname().split('/')[0] == 'good':
+                        print "HERE", to_m
+                        print "M"
+                        print m.to_debug_str()
+                        part[m_i] = to_m
+                        to_m.parents |= m.parents
+                        print "DELETING parent link", root, part_i
+                        m.del_parent_link(root, part_i)
+                        for p_i, p in enumerate(m.partitions):
+                            for child in p:
+                                print "CHILD"
+                                print child.to_debug_str()
+                                sys.stdout.flush()
+                                to_m.append(child, p_i)
+                                # Keeping parent links
+                                print "DELETE child parent", m, p_i
+                                sys.stdout.flush()
+                                child.del_parent_link(m, p_i)
+                                child.add_parent_link(to_m, p_i)
                     else:
                         # No replacement if from_m is modified
                         # TODO: w = 0 link from m to to_m
@@ -247,7 +386,7 @@ class Lexicon:
                 if num_children > 0:
                     to_visit.add(m)
         for m in to_visit:
-            self.__recursive_replace(m, from_m, to_m, visited)
+            self.__recursive_replace(m, from_m, to_m, always, visited)
 
     def add_construction(self, what):
         """
