@@ -165,50 +165,60 @@ class Lexicon:
         sys.stdout.flush()
 
         if curr_from not in replacement:
-            #print "Not in replacement"
-            # Does this machine appear in the static tree?
-            from_already_seen = self.__get_disambig_incomplete(curr_from.printname())
-            # If not: simply adding the new machine/definition...
-            if len(from_already_seen) == 0:
-                #print "from already seen = 0"
-                # This is the definition word, or no children: accept as
-                # canonical / placeholder
-                if len(curr_from.children()) == 0 or len(replacement) == 0:
-                    #print "adding as canoncical"
-                    from_already_seen = [curr_from]
-                # Otherwise add a placeholder + itself to static
-                else:
-                    #print "adding as placeholder"
-                    from_already_seen = [Machine(curr_from.printname()), curr_from]
-
-                self.static[curr_from.printname()] = from_already_seen
-                self.__add_to_disambig(curr_from.printname())
+            # Deep cases are not canonized
+            if curr_from.deep_case():
                 replacement[curr_from] = curr_from
-                    
             else:
-                #print "in static"
-                # Definitions: the word is the canonical one, regardless of
-                # the number of children
-                if len(replacement) == 0:
-                    #print "definition"
-                    canonical = from_already_seen[0]
-                    canonical.printname_ = curr_from.printname()
-                    canonical.control = curr_from.control
-                    replacement[curr_from] = canonical
-                # Handling non-definition words
-                else:
-                    #print "not definition"
-                    canonical = from_already_seen[0]
-                    # No children: replace with the canonical
-                    if len(curr_from.children()) == 0:
-                        #print "no children"
-                        replacement[curr_from] = canonical
-                    # Otherwise: add the new machine to static, and keep it
+                if curr_from.printname().isupper():
+                    curr_from.printname_ = curr_from.printname().lower()
+                #print "Not in replacement"
+                # Does this machine appear in the static tree?
+                from_already_seen = self.__get_disambig(curr_from.printname())
+                print "from already seen", curr_from.printname(), from_already_seen
+                # If not: simply adding the new machine/definition...
+                if len(from_already_seen) == 0:
+                    #print "from already seen = 0"
+                    # This is the definition word, or no children: accept as
+                    # canonical / placeholder
+                    if len(curr_from.children()) == 0 or len(replacement) == 0:
+                        #print "adding as canoncical"
+                        from_already_seen = [curr_from]
+                    # Otherwise add a placeholder + itself to static
                     else:
-                        #print "children"
-                        replacement[curr_from] = curr_from
-                        from_already_seen.append(curr_from)
+                        #print "adding as placeholder"
+                        from_already_seen = [Machine(curr_from.printname()), curr_from]
 
+                    self.static[curr_from.printname()] = from_already_seen
+                    self.__add_to_disambig(curr_from.printname())
+                    replacement[curr_from] = curr_from
+
+#                    print self.static, self.static_disambig
+
+                else:
+                    #print "in static"
+                    # Definitions: the word is the canonical one, regardless of
+                    # the number of children
+                    if len(replacement) == 0:
+                        #print "definition"
+                        canonical = from_already_seen[0]
+                        canonical.printname_ = curr_from.printname()
+                        canonical.control = curr_from.control
+                        replacement[curr_from] = canonical
+                    # Handling non-definition words
+                    else:
+                        #print "not definition"
+                        canonical = from_already_seen[0]
+                        # No children: replace with the canonical
+                        if len(curr_from.children()) == 0:
+                            #print "no children"
+                            replacement[curr_from] = canonical
+                        # Otherwise: add the new machine to static, and keep it
+                        else:
+                            #print "children"
+                            replacement[curr_from] = curr_from
+                            from_already_seen.append(curr_from)
+
+            # Copying the children...
             curr_to = replacement[curr_from]
             from_partitions = [[m for m in p] for p in curr_from.partitions]
             for part_i, part in enumerate(from_partitions):
