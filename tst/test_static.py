@@ -25,10 +25,11 @@ def test_static(argv):
     l.finalize_static()
     print "\n\n===========\n\n"
 
+    cano_machs = set([ machs_with_name[0] for machs_with_name in l.static.itervalues() ])
     for pn, machines in l.static.iteritems():
         print pn
         for m in machines:
-            print m.to_debug_str()
+            print m.to_debug_str(max_depth=42,parents_to_display=7,stop=cano_machs)
         print
 
 if __name__ == "__main__":
