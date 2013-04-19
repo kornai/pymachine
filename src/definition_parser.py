@@ -283,7 +283,7 @@ class DefinitionParser(object):
                 unified = __get_unified(machines_to_unify)
             __replace(machine, unified, is_other)
 
-    def __parse_expr(self, expr, parent, root):
+    def __parse_expr(self, expr, parent, root, loop_to_defendum=True):
         """
         creates machines from a parse node and its children
         there should be one handler for every rule
@@ -307,15 +307,16 @@ class DefinitionParser(object):
             # E -> UE | BE, A -> UE
             if (is_tree(expr[0])):
                 logging.debug("Parsing {0} as a tree.".format(expr[0]))
-                return self.__parse_expr(expr[0], parent, root)
+                return self.__parse_expr(expr[0], parent, root, loop_to_defendum)
 
         if (len(expr) == 2):
             # BE -> A B
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = self.create_machine(expr[1], 2)
-                m.append_all(self.__parse_expr(expr[0], m, root), 0)
-                m.append(root, 1)
+                m.append_all(self.__parse_expr(expr[0], m, root, loop_to_defendum), 0)
+                if loop_to_defendum:
+                    m.append(root, 1)
                 return [m]
 
             # BE -> B A
@@ -323,8 +324,9 @@ class DefinitionParser(object):
                     is_tree(expr[1])):
                 m = self.create_machine(expr[0], 2)
                 logging.debug(expr)
-                m.append_all(self.__parse_expr(expr[1], m, root), 1)
-                m.append(root, 0)
+                m.append_all(self.__parse_expr(expr[1], m, root, loop_to_defendum), 1)
+                if loop_to_defendum:
+                    m.append(root, 0)
                 return [m]
 
             # BE -> 'B
@@ -370,8 +372,8 @@ class DefinitionParser(object):
                     is_tree(expr[2])):
                 m = self.create_machine(expr[1], 2)
                 logging.debug(expr[1])
-                m.append_all(self.__parse_expr(expr[0], m, root), 0)
-                m.append_all(self.__parse_expr(expr[2], m, root), 1)
+                m.append_all(self.__parse_expr(expr[0], m, root, loop_to_defendum), 0)
+                m.append_all(self.__parse_expr(expr[2], m, root, loop_to_defendum), 1)
                 return [m]
 
             # A -> [ D ]
@@ -380,13 +382,13 @@ class DefinitionParser(object):
                     expr[2] == "]"):
                 logging.debug("Parsing expr {0} as an embedded definition".format(
                     expr))
-                res =  list(self.__parse_definition(expr[1], parent, root))
+                res =  list(self.__parse_definition(expr[1], parent, root, loop_to_defendum))
                 return res
 
             # E -> < E >, U -> < U >
             if expr[0] == '<' and expr[2] == '>':
                 logging.debug('E -> < E >' + str(expr[1]))
-                return list(self.__parse_expr(expr[1], parent, root))
+                return list(self.__parse_expr(expr[1], parent, root, loop_to_defendum))
         
         if (len(expr) == 4):
             # UE -> U ( U )
@@ -398,7 +400,7 @@ class DefinitionParser(object):
                 if is_unary(expr[2]):
                     m = self.create_machine(expr[2], 1)
                 else:
-                    m = self.__parse_expr(expr[2], parent, root)[0]
+                    m = self.__parse_expr(expr[2], parent, root, loop_to_defendum)[0]
                     logging.warning("0th partition of binary machines is not implemented, "+str(expr))
                 m.append(self.create_machine(expr[0], 1), 0)
                 return [m]
@@ -409,7 +411,7 @@ class DefinitionParser(object):
                     is_tree(expr[2]) and
                     expr[3] == "]"):
                 m = self.create_machine(expr[0], 1)
-                for parsed_expr in self.__parse_definition(expr[2], m, root):
+                for parsed_expr in self.__parse_definition(expr[2], m, root, loop_to_defendum):
                     m.append(parsed_expr, 0)
                 return [m]
 
@@ -418,7 +420,7 @@ class DefinitionParser(object):
             #        expr[1] == "(" and
             #        is_tree(expr[2]) and
             #        expr[3] == ")"):
-            #    ms = self.__parse_expr(expr[2], parent, root)
+            #    ms = self.__parse_expr(expr[2], parent, root, loop_to_defendum)
             #    # if BE was an expression with an apostrophe, then
             #    # return of __parse_expr() is None
             #    if len(ms) != 0:
@@ -439,8 +441,8 @@ class DefinitionParser(object):
                     is_tree(expr[4]) and
                     expr[5] == "]"):
                 m = self.create_machine(expr[0], 2)
-                m.append_all(self.__parse_expr(expr[2], m, root), 0)
-                m.append_all(self.__parse_expr(expr[4], m, root), 1)
+                m.append_all(self.__parse_expr(expr[2], m, root, loop_to_defendum), 0)
+                m.append_all(self.__parse_expr(expr[4], m, root, loop_to_defendum), 1)
                 return [m]
 
         pe = ParserException("Unknown expression in definition: "+str(expr))
@@ -448,11 +450,11 @@ class DefinitionParser(object):
         logging.debug(expr)
         raise pe
 
-    def __parse_definition(self, definition, parent, root):
+    def __parse_definition(self, definition, parent, root, loop_to_defendum=True):
         for d in definition:
-            yield self.__parse_expr(d, parent, root)[0]
+            yield self.__parse_expr(d, parent, root, loop_to_defendum)[0]
     
-    def parse_into_machines(self, s, printname_index=0, add_indices=False):
+    def parse_into_machines(self, s, printname_index=0, add_indices=False, loop_to_defendum=True):
         parsed = self.parse(s)
         
         machine = self.create_machine(parsed[1][printname_index].lower(), 1)
@@ -461,13 +463,13 @@ class DefinitionParser(object):
             machine.printname_ = machine.printname() + id_sep + parsed[0]
 
         if len(parsed) > 2:
-            for parsed_expr in self.__parse_definition(parsed[2], machine, machine):
+            for parsed_expr in self.__parse_definition(parsed[2], machine, machine, loop_to_defendum):
                 machine.append(parsed_expr, 0)
 
         self.unify(machine)
         return machine
 
-def read(f, plur_filn, printname_index=0, add_indices=False):
+def read(f, plur_filn, printname_index=0, add_indices=False, loop_to_defendum=True):
     d = {}
     plur_dict = read_plur(open(plur_filn))
     dp = DefinitionParser(plur_dict)
@@ -479,7 +481,7 @@ def read(f, plur_filn, printname_index=0, add_indices=False):
         if l.startswith("%"):
             continue
         try:
-            m = dp.parse_into_machines(l, printname_index, add_indices)
+            m = dp.parse_into_machines(l, printname_index, add_indices, loop_to_defendum)
             if m.partitions[0] == []:
                 logging.debug('dropping empty definition of '+m.printname())
                 continue
