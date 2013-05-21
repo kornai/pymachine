@@ -1,7 +1,7 @@
 """Attribute-value matrix."""
 
 from matcher import Matcher
-from machine import Machine
+from pymachine.src.machine import Machine
 from pyparsing import *
 import logging
 

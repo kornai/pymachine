@@ -1,7 +1,8 @@
 import sys
+import logging
 
 import matcher
-from machine import Machine
+from pymachine.src.machine import Machine
 
 def parse_rule(rule):
     right = rule.split('->')[1].strip()
@@ -24,12 +25,12 @@ def parse_chunk(chunk):
             for length in xrange(len(chunk), 0, -1):
                 for begin, end in _subsequence_index(chunk, length):
                     part = chunk[begin:end]
-                    #print begin, end, part
-                    #for m in part:
-                        #print m.control.kr
+#                    print begin, end, part
+#                    for m in part:
+#                        print m.control.kr
                     for c in np_rules:
                         if c.check(part):
-                            print c.name
+                            logging.info("applied rule " + c.name)
                             c_res = c.act(part)
                             if c_res is not None:
                                 change = True
@@ -66,7 +67,7 @@ def test_on_something():
             res = parse_chunk(chunk)
             print res
             for m in res:
-                print Machine.to_debug_str(m)
+                print m.to_debug_str().encode('utf-8')
             print 
 
 def main():
@@ -79,6 +80,7 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     test_on_something()
     #main()
 
