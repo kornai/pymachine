@@ -213,6 +213,32 @@ class Lexicon:
         self.static_disambig = dict(self.static_disambig)
         # TODO: remove the id from the print name of unambiguous machines
 
+    def extract_definition_graph(self):
+        """
+        Extracts the definition graph from the static graph. The former is a
+        "flattened" version of the latter: all canonical words in the definition
+        are connected to the definiendum, as well as the canonical version of
+        non-canonical terms. The structure of the definition is not preserved.
+        """
+        def_graph = {}
+        for name in self.static.keys():
+            def_graph[name] = Machine(name)
+        for name, static_machine in self.static.iteritems():
+            def_machine = def_graph[name]
+            self.__build_definition_graph(def_machine, static_machine,
+                    def_graph, set([def_machine]))
+
+        return def_graph
+
+    def __build_definition_graph(self, def_m, static_m, def_graph, stop):
+        for child in static_m.children():
+#            is_canonical = self.static[child.printname()] ==
+            def_child = def_graph[child.printname()]
+            if def_child not in stop:
+                def_m.append(def_child)
+                stop.add(def_child)
+
+
     def add_construction(self, what):
         """
         Adds construction(s) to the lexicon.
