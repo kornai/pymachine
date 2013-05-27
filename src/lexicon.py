@@ -61,12 +61,12 @@ class Lexicon:
             for m in what:
                 self.add_static(m)
 
-    # TODO: dog canonical == dog[faithfule]!
+    # TODO: dog canonical == dog[faithful]!
     def __add_static_recursive(self, curr_from, replacement=None):
         if replacement == None:
             replacement = {}
         #print "Processing word ", curr_from
-        sys.stdout.flush()
+        #sys.stdout.flush()
 
         if curr_from not in replacement:
             # Deep cases are not canonized
@@ -212,73 +212,6 @@ class Lexicon:
         # defaultdict is not safe, so convert it to a regular dict
         self.static_disambig = dict(self.static_disambig)
         # TODO: remove the id from the print name of unambiguous machines
-
-    def __recursive_replace(self, root, from_m, to_m, always=False, visited=None):
-        """
-        Replaces all instances of @p from_m with @p to_m in the tree under
-        @p root. @p to_m inherits all properties (content of partitions, etc.)
-        of @p from_m. This method cannot replace the root of the tree.
-
-        @param always if @p False (the default), only replaces unmodified
-                      machines; i.e. machines with empty partitions. @p True
-                      when dealing with the definiendum.
-        @param visited the set of already visited roots.
-        """
-        if visited is None:
-            visited = set()
-        if root in visited:
-            return
-
-        if to_m.printname().split('/')[0] == 'good':
-            print "root"
-            print root.to_debug_str(max_depth=1)
-            print "visited"
-            for m in visited:
-                print m.to_debug_str(max_depth=1)
-
-
-        # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
-        visited.add(root)
-        to_visit = set()
-        for part_i, part in enumerate(root.partitions):
-            for m_i, m in enumerate(part):
-                num_children = len(m.children())
-                if m.printname() == from_m.printname() and m is not to_m:
-                    if num_children == 0:
-                        # TODO Machine.replace()?
-                        part[m_i] = to_m
-                        #root.remove(m, part_i)
-                        #root.append(m, to_m, part_i)
-                        to_m.parents |= m.parents
-                        m.del_parent_link(root, part_i)
-                    elif always and to_m.printname().split('/')[0] == 'good':
-                        print "HERE", to_m
-                        print "M"
-                        print m.to_debug_str()
-                        part[m_i] = to_m
-                        to_m.parents |= m.parents
-                        print "DELETING parent link", root, part_i
-                        m.del_parent_link(root, part_i)
-                        for p_i, p in enumerate(m.partitions):
-                            for child in p:
-                                print "CHILD"
-                                print child.to_debug_str()
-                                sys.stdout.flush()
-                                to_m.append(child, p_i)
-                                # Keeping parent links
-                                print "DELETE child parent", m, p_i
-                                sys.stdout.flush()
-                                child.del_parent_link(m, p_i)
-                                child.add_parent_link(to_m, p_i)
-                    else:
-                        # No replacement if from_m is modified
-                        # TODO: w = 0 link from m to to_m
-                        # TODO: test direct recursion
-                        m.append(to_m, 0)
-                if num_children > 0:
-                    to_visit.add(m)
-        for m in to_visit:
-            self.__recursive_replace(m, from_m, to_m, always, visited)
 
     def add_construction(self, what):
         """
