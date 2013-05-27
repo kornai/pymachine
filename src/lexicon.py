@@ -255,18 +255,15 @@ class Lexicon:
         for name in self.static.keys():
             def_graph[name] = Machine(name)
         for name, static_machines in self.static.iteritems():
-            print "DEF", name
             static_machine = static_machines[0]
             if not static_machine.fancy():
                 def_machine = def_graph[name]
                 self.__build_definition_graph(def_machine, def_machine,
                         static_machines[0], def_graph, set([]), canonicals)
-                print def_machine.to_debug_str()
         return def_graph
 
-    # TODO: root_def_m -> def_m
+    # TODO: root_def_m -> def_m (if structure is really not needed)
     def __build_definition_graph(self, root_def_m, def_m, static_m, def_graph, stop, canonicals):
-        print "__build", def_m, static_m, static_m.children()
         for static_child in static_m.children():
             if not static_child.fancy():
                 cname = self.get_static_machine(static_child.printname())[0].printname()
@@ -275,13 +272,10 @@ class Lexicon:
                     root_def_m.append(def_child)
             else:
                 # TODO: do we need the deep cases?
-                cname = static_child.printname()
                 def_child = Machine(static_child.printname())
             if static_child.fancy() or static_child not in canonicals:
-                # TODO: handle IS_A, why doesn't it work? 343 furniture
-                print static_child, "not canonical"
-                if cname not in stop:
-                    stop.add(cname)
+                if static_child not in stop:
+                    stop.add(static_child)
                     self.__build_definition_graph(root_def_m,
                             def_child, static_child, def_graph, stop, canonicals)
 
