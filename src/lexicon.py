@@ -153,7 +153,7 @@ class Lexicon:
         word is referred to with its ambiguous name in the definition, we don't
         know the id yet, so we have to insert the ambiguous name to static as
         a placeholder. Once we see the definition of the word in question,
-        however, we can replace ambiguous name with the fully qualified one.
+        however, we can replace the ambiguous name with the fully qualified one.
         """
         if print_name in self.static:
 #            print "XXX: printname", print_name, "in static"
@@ -197,6 +197,36 @@ class Lexicon:
 #                        print "returning empty-handed"
                         return []
 
+    def get_static_machine(self, print_name):
+        # TODO: clean this up
+        """
+        Returns the machines (canonical & not) by their unique or ambiguous
+        names.
+        """
+        if print_name in self.static:
+#            print "XXX: printname", print_name, "in static"
+            # in static: everything's OK, just return
+            return self.static[print_name]
+        else:
+            ambig_name = print_name.split(id_sep)[0]
+            names = self.static_disambig.get(ambig_name, set())
+#            print "XXX: len(names:", ambig_name, ") ==", len(names), names
+            if len(names) == 0:
+#                print "len names == 0"
+                # Not in static_disambig: we haven't heard of this word at all
+                return []
+            else:
+                # If we only know the ambiguous name, there must be at most
+                # exactly one fully qualified name that matches.
+#                print "else"
+#                print ambig_name, print_name, len(names), names
+                if ambig_name == print_name and len(names) == 1:
+                    for name in names:      # why no peek()?
+                        return self.static[name]
+                else:
+#                        print "returning empty-handed"
+                    return []
+
     def finalize_static(self):
         """
         Must be called after all words have been added to the static graph.
@@ -224,21 +254,36 @@ class Lexicon:
         canonicals = set(l[0] for l in self.static.values())
         for name in self.static.keys():
             def_graph[name] = Machine(name)
-        for name, static_machine in self.static.iteritems():
-            def_machine = def_graph[name]
-            self.__build_definition_graph(def_machine, static_machine,
-                    def_graph, set([def_machine]), canonicals)
+        for name, static_machines in self.static.iteritems():
+            print "DEF", name
+            static_machine = static_machines[0]
+            if not static_machine.fancy():
+                def_machine = def_graph[name]
+                self.__build_definition_graph(def_machine, def_machine,
+                        static_machines[0], def_graph, set([]), canonicals)
+                print def_machine.to_debug_str()
         return def_graph
 
-    def __build_definition_graph(self, def_m, static_m, def_graph, canonicals):
+    # TODO: root_def_m -> def_m
+    def __build_definition_graph(self, root_def_m, def_m, static_m, def_graph, stop, canonicals):
+        print "__build", def_m, static_m, static_m.children()
         for static_child in static_m.children():
-            def_child = def_graph[static_child.printname()]
-            # TODO: check if the line below is needed
-            # if def_child not in def_m.children():
-            def_m.append(def_child)
-            if static_child not in canonicals:
-                self.__build_definition_graph(
-                        def_child, static_child, def_graph, canonicals)
+            if not static_child.fancy():
+                cname = self.get_static_machine(static_child.printname())[0].printname()
+                def_child = def_graph[cname]
+                if def_child != root_def_m:
+                    root_def_m.append(def_child)
+            else:
+                # TODO: do we need the deep cases?
+                cname = static_child.printname()
+                def_child = Machine(static_child.printname())
+            if static_child.fancy() or static_child not in canonicals:
+                # TODO: handle IS_A, why doesn't it work? 343 furniture
+                print static_child, "not canonical"
+                if cname not in stop:
+                    stop.add(cname)
+                    self.__build_definition_graph(root_def_m,
+                            def_child, static_child, def_graph, stop, canonicals)
 
     def add_construction(self, what):
         """
