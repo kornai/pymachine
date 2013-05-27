@@ -221,23 +221,24 @@ class Lexicon:
         non-canonical terms. The structure of the definition is not preserved.
         """
         def_graph = {}
+        canonicals = set(l[0] for l in self.static.values())
         for name in self.static.keys():
             def_graph[name] = Machine(name)
         for name, static_machine in self.static.iteritems():
             def_machine = def_graph[name]
             self.__build_definition_graph(def_machine, static_machine,
-                    def_graph, set([def_machine]))
-
+                    def_graph, set([def_machine]), canonicals)
         return def_graph
 
-    def __build_definition_graph(self, def_m, static_m, def_graph, stop):
-        for child in static_m.children():
-#            is_canonical = self.static[child.printname()] ==
-            def_child = def_graph[child.printname()]
-            if def_child not in stop:
-                def_m.append(def_child)
-                stop.add(def_child)
-
+    def __build_definition_graph(self, def_m, static_m, def_graph, canonicals):
+        for static_child in static_m.children():
+            def_child = def_graph[static_child.printname()]
+            # TODO: check if the line below is needed
+            # if def_child not in def_m.children():
+            def_m.append(def_child)
+            if static_child not in canonicals:
+                self.__build_definition_graph(
+                        def_child, static_child, def_graph, canonicals)
 
     def add_construction(self, what):
         """
