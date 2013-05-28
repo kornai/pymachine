@@ -243,41 +243,56 @@ class Lexicon:
         self.static_disambig = dict(self.static_disambig)
         # TODO: remove the id from the print name of unambiguous machines
 
-    def extract_definition_graph(self):
+    def extract_definition_graph(self, deep_cases=False):
         """
         Extracts the definition graph from the static graph. The former is a
         "flattened" version of the latter: all canonical words in the definition
         are connected to the definiendum, as well as the canonical version of
         non-canonical terms. The structure of the definition is not preserved.
+
+        @param deep_cases if @c False (the default), deep cases in the
+                          definitions do not appear on the output graph.
         """
         def_graph = {}
         canonicals = set(l[0] for l in self.static.values())
         for name in self.static.keys():
-            def_graph[name] = Machine(name)
+            def_graph[name] = [Machine(name)]
         for name, static_machines in self.static.iteritems():
             static_machine = static_machines[0]
             if not static_machine.fancy():
-                def_machine = def_graph[name]
-                self.__build_definition_graph(def_machine, def_machine,
-                        static_machines[0], def_graph, set([]), canonicals)
+                def_machine = def_graph[name][0]
+                self.__build_definition_graph(def_machine, static_machine,
+                                              def_graph, set([]), canonicals,
+                                              deep_cases)
         return def_graph
 
-    # TODO: root_def_m -> def_m (if structure is really not needed)
-    def __build_definition_graph(self, root_def_m, def_m, static_m, def_graph, stop, canonicals):
+    def __build_definition_graph(self, root_def_m, static_m, def_graph, stop,
+                                       canonicals, deep_cases):
+        """
+        Walks through the machines reachable from @p static_m, and adds a
+        reference to the corresponding canonical machines to the definition
+        graph node (@p root_def_m).
+        """
         for static_child in static_m.children():
             if not static_child.fancy():
                 cname = self.get_static_machine(static_child.printname())[0].printname()
-                def_child = def_graph[cname]
+                def_child = def_graph[cname][0]
                 if def_child != root_def_m:
                     root_def_m.append(def_child)
-            else:
-                # TODO: do we need the deep cases?
-                def_child = Machine(static_child.printname())
+            elif deep_cases and static_child.deep_case() and \
+                 static_child.printname() not in stop:
+                root_def_m.append(Machine(static_child.printname()))
             if static_child.fancy() or static_child not in canonicals:
-                if static_child not in stop:
-                    stop.add(static_child)
-                    self.__build_definition_graph(root_def_m,
-                            def_child, static_child, def_graph, stop, canonicals)
+                # deep cases are added by their printname to stop, because as
+                # of yet, hash is id-based for machines
+                if static_child not in stop and static_child.printname() not in stop:
+                    if static_child.fancy():
+                        stop.add(static_child.printname())
+                    else:
+                        stop.add(static_child)
+                    self.__build_definition_graph(root_def_m, static_child,
+                                                  def_graph, stop, canonicals,
+                                                  deep_cases)
 
     def add_construction(self, what):
         """

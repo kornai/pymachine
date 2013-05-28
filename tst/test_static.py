@@ -32,6 +32,16 @@ def test_static(argv):
             print m.to_debug_str(max_depth=42,parents_to_display=7,stop=cano_machs)
         print
 
+    print "\n\n===========\n\n"
+
+    def_graph = l.extract_definition_graph(deep_cases=True)
+    for pn, machines in def_graph.iteritems():
+        print pn
+        for m in machines:
+            print m.to_debug_str(max_depth=1,parents_to_display=7,stop=cano_machs)
+        print
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING, format=
             "%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
