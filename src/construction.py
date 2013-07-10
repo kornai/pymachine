@@ -5,10 +5,9 @@ from itertools import permutations
 from copy import deepcopy as copy
 
 from fst import FSA, FST
-from matcher import PrintnameMatcher
 from matcher import KRPosMatcher
 from machine import Machine
-from control import PosControl, ElviraPluginControl, KRPosControl
+from control import PosControl, KRPosControl
 from constants import deep_cases
 from avm import AVM
 from operators import ExpandOperator, FillArgumentOperator
@@ -172,7 +171,8 @@ class VerbConstruction(Construction):
                 increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
                 control.add_transition(self.matchers[arg], 
-                    [FillArgumentOperator(arg, self.working_area)],                                      str(actual_state), str(new_state))
+                    [FillArgumentOperator(arg, self.working_area)], 
+                                       str(actual_state), str(new_state))
 
                 actual_state = new_state
         return control
@@ -197,7 +197,9 @@ class VerbConstruction(Construction):
             return False
         else:
             res = Construction.check(self, seq)
-            logging.debug("Result of check is {0} and working area is:\n{1}".format(res, Machine.to_debug_str(self.working_area[0])))
+            logging.debug("Result of check is {0}".format(res) + 
+                          " and working area is:\n{1}".format(
+                              Machine.to_debug_str(self.working_area[0])))
             return res
 
 class AVMConstruction(Construction):
