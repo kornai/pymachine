@@ -31,10 +31,8 @@ class DefinitionParser(object):
     right_defa = '>'
 
 
-    def_sep = ":"
     clause_sep = ","
     part_sep = ";"
-    comment_sep = "%"
     prime = "'"
     hyphen = "-"
     langspec_pre = "$" # starts langspec deep case
@@ -74,10 +72,8 @@ class DefinitionParser(object):
         self.left_defa_lit = Literal(DefinitionParser.left_defa)
         self.right_defa_lit = Literal(DefinitionParser.right_defa)
 
-        self.def_sep_lit = Literal(DefinitionParser.def_sep)
         self.clause_sep_lit = Literal(DefinitionParser.clause_sep)
         self.part_sep_lit = Literal(DefinitionParser.part_sep)
-        self.comment_sep_lit = Literal(DefinitionParser.comment_sep)
         self.prime_lit = Literal(DefinitionParser.prime)
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
         self.enc_pre_lit = Literal(enc_pre)
@@ -178,10 +174,10 @@ class DefinitionParser(object):
         self.word = Group(self.hu + self.pos + self.en + self.lt + self.pt)
 
         # S -> W : D | W : D % _
-        self.sen = (self.defid + self.word + self.def_sep_lit.suppress() + Optional(self.definition) + Optional(self.comment_sep_lit + self.dontcare).suppress()) + LineEnd()
+        #self.sen = self.definition + LineEnd()
     
     def parse(self, s):
-        return self.sen.parseString(s).asList()
+        return self.definition.parseString(s).asList()
         
     def create_machine(self, name, partitions):
         # we accept lists because of ["=", "ROOT"] or ["!", "ACC"]
@@ -451,19 +447,26 @@ class DefinitionParser(object):
         raise pe
 
     def __parse_definition(self, definition, parent, root, loop_to_defendum=True):
+        logging.debug(str(definition))
         for d in definition:
             yield self.__parse_expr(d, parent, root, loop_to_defendum)[0]
     
-    def parse_into_machines(self, s, printname_index=0, add_indices=False, loop_to_defendum=True):
-        parsed = self.parse(s)
+    def parse_into_machines(self, string, printname_index=0, add_indices=False, loop_to_defendum=True):
+        printname = string.split('\t')[printname_index]
+        try:
+            id_, urob, pos, def_, comment = string.split('\t')[4:]
+        except:
+            raise Exception(string.split('\t')[4:])
+
         
-        machine = self.create_machine(parsed[1][printname_index].lower(), 1)
+        machine = self.create_machine(printname.lower(), 1)
 
         if add_indices:
-            machine.printname_ = machine.printname() + id_sep + parsed[0]
+            machine.printname_ = machine.printname() + id_sep + id_
 
-        if len(parsed) > 2:
-            for parsed_expr in self.__parse_definition(parsed[2], machine, machine, loop_to_defendum):
+        if def_ != '':
+            parsed = self.parse(def_)
+            for parsed_expr in self.__parse_definition(parsed[0], machine, machine, loop_to_defendum):
                 machine.append(parsed_expr, 0)
 
         self.unify(machine)
@@ -474,7 +477,7 @@ def read(f, plur_filn, printname_index=0, add_indices=False, loop_to_defendum=Tr
     plur_dict = read_plur(open(plur_filn))
     dp = DefinitionParser(plur_dict)
     for line in f:
-        l = line.strip()
+        l = line.strip('\n')
         logging.info("Parsing: {0}".format(l))
         if len(l) == 0:
             continue
