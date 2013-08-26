@@ -1,6 +1,9 @@
 import re
 import logging
-from control import PosControl, ConceptControl
+
+from langtools.utils.readkr import kr_to_dictionary as kr_to_dict
+
+from control import ConceptControl
 
 class Matcher(object):
     def __init__(self, string, exact=False):
@@ -26,15 +29,15 @@ class PrintnameMatcher(Matcher):
         str_ = machine.printname()
         return self.input_.search(str_) is not None
 
-class PosControlMatcher(Matcher):
-    def _match(self, machine):
-        if not isinstance(machine.control, PosControl):
-            return False
-        str_ = machine.control.pos
-        logging.debug("matching of {0} in {1} is {2}".format(
-            str_, self.input_.pattern,
-            self.input_.search(str_) is not None))
-        return self.input_.search(str_) is not None
+#class PosControlMatcher(Matcher):
+    #def _match(self, machine):
+        #if not isinstance(machine.control, PosControl):
+            #return False
+        #str_ = machine.control.pos
+        #logging.debug("matching of {0} in {1} is {2}".format(
+            #str_, self.input_.pattern,
+            #self.input_.search(str_) is not None))
+        #return self.input_.search(str_) is not None
 
 class ConceptMatcher(Matcher):
     """Matches concepts (words not in the sentence)."""
@@ -51,17 +54,18 @@ class EnumMatcher(Matcher):
             self.name, u" ".join(self.machine_names)))
 
     def collect_machines(self, lexicon):
-        cm = lexicon.static[self.name]
-        machines_on_type =  set([str(m.base.partitions[1][0])
-            for m in cm.base.partitions[1] if m.printname() == "IS_A"])
+        cm = lexicon.static[self.name][0]
+        machines_on_type =  set([m.partitions[0][0].printname()
+            for m in cm.partitions[0] if m.printname() == "IS_A"])
 
         all_machines = machines_on_type
-        for pn, m in lexicon.static.iteritems():
-            for child in m.base.partitions[1]:
-                if (child.printname() == "IS_A" and
-                    child.base.partitions[2][0] == self.name):
-                    all_machines.add(pn)
-                    break
+        for pn, ms in lexicon.static.iteritems():
+            for m in ms:
+                for child in m.partitions[0]:
+                    if (child.printname() == "IS_A" and
+                        child.partitions[1][0] == self.name):
+                        all_machines.add(pn)
+                        break
         return all_machines
 
     def _match(self, machine):
@@ -126,10 +130,15 @@ class SatisfiedAVMMatcher(Matcher):
             # Not an avm
             return False
 
-class PatternMatcher(Matcher):
+class KRPosMatcher(Matcher):
     """ Matches a rule. """
     def __init__(self, pattern):
-        self.pattern = pattern
+        if isinstance(pattern, str) or isinstance(pattern, unicode):
+            self.pattern = kr_to_dict("stem/" + pattern)
+        elif isinstance(pattern, dict):
+            self.pattern = pattern
+        else:
+            raise Exception("No allowed type for pattern")
 
     def _subset(self, small, large):
         for key in small:
@@ -146,5 +155,6 @@ class PatternMatcher(Matcher):
         return True             
  
     def _match(self, machine):
-        return self._subset(self.pattern, machine.control.kr) 
+        res = self._subset(self.pattern, machine.control.kr)
+        return res
 

@@ -1,12 +1,13 @@
 import logging
 from itertools import chain
-from collections import Iterable
+from collections import Iterable, defaultdict
 import copy
 
-from machine import Machine
-from monoid import Monoid
-from control import ElviraPluginControl, ConceptControl
-from construction import Construction, AVMConstruction
+from pymachine.src.machine import Machine
+from pymachine.src.control import ConceptControl
+from pymachine.src.construction import Construction, AVMConstruction
+from pymachine.src.constants import id_sep
+import sys
 
 class Lexicon:
     """THE machine repository."""
@@ -14,6 +15,8 @@ class Lexicon:
         # static will store only one machine per printname (key),
         # while active can store more
         self.static = {}
+        # e.g. {'in': {'in_2758', 'in_13'}}, where in_XXXs are keys in static
+        self.static_disambig = defaultdict(set)
         # TODO: map: {active_machine : is it expanded?}
         self.active = {}
         # Constructions
@@ -46,14 +49,250 @@ class Lexicon:
                           " type")
 
     def add_static(self, what):
-        """adds machines to static collection
-        typically called once to add whole background knowledge
-        which is the input of the definition parser"""
+        """
+        Add lexical definition to the static collection 
+        while keeping prior links (parent links).
+        @note We assume that a machine is added to the static graph only once.
+        """
         if isinstance(what, Machine):
-            self.static[what.printname()] = what
+            self.__add_static_recursive(what)
+        # Call for each item in an iterable
         elif isinstance(what, Iterable):
             for m in what:
                 self.add_static(m)
+
+    # TODO: dog canonical == dog[faithful]!
+    def __add_static_recursive(self, curr_from, replacement=None):
+        if replacement == None:
+            replacement = {}
+        #print "Processing word ", curr_from
+        #sys.stdout.flush()
+
+        if curr_from not in replacement:
+            # Deep cases are not canonized
+            if curr_from.deep_case():
+                replacement[curr_from] = curr_from
+            else:
+                if curr_from.printname().isupper():
+                    curr_from.printname_ = curr_from.printname().lower()
+                #print "Not in replacement"
+                # Does this machine appear in the static tree?
+                from_already_seen = self.__get_disambig_incomplete(curr_from.printname())
+#                print "from already seen", curr_from.printname(), from_already_seen
+                # If not: simply adding the new machine/definition...
+                if len(from_already_seen) == 0:
+                    #print "from already seen = 0"
+                    # This is the definition word, or no children: accept as
+                    # canonical / placeholder
+                    if len(curr_from.children()) == 0 or len(replacement) == 0:
+                        #print "adding as canoncical"
+                        from_already_seen = [curr_from]
+                    # Otherwise add a placeholder + itself to static
+                    else:
+                        #print "adding as placeholder"
+                        from_already_seen = [Machine(curr_from.printname()), curr_from]
+
+                    self.static[curr_from.printname()] = from_already_seen
+                    self.__add_to_disambig(curr_from.printname())
+                    replacement[curr_from] = curr_from
+
+#                    print self.static, self.static_disambig
+
+                else:
+                    #print "in static"
+                    # Definitions: the word is the canonical one, regardless of
+                    # the number of children
+                    if len(replacement) == 0:
+                        #print "definition"
+                        canonical = from_already_seen[0]
+                        canonical.printname_ = curr_from.printname()
+                        canonical.control = curr_from.control
+                        replacement[curr_from] = canonical
+                    # Handling non-definition words
+                    else:
+                        #print "not definition"
+                        canonical = from_already_seen[0]
+                        # No children: replace with the canonical
+                        if len(curr_from.children()) == 0:
+                            #print "no children"
+                            replacement[curr_from] = canonical
+                        # Otherwise: add the new machine to static, and keep it
+                        else:
+                            #print "children"
+                            replacement[curr_from] = curr_from
+                            from_already_seen.append(curr_from)
+
+            # Copying the children...
+            curr_to = replacement[curr_from]
+            from_partitions = [[m for m in p] for p in curr_from.partitions]
+            for part_i, part in enumerate(from_partitions):
+                for child in part:
+            #        print "found child", child
+                    # Remove to delete any parent links
+            #        print "part before", part, curr_from.partitions[part_i]
+                    curr_from.remove(child, part_i)
+            #        print "part after", part, curr_from.partitions[part_i]
+                    curr_to.append(self.__add_static_recursive(child, replacement),
+                                   part_i)
+
+        return replacement[curr_from]
+
+    def __add_to_disambig(self, print_name):
+        """Adds @p print_name to the static_disambig."""
+        self.static_disambig[print_name.split(id_sep)[0]].add(print_name)
+
+    def __get_disambig_incomplete(self, print_name):
+        """
+        Returns the machine by its unique name. If the name is not in static,
+        but static_disambig contains the ambiguous name, which points to itself,
+        (and only itself,) then we replace the value in the mapping with the
+        unique name.
+
+        The above is needed because it is possible to encounter a word in the
+        definition of another before we get to the word in the lexicon. If our
+        word is referred to with its ambiguous name in the definition, we don't
+        know the id yet, so we have to insert the ambiguous name to static as
+        a placeholder. Once we see the definition of the word in question,
+        however, we can replace the ambiguous name with the fully qualified one.
+        """
+        if print_name in self.static:
+#            print "XXX: printname", print_name, "in static"
+            # in static: everything's OK, just return
+            return self.static[print_name]
+        else:
+            ambig_name = print_name.split(id_sep)[0]
+            names = self.static_disambig.get(ambig_name, set())
+#            print "XXX: len(names:", ambig_name, ") ==", len(names), names
+            if len(names) == 0:
+#                print "len names == 0"
+                # Not in static_disambig: we haven't heard of this word at all
+                return []
+            else:
+                # The ambiguous word is in static_disambig, but is it mapped to
+                # fully qualified names, or is there an ambiguous placeholder?
+                if ambig_name in names:
+#                    print "ambig_name in names"
+                    # Ambiguous name -- we have not yet seen the definition.
+                    assert len(names) == 1
+#                    print "XXX: ambiguous name alert!"
+                    # We see a fully specified form: replace the ambiguous one
+                    if ambig_name != print_name:
+                        names.remove(ambig_name)
+                        names.add(print_name)
+                        already_seen = self.static[ambig_name]
+                        del self.static[ambig_name]
+                        self.static[print_name] = already_seen
+                        return already_seen
+                    else:
+                        return self.static[ambig_name]
+                # Only fully qualified names. Our ambig is a valid reference, if
+                # there is only one.
+                else:
+#                    print "else"
+#                    print ambig_name, print_name, len(names), names
+                    if ambig_name == print_name and len(names) == 1:
+                        for name in names:      # why no peek()?
+                            return self.static[name]
+                    else:
+#                        print "returning empty-handed"
+                        return []
+
+    def get_static_machine(self, print_name):
+        # TODO: clean this up
+        """
+        Returns the machines (canonical & not) by their unique or ambiguous
+        names.
+        """
+        if print_name in self.static:
+#            print "XXX: printname", print_name, "in static"
+            # in static: everything's OK, just return
+            return self.static[print_name]
+        else:
+            ambig_name = print_name.split(id_sep)[0]
+            names = self.static_disambig.get(ambig_name, set())
+#            print "XXX: len(names:", ambig_name, ") ==", len(names), names
+            if len(names) == 0:
+#                print "len names == 0"
+                # Not in static_disambig: we haven't heard of this word at all
+                return []
+            else:
+                # If we only know the ambiguous name, there must be at most
+                # exactly one fully qualified name that matches.
+#                print "else"
+#                print ambig_name, print_name, len(names), names
+                if ambig_name == print_name and len(names) == 1:
+                    for name in names:      # why no peek()?
+                        return self.static[name]
+                else:
+#                        print "returning empty-handed"
+                    return []
+
+    def finalize_static(self):
+        """
+        Must be called after all words have been added to the static graph.
+        Links the modified nodes to the canonical one.
+        """
+        for print_name, nodes in self.static.iteritems():
+            # We don't care about deep cases here
+            if not nodes[0].fancy():
+                for node in nodes[1:]:
+                    # HACK don't insert for binaries
+                    if node.unary():
+                        node.append(nodes[0])
+        # defaultdict is not safe, so convert it to a regular dict
+        self.static_disambig = dict(self.static_disambig)
+        # TODO: remove the id from the print name of unambiguous machines
+
+    def extract_definition_graph(self, deep_cases=False):
+        """
+        Extracts the definition graph from the static graph. The former is a
+        "flattened" version of the latter: all canonical words in the definition
+        are connected to the definiendum, as well as the canonical version of
+        non-canonical terms. The structure of the definition is not preserved.
+
+        @param deep_cases if @c False (the default), deep cases in the
+                          definitions do not appear on the output graph.
+        """
+        def_graph = {}
+        canonicals = set(l[0] for l in self.static.values())
+        for name in self.static.keys():
+            def_graph[name] = [Machine(name)]
+        for name, static_machines in self.static.iteritems():
+            static_machine = static_machines[0]
+            if not static_machine.fancy():
+                def_machine = def_graph[name][0]
+                self.__build_definition_graph(def_machine, static_machine,
+                                              def_graph, set([]), canonicals,
+                                              deep_cases)
+        return def_graph
+
+    def __build_definition_graph(self, root_def_m, static_m, def_graph, stop,
+                                       canonicals, deep_cases):
+        """
+        Walks through the machines reachable from @p static_m, and adds a
+        reference to the corresponding canonical machines to the definition
+        graph node (@p root_def_m).
+        """
+        for static_child in static_m.children():
+            if not static_child.fancy():
+                cname = self.get_static_machine(static_child.printname())[0].printname()
+                def_child = def_graph[cname][0]
+                if def_child != root_def_m:
+                    root_def_m.append(def_child)
+            elif deep_cases and static_child.deep_case() and \
+                 static_child.printname() not in stop:
+                root_def_m.append(Machine(static_child.printname()))
+            if static_child.fancy() or static_child not in canonicals:
+                # deep cases are added by their printname to stop, because as
+                # of yet, hash is id-based for machines
+                if static_child not in stop and static_child.printname() not in stop:
+                    if static_child.fancy():
+                        stop.add(static_child.printname())
+                    else:
+                        stop.add(static_child)
+                    self.__build_definition_graph(root_def_m, static_child,
+                                                  def_graph, stop, canonicals,
+                                                  deep_cases)
 
     def add_construction(self, what):
         """
@@ -113,14 +352,13 @@ class Lexicon:
         machine or a string.
         @param stop the set of machines already unified."""
         if stop is None:
-            logging.debug("unify_recursively:\n"
-                          + Machine.to_debug_str(static_machine))
             stop = set()
 
         if unicode(static_machine) == u'IS_A':
             return None
         # If we have already unified this machine: just return
-        if not isinstance(static_machine, str) and not isinstance(static_machine, unicode):
+        if (not isinstance(static_machine, str) and
+            not isinstance(static_machine, unicode)):
             static_printname = static_machine.printname()
         else:
             static_printname = static_machine
@@ -140,7 +378,8 @@ class Lexicon:
                     self.wake_avm_construction(static_machine)
                     return None
 #                logging.debug('ur activating str')
-                active_machine = Machine(Monoid(static_machine), ConceptControl())
+                active_machine = Machine(static_machine,
+                                                 ConceptControl())
                 self.__add_active_machine(active_machine)
                 return active_machine
         # If it's a machine, we create the corresponding active one
@@ -158,7 +397,7 @@ class Lexicon:
                     self.wake_avm_construction(static_name)
                     return None
 #                logging.debug('ur activating machine')
-                active_machine = Machine(Monoid(static_name))
+                active_machine = Machine(static_name)
                 active_control = copy.deepcopy(static_machine.control)
                 active_machine.set_control(active_control)
                 self.__add_active_machine(active_machine)
@@ -166,12 +405,11 @@ class Lexicon:
             stop.add(static_name)
 
             # Now we have to walk through the tree recursively
-            for i, part in enumerate(static_machine.base.partitions[1:]):
-                part_index = i + 1
+            for i, part in enumerate(static_machine.partitions):
                 for ss_machine in part:
                     as_machine = self.unify_recursively(ss_machine, stop)
                     if as_machine is not None:
-                        active_machine.append(as_machine, part_index)
+                        active_machine.append(as_machine, i)
             return active_machine
         else:
             raise TypeError('static_machine must be a Machine or a str')
@@ -183,7 +421,8 @@ class Lexicon:
         """
         avm_construction = self.avm_constructions.get(avm_name[1:])
         # TODO
-        if avm_construction is not None and avm_construction not in self.constructions:
+        if (avm_construction is not None and
+            avm_construction not in self.constructions):
             self.constructions.append(avm_construction)
 
     def activate(self):
@@ -200,14 +439,15 @@ class Lexicon:
             if printname in self.active:
                 continue
             has_machine = False
-            for machine in chain(*static_machine.base.partitions[1:]):
+            for machine in chain(*static_machine.partitions):
                 has_machine = True
                 if (not unicode(machine).startswith(u'#') and
                     unicode(machine) not in self.active):
                     break
             else:
                 if has_machine:
-                    m = Machine(Monoid(printname), copy.copy(static_machine.control))
+                    m = machine.Machine(printname,
+                                        copy.copy(static_machine.control))
                     self.add_active(m)
                     activated.append(m)
         return activated
@@ -255,4 +495,8 @@ class Lexicon:
             c.avm.clear()
             if c in self.avm_constructions.values():
                 self.constructions.remove(c)
+
+    def test_static_graph_building():
+        """Tests the static graph building procedure."""
+        pass
 
