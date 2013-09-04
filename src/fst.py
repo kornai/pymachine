@@ -1,7 +1,7 @@
 from collections import defaultdict, Iterable
 import logging
 
-from machine import Machine
+from pymachine.src.machine import Machine
 from matcher import Matcher
 from avm import AVM
 

@@ -7,7 +7,7 @@ from pymachine.src.lexicon import Lexicon
 from pymachine.src.definition_parser import read as read_defs
 
 def dump(argv):
-    definitions = read_defs(file(argv[0]), '../../res/4lang/4lang.plural', 2, add_indices=True)
+    definitions = read_defs(file(argv[0]), '../../res/4lang/4lang.plural', add_indices=True, three_parts=True)
     pickle.dump(definitions, open(argv[1], "w"))
 
 def test_static(argv):
@@ -31,6 +31,16 @@ def test_static(argv):
         for m in machines:
             print m.to_debug_str(max_depth=42,parents_to_display=7,stop=cano_machs)
         print
+
+    print "\n\n===========\n\n"
+
+    def_graph = l.extract_definition_graph(deep_cases=True)
+    for pn, machines in def_graph.iteritems():
+        print pn
+        for m in machines:
+            print m.to_debug_str(max_depth=1,parents_to_display=7,stop=cano_machs)
+        print
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING, format=

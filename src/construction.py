@@ -6,8 +6,8 @@ from copy import deepcopy as copy
 
 from fst import FSA, FST
 from matcher import KRPosMatcher
-from machine import Machine
-from control import PosControl, KRPosControl
+from pymachine.src.machine import Machine
+from control import PosControl, ElviraPluginControl, KRPosControl
 from constants import deep_cases
 from avm import AVM
 from operators import ExpandOperator, FillArgumentOperator

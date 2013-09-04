@@ -2,8 +2,8 @@
 
 import logging
 
-from machine import Machine
-from control import KRPosControl, ConceptControl
+from pymachine.src.machine import Machine
+from pymachine.src.control import KRPosControl, ConceptControl
 
 class Operator(object):
     """The abstract superclass of the operator hierarchy."""

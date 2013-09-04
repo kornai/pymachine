@@ -61,12 +61,12 @@ class Lexicon:
             for m in what:
                 self.add_static(m)
 
-    # TODO: dog canonical == dog[faithfule]!
+    # TODO: dog canonical == dog[faithful]!
     def __add_static_recursive(self, curr_from, replacement=None):
         if replacement == None:
             replacement = {}
         #print "Processing word ", curr_from
-        sys.stdout.flush()
+        #sys.stdout.flush()
 
         if curr_from not in replacement:
             # Deep cases are not canonized
@@ -153,7 +153,7 @@ class Lexicon:
         word is referred to with its ambiguous name in the definition, we don't
         know the id yet, so we have to insert the ambiguous name to static as
         a placeholder. Once we see the definition of the word in question,
-        however, we can replace ambiguous name with the fully qualified one.
+        however, we can replace the ambiguous name with the fully qualified one.
         """
         if print_name in self.static:
 #            print "XXX: printname", print_name, "in static"
@@ -197,6 +197,36 @@ class Lexicon:
 #                        print "returning empty-handed"
                         return []
 
+    def get_static_machine(self, print_name):
+        # TODO: clean this up
+        """
+        Returns the machines (canonical & not) by their unique or ambiguous
+        names.
+        """
+        if print_name in self.static:
+#            print "XXX: printname", print_name, "in static"
+            # in static: everything's OK, just return
+            return self.static[print_name]
+        else:
+            ambig_name = print_name.split(id_sep)[0]
+            names = self.static_disambig.get(ambig_name, set())
+#            print "XXX: len(names:", ambig_name, ") ==", len(names), names
+            if len(names) == 0:
+#                print "len names == 0"
+                # Not in static_disambig: we haven't heard of this word at all
+                return []
+            else:
+                # If we only know the ambiguous name, there must be at most
+                # exactly one fully qualified name that matches.
+#                print "else"
+#                print ambig_name, print_name, len(names), names
+                if ambig_name == print_name and len(names) == 1:
+                    for name in names:      # why no peek()?
+                        return self.static[name]
+                else:
+#                        print "returning empty-handed"
+                    return []
+
     def finalize_static(self):
         """
         Must be called after all words have been added to the static graph.
@@ -213,72 +243,56 @@ class Lexicon:
         self.static_disambig = dict(self.static_disambig)
         # TODO: remove the id from the print name of unambiguous machines
 
-    def __recursive_replace(self, root, from_m, to_m, always=False, visited=None):
+    def extract_definition_graph(self, deep_cases=False):
         """
-        Replaces all instances of @p from_m with @p to_m in the tree under
-        @p root. @p to_m inherits all properties (content of partitions, etc.)
-        of @p from_m. This method cannot replace the root of the tree.
+        Extracts the definition graph from the static graph. The former is a
+        "flattened" version of the latter: all canonical words in the definition
+        are connected to the definiendum, as well as the canonical version of
+        non-canonical terms. The structure of the definition is not preserved.
 
-        @param always if @p False (the default), only replaces unmodified
-                      machines; i.e. machines with empty partitions. @p True
-                      when dealing with the definiendum.
-        @param visited the set of already visited roots.
+        @param deep_cases if @c False (the default), deep cases in the
+                          definitions do not appear on the output graph.
         """
-        if visited is None:
-            visited = set()
-        if root in visited:
-            return
+        def_graph = {}
+        canonicals = set(l[0] for l in self.static.values())
+        for name in self.static.keys():
+            def_graph[name] = [Machine(name)]
+        for name, static_machines in self.static.iteritems():
+            static_machine = static_machines[0]
+            if not static_machine.fancy():
+                def_machine = def_graph[name][0]
+                self.__build_definition_graph(def_machine, static_machine,
+                                              def_graph, set([]), canonicals,
+                                              deep_cases)
+        return def_graph
 
-        if to_m.printname().split('/')[0] == 'good':
-            print "root"
-            print root.to_debug_str(max_depth=1)
-            print "visited"
-            for m in visited:
-                print m.to_debug_str(max_depth=1)
-
-
-        # TODO: make person1[drunk], person2 DRINKS, person1 == person2?
-        visited.add(root)
-        to_visit = set()
-        for part_i, part in enumerate(root.partitions):
-            for m_i, m in enumerate(part):
-                num_children = len(m.children())
-                if m.printname() == from_m.printname() and m is not to_m:
-                    if num_children == 0:
-                        # TODO Machine.replace()?
-                        part[m_i] = to_m
-                        #root.remove(m, part_i)
-                        #root.append(m, to_m, part_i)
-                        to_m.parents |= m.parents
-                        m.del_parent_link(root, part_i)
-                    elif always and to_m.printname().split('/')[0] == 'good':
-                        print "HERE", to_m
-                        print "M"
-                        print m.to_debug_str()
-                        part[m_i] = to_m
-                        to_m.parents |= m.parents
-                        print "DELETING parent link", root, part_i
-                        m.del_parent_link(root, part_i)
-                        for p_i, p in enumerate(m.partitions):
-                            for child in p:
-                                print "CHILD"
-                                print child.to_debug_str()
-                                sys.stdout.flush()
-                                to_m.append(child, p_i)
-                                # Keeping parent links
-                                print "DELETE child parent", m, p_i
-                                sys.stdout.flush()
-                                child.del_parent_link(m, p_i)
-                                child.add_parent_link(to_m, p_i)
+    def __build_definition_graph(self, root_def_m, static_m, def_graph, stop,
+                                       canonicals, deep_cases):
+        """
+        Walks through the machines reachable from @p static_m, and adds a
+        reference to the corresponding canonical machines to the definition
+        graph node (@p root_def_m).
+        """
+        for static_child in static_m.children():
+            if not static_child.fancy():
+                cname = self.get_static_machine(static_child.printname())[0].printname()
+                def_child = def_graph[cname][0]
+                if def_child != root_def_m:
+                    root_def_m.append(def_child)
+            elif deep_cases and static_child.deep_case() and \
+                 static_child.printname() not in stop:
+                root_def_m.append(Machine(static_child.printname()))
+            if static_child.fancy() or static_child not in canonicals:
+                # deep cases are added by their printname to stop, because as
+                # of yet, hash is id-based for machines
+                if static_child not in stop and static_child.printname() not in stop:
+                    if static_child.fancy():
+                        stop.add(static_child.printname())
                     else:
-                        # No replacement if from_m is modified
-                        # TODO: w = 0 link from m to to_m
-                        # TODO: test direct recursion
-                        m.append(to_m, 0)
-                if num_children > 0:
-                    to_visit.add(m)
-        for m in to_visit:
-            self.__recursive_replace(m, from_m, to_m, always, visited)
+                        stop.add(static_child)
+                    self.__build_definition_graph(root_def_m, static_child,
+                                                  def_graph, stop, canonicals,
+                                                  deep_cases)
 
     def add_construction(self, what):
         """
