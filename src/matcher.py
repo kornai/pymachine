@@ -1,7 +1,7 @@
 import re
 import logging
 
-from langtools.utils.readkr import kr_to_dictionary as kr_to_dict
+from hunmisc.utils.readkr import kr_to_dictionary as kr_to_dict
 
 from control import ConceptControl
 
