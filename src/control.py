@@ -3,7 +3,7 @@ control does syntax-related things"""
 
 import logging
 
-from langtools.utils.readkr import kr_to_dictionary as kr2dict
+from hunmisc.utils.readkr import kr_to_dictionary as kr2dict
 
 class Control(object):
     def __init__(self, machine=None):
