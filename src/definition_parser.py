@@ -11,7 +11,7 @@ except ImportError:
     logging.critical("PyParsing has to be installed on the computer")
     sys.exit(-1)
 
-from hunmisc.string.encoding import decode_from_proszeky
+from hunmisc.xstring.encoding import decode_from_proszeky
 
 from constants import deep_cases, avm_pre, deep_pre, enc_pre, id_sep
 from pymachine.src.machine import Machine
@@ -36,7 +36,6 @@ class DefinitionParser(object):
     prime = "'"
     hyphen = "-"
     langspec_pre = "$" # starts langspec deep case
-    root_pre = '='
     unary_p = re.compile("^[a-z_#\-/0-9]+(/[0-9]+)?$")
     binary_p = re.compile("^[A-Z_0-9]+(/[0-9]+)?$")
 
@@ -47,14 +46,13 @@ class DefinitionParser(object):
     @classmethod
     def _is_binary(cls, s):
         return ((type(s) in cls._str and cls.binary_p.match(s)) or 
-                ( type(s) is list and s[0] == cls.root_pre and s[1] == "ROOT"))
+                ( type(s) is list and s[0] == deep_pre and s[1] == "REL"))
     
     @classmethod
     def _is_unary(cls, s):
         return ((type(s) in cls._str and cls.unary_p.match(s) is not None ) or 
                 (type(s) is list and (
                     ( s[0] == deep_pre) or
-                    ( s[0] == cls.root_pre and s[1] == "root") or
                     ( s[0] == cls.langspec_pre) or
                     ( s[0] == enc_pre) or
                     ( s[0] == cls.left_defa)
@@ -78,7 +76,6 @@ class DefinitionParser(object):
         self.hyphen_lit = Literal(DefinitionParser.hyphen)
         self.enc_pre_lit = Literal(enc_pre)
         self.deep_pre_lit = Literal(deep_pre)
-        self.root_pre_lit = Literal(DefinitionParser.root_pre)
         self.avm_pre_lit = Literal(avm_pre)
         self.langspec_pre_lit = Literal(DefinitionParser.langspec_pre)
         self.id_sep_lit = Literal(id_sep)
@@ -89,7 +86,6 @@ class DefinitionParser(object):
         
         self.unary = Forward()
         self.unary << (Combine(Optional("-") + Word(string.lowercase + "_" + nums) + Optional(self.disambig_id)) 
-                      | Group(self.root_pre_lit + Literal('root'))
                       | self.deep_cases
                       | Group(self.langspec_pre_lit + Word(string.uppercase + "_"))
                       | Group(self.avm_pre_lit + Word(string.ascii_letters + "_"))
@@ -98,8 +94,8 @@ class DefinitionParser(object):
                       )
 
         self.binary = (Combine(Word(string.uppercase + "_" + nums) + Optional(self.disambig_id))
-                       | Group(self.root_pre_lit + Literal('ROOT'))
-                       )
+                      | Group(self.deep_pre_lit + 'REL')
+                      )
         self.dontcare = SkipTo(LineEnd())
         
         # main expression
@@ -138,13 +134,8 @@ class DefinitionParser(object):
             (self.argexpr + self.binary + self.argexpr) ^
 
             # BE -> B [ E; E ]
-            (self.binary + self.lb_lit + self.expression + self.part_sep_lit + self.expression + self.rb_lit) ^
-
-            # BE -> 'B
-            (self.prime_lit + self.binary) ^
-
-            # BE -> B'
-            (self.binary + self.prime_lit)
+            (self.binary + self.lb_lit + self.expression + self.part_sep_lit 
+             + self.expression + self.rb_lit)
         )
 
         self.unexpr << Group(
@@ -166,7 +157,10 @@ class DefinitionParser(object):
             (self.lb_lit + self.definition + self.rb_lit) ^
 
             # A -> < A >
-            (self.left_defa_lit + self.argexpr + self.right_defa_lit)
+            (self.left_defa_lit + self.argexpr + self.right_defa_lit) ^
+
+            # A -> '
+            (self.prime_lit)
         )
         
         self.hu, self.pos, self.en, self.lt, self.pt = (Word(alphanums + "#-/_.'" ),) * 5
@@ -177,10 +171,10 @@ class DefinitionParser(object):
         #self.sen = self.definition + LineEnd()
     
     def parse(self, s):
-        return self.definition.parseString(s).asList()
+        return self.definition.parseString(s, parseAll=True).asList()
         
     def create_machine(self, name, partitions):
-        # we accept lists because of ["=", "ROOT"] or ["!", "ACC"]
+        # lists are accepted because of ["!", "AGT"]
         if type(name) is list:
             name = "".join(name)
 
@@ -314,7 +308,8 @@ class DefinitionParser(object):
             if (is_tree(expr[0]) and
                     is_binary(expr[1])):
                 m = self.create_machine(expr[1], most_part)
-                m.append_all(self.__parse_expr(expr[0], root, loop_to_defendum, three_parts), left_part)
+                if expr[0] != ["'"]: 
+                    m.append_all(self.__parse_expr(expr[0], root, loop_to_defendum, three_parts), left_part)
                 if loop_to_defendum:
                     m.append(root, right_part)
                 return [m]
@@ -323,14 +318,14 @@ class DefinitionParser(object):
             if (is_binary(expr[0]) and
                     is_tree(expr[1])):
                 m = self.create_machine(expr[0], most_part)
-                logging.debug(expr)
-                m.append_all(self.__parse_expr(expr[1], root, loop_to_defendum, three_parts), right_part)
+                if expr[1] != ["'"]: 
+                    m.append_all(self.__parse_expr(expr[1], root, loop_to_defendum, three_parts), right_part)
                 if loop_to_defendum:
                     m.append(root, left_part)
                 return [m]
 
             # BE -> 'B
-            if (expr[0] == "'" and
+            if (expr[0] == ["'"] and
                     is_binary(expr[1])):
                 m = self.create_machine(expr[1], most_part)
                 #m.append(parent, 1)
@@ -340,7 +335,7 @@ class DefinitionParser(object):
 
             # BE -> B'
             if (is_binary(expr[0]) and
-                    expr[1] == "'"):
+                    expr[1] == ["'"]):
                 m = self.create_machine(expr[0], most_part)
                 # m.append(parent, 0)
                 if loop_to_defendum:
@@ -359,10 +354,6 @@ class DefinitionParser(object):
             if (expr[0] == avm_pre):
                 return [self.create_machine(avm_pre + expr[1], 1)]
 
-            # U -> =root
-            if (expr[0] == cls.root_pre):
-                return [self.create_machine(cls.root_pre + expr[1], 1)]
-
             # U -> @External_url
             if (expr[0] == enc_pre):
                 return [self.create_machine(enc_pre + expr[1], 1)]
@@ -374,8 +365,11 @@ class DefinitionParser(object):
                     is_tree(expr[2])):
                 m = self.create_machine(expr[1], most_part)
                 logging.debug(expr[1])
-                m.append_all(self.__parse_expr(expr[0], root, loop_to_defendum, three_parts), left_part)
-                m.append_all(self.__parse_expr(expr[2], root, loop_to_defendum, three_parts), right_part)
+                if expr[0] != [DefinitionParser.prime]:
+                    logging.debug(expr[0])
+                    m.append_all(self.__parse_expr(expr[0], root, loop_to_defendum, three_parts), left_part)
+                if expr[2] != [DefinitionParser.prime]:
+                    m.append_all(self.__parse_expr(expr[2], root, loop_to_defendum, three_parts), right_part)
                 return [m]
 
             # A -> [ D ]
@@ -448,7 +442,7 @@ class DefinitionParser(object):
                 m.append_all(self.__parse_expr(expr[4], m, root, loop_to_defendum, three_parts), 1)
                 return [m]
 
-        pe = ParserException("Unknown expression in definition: "+str(expr))
+        pe = ParserException("Unknown expression in definition: {0} (len={1})".format(expr,len(expr)))
         logging.debug(str(pe))
         logging.debug(expr)
         raise pe
@@ -471,7 +465,9 @@ class DefinitionParser(object):
             machine.printname_ = machine.printname() + id_sep + id_
 
         if def_ != '':
+            logging.debug(def_)
             parsed = self.parse(def_)
+            logging.debug(parsed)
             for parsed_expr in self.__parse_definition(parsed[0], machine, loop_to_defendum, three_parts):
                 machine.append(parsed_expr, 0)
 
@@ -491,10 +487,10 @@ def read(f, plur_filn, printname_index=0, add_indices=False, loop_to_defendum=Tr
                 logging.debug('dropping empty definition of '+m.printname())
                 continue
             d[m.printname()] = m
-            logging.info(m.to_debug_str())
+            logging.info('\n'+m.to_debug_str())
         except pyparsing.ParseException, pe:
             print l
-            print "Error: ", str(pe)
+            logging.error("Error: "+str(pe))
     return d
 
 def read_plur(_file):
@@ -510,9 +506,10 @@ if __name__ == "__main__":
     dp = DefinitionParser(plur_dict)
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
-        print Machine.to_debug_str(dp.parse_into_machines(pstr))
+        print Machine.to_debug_str(dp.parse_into_machines(pstr), max_depth=99)
     elif sys.argv[1] == "-f":
         lexicon = read(file(sys.argv[2]),'../../res/4lang/4lang.plural',three_parts=True)
     else:
         print dp.parse(pstr)
+
 
