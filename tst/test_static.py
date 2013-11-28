@@ -34,18 +34,19 @@ def test_static(argv):
     l.finalize_static()
 
     cano_machs = set([ machs_with_name[0] for machs_with_name in l.static.itervalues() ])
+    # TODO fix stop
     def_graph = l.extract_definition_graph(deep_cases=True)
     # print_to_debug_strs(l.static)
     # print_to_debug_strs(def_graph)
-    with open(sys.arv[3]) as tsv_out:
+    with open(sys.argv[3], mode='w') as tsv_out:
         for pn, machines in def_graph.iteritems():
             tsv_out.write(pn)
             for m in machines:
-                tsv_out.write('\t{}'.format(m.to_debug_str(max_depth=1,parents_to_display=7,stop=cano_machs)))
+                tsv_out.write('\n{}'.format(m.to_debug_str(max_depth=7,parents_to_display=7,stop=cano_machs)))
             tsv_out.write('\n')
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING, format=
+    logging.basicConfig(level=logging.DEBUG, format=
             "%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
 
     command = sys.argv[1]
