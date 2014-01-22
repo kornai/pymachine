@@ -174,7 +174,7 @@ class DefinitionParser(object):
         return self.definition.parseString(s, parseAll=True).asList()
         
     def create_machine(self, name, partitions):
-        # lists are accepted because of ["!", "AGT"]
+        # lists are accepted because of ["=", "AGT"]
         if type(name) is list:
             name = "".join(name)
 
@@ -342,7 +342,7 @@ class DefinitionParser(object):
                     m.append(root, left_part)
                 return [m]
 
-            # U -> !ACC
+            # U -> =AGT
             if expr[0] == deep_pre:
                 return [self.create_machine(deep_pre + expr[1], 1)]
 
@@ -459,7 +459,7 @@ class DefinitionParser(object):
         except:
             raise Exception(string.split('\t'))
         
-        machine = self.create_machine(printname.lower(), 1) # TODO !AGT -> partition 1, !PAT -> partition 2, !TO -> ?
+        machine = self.create_machine(printname.lower(), 1) # TODO =AGT -> partition 1, =PAT -> partition 2, =TO -> ?
 
         if add_indices:
             machine.printname_ = machine.printname() + id_sep + id_
