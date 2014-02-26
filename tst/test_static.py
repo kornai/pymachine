@@ -8,7 +8,7 @@ from pymachine.src.definition_parser import read as read_defs
 
 def dump(argv):
     plur_filen = '../../res/4lang/4lang.plural'
-    logging.info('reading plurals from {}'.format(plur_filen))
+    logging.info('reading plurals from {0}'.format(plur_filen))
     definitions = read_defs(file(argv[0]), plur_filen, add_indices=True, three_parts=True)
     pickle.dump(definitions, open(argv[1], "w"))
 
@@ -42,11 +42,11 @@ def test_static(argv):
         for pn, machines in def_graph.iteritems():
             tsv_out.write(pn)
             for m in machines:
-                tsv_out.write('\n{}'.format(m.to_debug_str(max_depth=7,parents_to_display=7,stop=cano_machs)))
+                tsv_out.write('\n{0}'.format(m.to_debug_str(max_depth=7,parents_to_display=7,stop=cano_machs)))
             tsv_out.write('\n')
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format=
+    logging.basicConfig(level=logging.WARNING, format=
             "%(asctime)s : %(module)s (%(lineno)s) - %(levelname)s - %(message)s")
 
     command = sys.argv[1]
