@@ -65,7 +65,7 @@ class Lexicon:
     def __add_static_recursive(self, curr_from, replacement=None):
         if replacement == None:
             replacement = {}
-        #print "Processing word ", curr_from
+        #print "Processing word", curr_from
         #sys.stdout.flush()
 
         if curr_from not in replacement:
@@ -93,13 +93,14 @@ class Lexicon:
                         from_already_seen = [Machine(curr_from.printname()), curr_from]
 
                     self.static[curr_from.printname()] = from_already_seen
+                    #print "Adding to static", curr_from.printname(), from_already_seen
                     self.__add_to_disambig(curr_from.printname())
                     replacement[curr_from] = curr_from
 
 #                    print self.static, self.static_disambig
 
                 else:
-                    #print "in static"
+                    #print "in static", from_already_seen
                     # Definitions: the word is the canonical one, regardless of
                     # the number of children
                     if len(replacement) == 0:
@@ -182,6 +183,9 @@ class Lexicon:
                         already_seen = self.static[ambig_name]
                         del self.static[ambig_name]
                         self.static[print_name] = already_seen
+                        # TODO: test if this messed up anything
+                        for m in already_seen:
+                            m.printname_ = print_name
                         return already_seen
                     else:
                         return self.static[ambig_name]
@@ -233,6 +237,9 @@ class Lexicon:
         Links the modified nodes to the canonical one.
         """
         for print_name, nodes in self.static.iteritems():
+            if print_name != nodes[0].printname():
+                #len(nodes) > 1 and nodes[0].printname() != nodes[1].printname():
+                nodes[0].printname_ = print_name
             # We don't care about deep cases here
             if not nodes[0].fancy():
                 for node in nodes[1:]:
@@ -258,6 +265,7 @@ class Lexicon:
         for name in self.static.keys():
             def_graph[name] = [Machine(name)]
         for name, static_machines in self.static.iteritems():
+            #print "I am at machine", name
             static_machine = static_machines[0]
             if not static_machine.fancy():
                 def_machine = def_graph[name][0]
