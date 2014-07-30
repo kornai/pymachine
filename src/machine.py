@@ -33,7 +33,7 @@ class Machine(object):
         new_machine.partitions = new_partitions
         new_machine.control = new_control
 
-        for part_i, part in enumerate(new_partitions.partitions):
+        for part_i, part in enumerate(new_machine.partitions):
             for m in part:
                 m.add_parent_link(new_machine, part_i)
         return new_machine

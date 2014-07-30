@@ -348,10 +348,11 @@ class Lexicon:
             self.active[printname][machine] = True
             return
         
-        machine = self.unify_recursively(self.static[printname])
+        for static_machine in self.static[printname]:
+            machine = self.unify_recursively(static_machine)
 
-        # change expand status in active store
-        self.active[printname][machine] = True
+            # change expand status in active store
+            self.active[printname][machine] = True
 
     def unify_recursively(self, static_machine, stop=None):
         """Returns the active machine that corresponds to @p static_machine. It
@@ -443,21 +444,22 @@ class Lexicon:
         all non-primitive machines on its partitions are active."""
         activated = []
         
-        for printname, static_machine in self.static.iteritems():
-            if printname in self.active:
-                continue
-            has_machine = False
-            for machine in chain(*static_machine.partitions):
-                has_machine = True
-                if (not unicode(machine).startswith(u'#') and
-                    unicode(machine) not in self.active):
-                    break
-            else:
-                if has_machine:
-                    m = machine.Machine(printname,
-                                        copy.copy(static_machine.control))
-                    self.add_active(m)
-                    activated.append(m)
+        for printname, static_machines in self.static.iteritems():
+            for static_machine in static_machines:
+                if printname in self.active:
+                    continue
+                has_machine = False
+                for machine in chain(*static_machine.partitions):
+                    has_machine = True
+                    if (not unicode(machine).startswith(u'#') and
+                        unicode(machine) not in self.active):
+                        break
+                else:
+                    if has_machine:
+                        m = Machine(printname,
+                            copy.copy(static_machine.control))
+                        self.add_active(m)
+                        activated.append(m)
         return activated
 
     def is_expanded(self, m):
