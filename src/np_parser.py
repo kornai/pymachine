@@ -55,7 +55,7 @@ def _subsequence_index(seq, length):
 
 def test_on_something():
     from sentence_parser import SentenceParser
-    from langtools.corpustools.bie1_reader import read_bie1_corpus
+    from hunmisc.corpustools.bie1_reader import read_bie1_corpus
     import codecs
     sentences = read_bie1_corpus(codecs.open(sys.argv[1], "r", "utf-8"))
     for sen in sentences:
