@@ -132,6 +132,12 @@ class SatisfiedAVMMatcher(Matcher):
 
 class KRPosMatcher(Matcher):
     """ Matches a rule. """
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return self.pattern.__str__()
+
     def __init__(self, pattern):
         if isinstance(pattern, str) or isinstance(pattern, unicode):
             self.pattern = kr_to_dict("stem/" + pattern)
