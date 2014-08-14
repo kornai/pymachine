@@ -107,6 +107,8 @@ class FST(FSA):
                 self.transitions[active_state].iteritems()):
 
                 if transition.match(machine):
+                    #logging.info('FST: matching transitions: {}'.format(
+                    #    transition))
                     for op in operators:
                         op.act(machine)
                     new_active_states.add(out_state)

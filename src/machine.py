@@ -23,7 +23,9 @@ class Machine(object):
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return self.printname()
+        if self.control is None:
+            return u"{0} (no control)".format(self.printname())
+        return u"{0} ({1})".format(self.printname(), self.control.to_debug_str().replace('\n', ' '))
 
     def __deepcopy__(self, memo):
         new_machine = self.__class__(self.printname_)
@@ -45,7 +47,8 @@ class Machine(object):
         """Sets the control."""
         # control will be an FST representation later
         if not isinstance(control, Control) and control is not None:
-            raise TypeError("control should be a Control instance")
+            raise TypeError("control should be a Control instance, " +
+                "got {} instead".format(type(control)))
         self.control = control
         if control is not None:
             control.set_machine(self)

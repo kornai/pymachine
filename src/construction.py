@@ -7,7 +7,7 @@ from copy import deepcopy as copy
 from fst import FSA, FST
 from matcher import KRPosMatcher
 from pymachine.src.machine import Machine
-from control import PosControl, ElviraPluginControl, KRPosControl
+from pymachine.src.control import PosControl, ElviraPluginControl, KRPosControl
 from constants import deep_cases
 from avm import AVM
 from operators import ExpandOperator, FillArgumentOperator
@@ -55,7 +55,7 @@ class Construction(object):
     def act(self, seq):
         """@return a sequence of machines, or @c None, if last_check() failed.
         """
-        logging.debug("Construction matched, running action")
+        logging.info("Construction matched, running action")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
 
@@ -142,6 +142,8 @@ class VerbConstruction(Construction):
         self.case_pattern = re.compile("N(OUN|P)[^C]*CAS<([^>]*)>")
         Construction.__init__(self, name, control)
         self.activated = False
+        logging.info('VerbConstruction {0} created. Matchers: {1}'.format(
+            self.name, self.matchers))
 
     def generate_control(self):
         arguments = self.matchers.keys()
@@ -178,11 +180,15 @@ class VerbConstruction(Construction):
         return control
 
     def discover_arguments(self, machine):
+        logging.info('discovering arguments of {0}...'.format(machine))
         for pi, p in enumerate(machine.partitions):
+            logging.info('\tpartition #{0}: {1}'.format(pi, p))
             for mi, part_machine in enumerate(p):
+                logging.info('\t\tmachine #{0}: {1}'.format(mi, part_machine))
                 pn = part_machine.printname()
                 # we are interested in deep cases and
                 # supplementary regexps
+                #TODO MUST HANDLE =AGT and =PAT
                 if pn in deep_cases or pn.startswith("$"):
                     if pn.startswith("$"):
                         self.matchers[pn] = self.supp_dict[pn]
@@ -197,8 +203,10 @@ class VerbConstruction(Construction):
             return False
         else:
             res = Construction.check(self, seq)
+            if res:
+                logging.info('check is True!')
             logging.debug("Result of check is {0}".format(res) + 
-                          " and working area is:\n{1}".format(
+                          " and working area is:\n{0}".format(
                               Machine.to_debug_str(self.working_area[0])))
             return res
 

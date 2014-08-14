@@ -31,8 +31,16 @@ class SpreadingActivation(object):
         self.lexicon.add_active(sentence)
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
+        chunk_constructions = set([c for c in self.lexicon.constructions
+                                      if c.type_ == Construction.CHUNK])
+        chunk_dbg_str = ', '.join(c.name.encode('utf-8') for c in chunk_constructions)
+        logging.debug("\n\nCHUNK CONSTRUCTIONS:" + ' ' + chunk_dbg_str + "\n\n")
+
         semantic_constructions = set([c for c in self.lexicon.constructions
                                       if c.type_ == Construction.SEMANTIC])
+        semantic_dbg_str = ', '.join(c.name.encode('utf-8') for c in semantic_constructions)
+        logging.info("\n\nSEMANTIC CONSTRUCTIONS:" + ' ' + semantic_dbg_str + "\n\n")
+
         avm_constructions = set()
 
         # Chunk constructions are run here to form the phrase machines.
@@ -48,8 +56,10 @@ class SpreadingActivation(object):
                 safety_zone += 1
             active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
             static_dbg_str = ', '.join(k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
-            logging.debug("\n\nACTIVE:" + last_active.printname() + ' ' + active_dbg_str + "\n\n")
-            logging.debug("\n\nSTATIC:" + ' ' + static_dbg_str + "\n\n")
+            logging.debug("\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str)
+            logging.info("\n\nACTIVE DICT: {}".format(self.lexicon.active))
+            logging.debug("\n\nSTATIC:" + ' ' + static_dbg_str)
+            logging.debug("\n\nSTATIC DICT: {}".format(self.lexicon.static))
 #            logging.debug('ACTIVE')
 #            from machine import Machine
 #            for ac in self.lexicon.active.values():
@@ -64,7 +74,7 @@ class SpreadingActivation(object):
             # Step 2a: semantic constructions:
             for c in semantic_constructions:
                 # The machines that can take part in constructions
-                logging.debug("CONST " + c.name)
+                logging.info("CONST " + c.name)
                 accepted = []
                 # Find the sequences that match the construction
                 # TODO: combinatorial explosion alert!
@@ -80,17 +90,21 @@ class SpreadingActivation(object):
                 #       combination; maybe this step should be combination-
                 #       dependent.
                 accepted.sort(key=lambda seq: len(seq))
-                logging.debug("ACCEPTED")
+                if not accepted:
+                    logging.info("NOTHING ACCEPTED")
+                else:
+                    logging.info("ACCEPTED")
                 for seq in accepted:
-                    logging.debug(u" ".join(unicode(m) for m in seq).encode('utf-8'))
+                    logging.info(u" ".join(unicode(m) for m in seq).encode('utf-8'))
 
                 # No we try to act() on these sequences. We stop at the first
                 # sequence that is accepted by act().
                 while len(accepted) > 0:
                     seq = accepted[-1]
+                    logging.info('trying to make construction act')
                     c_res = c.act(seq)
                     if c_res is not None:
-                        logging.debug("SUCCESS: " + u" ".join(unicode(m) for m in seq).encode("utf-8"))
+                        logging.info("SUCCESS: " + u" ".join(unicode(m) for m in seq).encode("utf-8"))
                         # We remove the machines that were consumed by the
                         # construction and add the machines returned by it
                         for m in c_res:

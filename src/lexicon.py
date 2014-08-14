@@ -308,6 +308,8 @@ class Lexicon:
         @param what a construction, or an iterable thereof.
         """
         if isinstance(what, Construction):
+            logging.info('adding construction: {}'.format(
+                what))
             self.constructions.append(what)
         elif isinstance(what, Iterable):
             for c in what:
