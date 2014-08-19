@@ -48,7 +48,7 @@ class Wrapper:
                     " by pymachine/scripts/generate_translation_dict.sh" +
                     " does not exist: {0}".format(file_name))
             definitions = read_defs(file(file_name),
-                self.plural_fn, printname_index)
+                self.plural_fn, printname_index, three_parts=True)
             logging.debug("{0}: {1}".format(file_name, definitions.keys()))
             logging.debug("{0}: {1}".format(file_name, definitions))
             self.lexicon.add_static(definitions.itervalues())
