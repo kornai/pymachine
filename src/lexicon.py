@@ -498,7 +498,7 @@ class Lexicon:
         """
         self.active = {}
         # HACK
-        self.unify_recursively('train')
+        #self.unify_recursively('train')
 
         # Resets the AVM constructions.
         avm_constructions = [c for c in self.constructions
