@@ -7,14 +7,15 @@ from copy import deepcopy as copy
 from fst import FSA, FST
 from matcher import KRPosMatcher
 from pymachine.src.machine import Machine
-from pymachine.src.control import PosControl, ElviraPluginControl, KRPosControl
-from constants import deep_cases
+from pymachine.src.control import KRPosControl
+from constants import deep_cases, deep_case_to_grammatical_case
 from avm import AVM
 from operators import ExpandOperator, FillArgumentOperator
 from np_parser import parse_rule
 
 class Construction(object):
     SEMANTIC, CHUNK, AVM = xrange(3)  # types
+
     def __init__(self, name, control, type_=SEMANTIC):
         """
         @param type_ the type of the construction -- SEMANTIC, CHUNK or AVM.
@@ -55,7 +56,7 @@ class Construction(object):
     def act(self, seq):
         """@return a sequence of machines, or @c None, if last_check() failed.
         """
-        logging.info("Construction matched, running action")
+        logging.debug("Construction matched, running action")
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
 
@@ -108,11 +109,11 @@ class NPConstruction(Construction):
             else:
                 if isinstance(tmpl[key], dict):
                     return self._collect_variable_values(
-                            tmpl[key], data[key], greeks)
+                        tmpl[key], data[key], greeks)
                 else:
                     if tmpl[key][0] == '@':
                         greeks[tmpl[key]].add(data[key])
-        return True    
+        return True
 
     def act(self, seq):
         for operator in self.operators:
@@ -147,7 +148,7 @@ class VerbConstruction(Construction):
 
     def generate_control(self):
         arguments = self.matchers.keys()
-        
+
         # this will be a hypercube
         control = FST()
 
@@ -160,7 +161,7 @@ class VerbConstruction(Construction):
 
         # last node of the hypercube
         control.add_state(str(int(pow(2, len(arguments)))),
-                              is_init=False, is_final=True)
+            is_init=False, is_final=True)
 
         # first transition
         control.add_transition(KRPosMatcher("VERB"), [ExpandOperator(
@@ -172,31 +173,36 @@ class VerbConstruction(Construction):
             for arg in path:
                 increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
-                control.add_transition(self.matchers[arg], 
-                    [FillArgumentOperator(arg, self.working_area)], 
-                                       str(actual_state), str(new_state))
+                control.add_transition(self.matchers[arg],
+                    [FillArgumentOperator(arg, self.working_area)],
+                    str(actual_state), str(new_state))
 
                 actual_state = new_state
         return control
 
-    def discover_arguments(self, machine):
-        logging.info('discovering arguments of {0}...'.format(machine))
+    def discover_arguments(self, machine, depth=0):
+        logging.info('\t\t'*depth + 'discovering arguments of {0}...'.format(
+            machine))
         for pi, p in enumerate(machine.partitions):
-            logging.info('\tpartition #{0}: {1}'.format(pi, p))
+            logging.info('\t\t'*depth + 'partition #{0}: {1}'.format(pi, p))
             for mi, part_machine in enumerate(p):
-                logging.info('\t\tmachine #{0}: {1}'.format(mi, part_machine))
+                logging.info('\t\t'*depth + '\tmachine #{0}: {1}'.format(
+                    mi, part_machine))
                 pn = part_machine.printname()
                 # we are interested in deep cases and
                 # supplementary regexps
-                #TODO MUST HANDLE =AGT and =PAT
                 if pn in deep_cases or pn.startswith("$"):
                     if pn.startswith("$"):
                         self.matchers[pn] = self.supp_dict[pn]
                     else:
-                        self.matchers[pn] = KRPosMatcher("CAS<{0}>".format(pn))
+                        #TODO get grammatical case from deep case!
+                        #This is a temporary hack
+                        gr_case = deep_case_to_grammatical_case[pn]
+                        self.matchers[pn] = KRPosMatcher(
+                            "NOUN<CAS<{0}>>".format(gr_case))
 
                 # recursive call
-                self.discover_arguments(part_machine)
+                self.discover_arguments(part_machine, depth=depth+1)
 
     def check(self, seq):
         if self.activated:
@@ -204,8 +210,8 @@ class VerbConstruction(Construction):
         else:
             res = Construction.check(self, seq)
             if res:
-                logging.info('check is True!')
-            logging.debug("Result of check is {0}".format(res) + 
+                logging.debug('check is True!')
+            logging.debug("Result of check is {0}".format(res) +
                           " and working area is:\n{0}".format(
                               Machine.to_debug_str(self.working_area[0])))
             return res
@@ -216,7 +222,8 @@ class AVMConstruction(Construction):
         self.avm = avm
         self.phi = self.generate_phi()
         control = self.generate_control()
-        Construction.__init__(self, avm.name + 'Construction', control, type_=Construction.AVM)
+        Construction.__init__(self, avm.name + 'Construction', control,
+            type_=Construction.AVM)
 
     def generate_phi(self):
         phi = {}
@@ -254,15 +261,15 @@ class AVMConstruction(Construction):
         return [self.avm]
 
 def test():
-    a = Machine("the", PosControl("DET"))
-    kek = Machine("kek", PosControl("ADJ"))
-    kockat = Machine("kockat", PosControl("NOUN<CAS<ACC>>"))
+    #a = Machine("the", PosControl("DET"))
+    #kek = Machine("kek", PosControl("ADJ"))
+    #kockat = Machine("kockat", PosControl("NOUN<CAS<ACC>>"))
     m = Machine("vonat")
     m2 = Machine("tb")
     m.append(m2)
     m2.append(m)
     m3 = copy(m)
+    assert m3
 
 if __name__ == "__main__":
     test()
-
