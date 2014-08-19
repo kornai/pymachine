@@ -4,6 +4,12 @@ import logging
 import itertools
 from np_parser import parse_chunk
 
+def powerset(iterable):
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    return itertools.chain.from_iterable(
+        itertools.combinations(s, r) for r in range(len(s)+1))
+
 class SpreadingActivation(object):
     """Implements spreading activation (surprise surprise)."""
     def __init__(self, lexicon):
@@ -19,9 +25,9 @@ class SpreadingActivation(object):
              no new words are found.
         @return Messages to be sent to active plugins.
         The algorithm stops when ... I don't know.
-        
-        @param chunks a list of lists of machines that make up the chunks in the
-                      sentence (and the rest, too).
+
+        @param chunks a list of lists of machines that make up the chunks in
+            the sentence (and the rest, too).
         """
         # chunks contains the chunks of the sentence -- at the beginning, all
         # words are considered chunks, but then are merged by the syntactic
@@ -32,14 +38,18 @@ class SpreadingActivation(object):
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
         chunk_constructions = set([c for c in self.lexicon.constructions
-                                      if c.type_ == Construction.CHUNK])
-        chunk_dbg_str = ', '.join(c.name.encode('utf-8') for c in chunk_constructions)
-        logging.debug("\n\nCHUNK CONSTRUCTIONS:" + ' ' + chunk_dbg_str + "\n\n")
+            if c.type_ == Construction.CHUNK])
+        chunk_dbg_str = ', '.join(c.name.encode('utf-8')
+            for c in chunk_constructions)
+        logging.debug(
+            "\n\nCHUNK CONSTRUCTIONS:" + ' ' + chunk_dbg_str + "\n\n")
 
         semantic_constructions = set([c for c in self.lexicon.constructions
                                       if c.type_ == Construction.SEMANTIC])
-        semantic_dbg_str = ', '.join(c.name.encode('utf-8') for c in semantic_constructions)
-        logging.info("\n\nSEMANTIC CONSTRUCTIONS:" + ' ' + semantic_dbg_str + "\n\n")
+        semantic_dbg_str = ', '.join(
+            c.name.encode('utf-8') for c in semantic_constructions)
+        logging.info(
+            "\n\nSEMANTIC CONSTRUCTIONS:" + ' ' + semantic_dbg_str + "\n\n")
 
         avm_constructions = set()
 
@@ -47,16 +57,19 @@ class SpreadingActivation(object):
         for chunk in filter(lambda c: len(c) > 1, chunks):
             parse_chunk(chunk)
 
-        # This condition works for the demo, but we need to find another one for
-        # the whole lexicon
+        # This condition works for the demo, but we need to find another one
+        # for the whole lexicon
         plugin_found = False
         safety_zone = 0
         while not plugin_found or safety_zone < 5:
             if plugin_found:
                 safety_zone += 1
-            active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v)) for k, v in self.lexicon.active.iteritems())
-            static_dbg_str = ', '.join(k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
-            logging.debug("\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str)
+            active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v))
+                for k, v in self.lexicon.active.iteritems())
+            static_dbg_str = ', '.join(k.encode('utf-8')
+                for k in sorted(self.lexicon.static.keys()))
+            logging.debug(
+                "\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str)
             logging.info("\n\nACTIVE DICT: {}".format(self.lexicon.active))
             logging.debug("\n\nSTATIC:" + ' ' + static_dbg_str)
             logging.debug("\n\nSTATIC DICT: {}".format(self.lexicon.static))
@@ -78,12 +91,25 @@ class SpreadingActivation(object):
                 accepted = []
                 # Find the sequences that match the construction
                 # TODO: combinatorial explosion alert!
-                for elems in xrange(min(len(self.lexicon.active_machines()), 4)):
+                """
+                for elems in xrange(
+                        min(len(self.lexicon.active_machines()), 4)):
                 #for elems in xrange(len(constable)):
                     for seq in itertools.permutations(
                             self.lexicon.active_machines(), elems + 1):
-                        if c.check(seq):
-                            accepted.append(seq)
+                """
+                logging.info(
+                    '# of active machines: {0}, size of powerset: {1}'.format(
+                        len(self.lexicon.active_machines()),
+                        pow(2, len(self.lexicon.active_machines()))))
+                for i, seq in enumerate(powerset(
+                        self.lexicon.active_machines())):
+                    if i % 100 == 0:
+                        logging.info("{0}".format(i))
+
+                    if c.check(seq):
+                        #quit()
+                        accepted.append(seq)
 
                 # The sequence preference order is longer first
                 # TODO: obviously this won't work for every imaginable
@@ -93,18 +119,21 @@ class SpreadingActivation(object):
                 if not accepted:
                     logging.info("NOTHING ACCEPTED")
                 else:
-                    logging.info("ACCEPTED")
+                    logging.info(
+                        "ACCEPTED {0} sequences".format(len(accepted)))
                 for seq in accepted:
-                    logging.info(u" ".join(unicode(m) for m in seq).encode('utf-8'))
+                    logging.debug(
+                        u" ".join(unicode(m) for m in seq).encode('utf-8'))
 
                 # No we try to act() on these sequences. We stop at the first
                 # sequence that is accepted by act().
                 while len(accepted) > 0:
                     seq = accepted[-1]
-                    logging.info('trying to make construction act')
+                    logging.debug('trying to make construction act')
                     c_res = c.act(seq)
                     if c_res is not None:
-                        logging.info("SUCCESS: " + u" ".join(unicode(m) for m in seq).encode("utf-8"))
+                        logging.info("SUCCESS: " + u" ".join(unicode(m)
+                            for m in seq).encode("utf-8"))
                         # We remove the machines that were consumed by the
                         # construction and add the machines returned by it
                         for m in c_res:
@@ -122,28 +151,33 @@ class SpreadingActivation(object):
                         del accepted[-1]
 
             avm_constructions = set([c for c in self.lexicon.constructions
-                                     if c.type_ == Construction.AVM])
-            active_avm_dbg_str = ', '.join(c.name.encode('utf-8') for c in avm_constructions)
-            logging.debug("\n\nAVM CONSTRUCTIONS:" + ' ' + active_avm_dbg_str + "\n\n")
+                if c.type_ == Construction.AVM])
+            active_avm_dbg_str = ', '.join(c.name.encode('utf-8')
+                for c in avm_constructions)
+            logging.debug(
+                "\n\nAVM CONSTRUCTIONS:" + ' ' + active_avm_dbg_str + "\n\n")
             # Step 2b: AVM constructions
             for c in avm_constructions:
-                logging.debug(u"AVM {0} before: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))
+                logging.debug(u"AVM {0} before: {1}".format(
+                    c.name, unicode(c.avm)).encode("utf-8"))
                 attr_vals = set(self.lexicon.active_machines()) | set(
-                        c.avm for c in avm_constructions)
+                    c.avm for c in avm_constructions)
                 for m in attr_vals:
                     if c.check([m]):
                         c.act([m])
                         if c.avm.satisfied():
                             plugin_found = True
                             logging.debug('AVM found: ' + c.name)
-                logging.debug(u"AVM {0} after: {1}".format(c.name, unicode(c.avm)).encode("utf-8"))
+                logging.debug(u"AVM {0} after: {1}".format(
+                    c.name, unicode(c.avm)).encode("utf-8"))
 
             # Step 3: activation
             self.lexicon.activate()
 
             # Step 4: housekeeping
             unexpanded = list(self.lexicon.get_unexpanded())
-            if len(self.lexicon.active) + len(avm_constructions) == last_active:
+            if len(self.lexicon.active) + len(
+                    avm_constructions) == last_active:
                 break
             else:
                 last_active = len(self.lexicon.active) + len(avm_constructions)
@@ -158,4 +192,3 @@ class SpreadingActivation(object):
 
         logging.debug('Returning ' + str(ret))
         return ret
-
