@@ -149,11 +149,19 @@ class FillArgumentOperator(Operator):
         self.case = case
 
     def act(self, arg_mach):
-        logging.debug("FillArgOp acting on input {0} and working area {0}".format(arg_mach, self.working_area[0]))
+        logging.debug("FillArgOp acting on input {0} and working area {1}".format(arg_mach, self.working_area[0]))
+        self.seen_by_act = set()
         self._act(arg_mach, self.working_area[0])
 
     def _act(self, arg_mach, machine):
         """Recursive helper method for act()."""
+        if machine.printname() in self.seen_by_act:
+            return
+        else:
+            self.seen_by_act.add(machine.printname())
+
+        logging.debug("FillArgOp _acting on input {0} and working area {1}".format(arg_mach, machine))
+        logging.debug('working area partitions: {0}'.format(machine.partitions))
         for part_ind, part in enumerate(machine.partitions):
             for submach_ind, submach in enumerate(part):
                 if submach.printname() == self.case:
