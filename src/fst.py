@@ -14,6 +14,11 @@ class FSA(object):
         self.transitions = defaultdict(dict)
         self.active_states = None
 
+    def __str__(self):
+        return "{0}\nstates: {1}\ntransitions: {2}\ninitial states: {3}\
+            final states: {4}".format(type(self), self.states,
+            self.transitions, self.init_states, self.final_states)
+
     def add_state(self, state, is_init=False, is_final=False):
         self.states.add(state)
         if is_init:
@@ -68,10 +73,10 @@ class FSA(object):
         self.check_states()
         if self.active_states is None:
             self.init_active_states()
-        new_active_states = set() 
+        new_active_states = set()
         for active_state in self.active_states:
             for transition, out_state in (
-                self.transitions[active_state].iteritems()):
+                    self.transitions[active_state].iteritems()):
 
                 if transition.match(machine):
                     new_active_states.add(out_state)
@@ -100,11 +105,11 @@ class FST(FSA):
         self.check_states()
         if self.active_states is None:
             self.init_active_states()
-        new_active_states = set() 
+        new_active_states = set()
         logging.debug("Old active: {0}".format(self.active_states))
         for active_state in self.active_states:
             for transition, (out_state, operators) in (
-                self.transitions[active_state].iteritems()):
+                    self.transitions[active_state].iteritems()):
 
                 if transition.match(machine):
                     #logging.info('FST: matching transitions: {}'.format(
@@ -117,4 +122,3 @@ class FST(FSA):
         if len(new_active_states) > 0:
             self.active_states = new_active_states
         logging.debug("New active: {0}".format(self.active_states))
-
