@@ -1,7 +1,9 @@
-from control import PluginControl
-from construction import Construction
+from math import factorial as fac
 import logging
 import itertools
+
+from control import PluginControl
+from construction import Construction
 from np_parser import parse_chunk
 
 def powerset(iterable):
@@ -38,8 +40,9 @@ class SpreadingActivation(object):
         last_active = len(self.lexicon.active)
         unexpanded = list(self.lexicon.get_unexpanded())
         chunk_constructions = set([c for c in self.lexicon.constructions
-            if c.type_ == Construction.CHUNK])
-        chunk_dbg_str = ', '.join(c.name.encode('utf-8')
+                                  if c.type_ == Construction.CHUNK])
+        chunk_dbg_str = ', '.join(
+            c.name.encode('utf-8')
             for c in chunk_constructions)
         logging.debug(
             "\n\nCHUNK CONSTRUCTIONS:" + ' ' + chunk_dbg_str + "\n\n")
@@ -64,10 +67,11 @@ class SpreadingActivation(object):
         while not plugin_found or safety_zone < 5:
             if plugin_found:
                 safety_zone += 1
-            active_dbg_str = ', '.join(k.encode('utf-8') + ':' + str(len(v))
+            active_dbg_str = ', '.join(
+                k.encode('utf-8') + ':' + str(len(v))
                 for k, v in self.lexicon.active.iteritems())
-            static_dbg_str = ', '.join(k.encode('utf-8')
-                for k in sorted(self.lexicon.static.keys()))
+            static_dbg_str = ', '.join(
+                k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
             logging.debug(
                 "\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str)
             logging.info("\n\nACTIVE DICT: {}".format(self.lexicon.active))
@@ -91,25 +95,32 @@ class SpreadingActivation(object):
                 accepted = []
                 # Find the sequences that match the construction
                 # TODO: combinatorial explosion alert!
+                no_active = len(self.lexicon.active_machines())
+                max_length = 3
+                no_all_combinations = sum((fac(no_active)/fac(no_active-i-1)
+                                          for i in range(max_length)))
+                logging.info((
+                    '# of active machines: {0}, ' +
+                    'trying all sequences of at most {1} machines, ' +
+                    'total # of sequences: {2}').format(
+                    no_active, max_length, no_all_combinations))
                 """
-                for elems in xrange(
-                        min(len(self.lexicon.active_machines()), 4)):
-                #for elems in xrange(len(constable)):
-                    for seq in itertools.permutations(
-                            self.lexicon.active_machines(), elems + 1):
-                """
-                logging.info(
-                    '# of active machines: {0}, size of powerset: {1}'.format(
-                        len(self.lexicon.active_machines()),
-                        pow(2, len(self.lexicon.active_machines()))))
                 for i, seq in enumerate(powerset(
                         self.lexicon.active_machines())):
-                    if i % 100 == 0:
-                        logging.info("{0}".format(i))
+                """
+                count = 0
+                for elems in xrange(
+                        min(len(self.lexicon.active_machines()), max_length)):
+                #for elems in xrange(len(constable)):
+                    for i, seq in enumerate(itertools.permutations(
+                            self.lexicon.active_machines(), elems + 1)):
+                        count += 1
+                        if count % 100 == 0:
+                            logging.info("{0}".format(count))
 
-                    if c.check(seq):
-                        #quit()
-                        accepted.append(seq)
+                        if c.check(seq):
+                            #quit()
+                            accepted.append(seq)
 
                 # The sequence preference order is longer first
                 # TODO: obviously this won't work for every imaginable
@@ -133,7 +144,7 @@ class SpreadingActivation(object):
                     c_res = c.act(seq)
                     if c_res is not None:
                         logging.info("SUCCESS: " + u" ".join(unicode(m)
-                            for m in seq).encode("utf-8"))
+                                     for m in seq).encode("utf-8"))
                         # We remove the machines that were consumed by the
                         # construction and add the machines returned by it
                         for m in c_res:
@@ -151,9 +162,9 @@ class SpreadingActivation(object):
                         del accepted[-1]
 
             avm_constructions = set([c for c in self.lexicon.constructions
-                if c.type_ == Construction.AVM])
-            active_avm_dbg_str = ', '.join(c.name.encode('utf-8')
-                for c in avm_constructions)
+                                    if c.type_ == Construction.AVM])
+            active_avm_dbg_str = ', '.join(
+                c.name.encode('utf-8') for c in avm_constructions)
             logging.debug(
                 "\n\nAVM CONSTRUCTIONS:" + ' ' + active_avm_dbg_str + "\n\n")
             # Step 2b: AVM constructions
