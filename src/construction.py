@@ -29,9 +29,9 @@ class Construction(object):
         self.type_ = type_
 
     def check(self, seq):
-        logging.debug((u"Checking {0} construction for matching with " +
-                      u"{1} machines").format(self.name,
-                      u" ".join(unicode(m) for m in seq)).encode("utf-8"))
+        logging.info((u"Checking {0} construction for matching with " +
+                     u"{1} machines").format(self.name,
+                     u" ".join(unicode(m) for m in seq)).encode("utf-8"))
         self.control.reset()
         for machine in seq:
             self.control.read(machine)
@@ -72,8 +72,9 @@ class NPConstruction(Construction):
         control = FSA()
         control.add_state("0", is_init=True, is_final=False)
         for state in xrange(1, len(self.matchers) + 1):
-            control.add_state(str(state), is_init=False,
-                    is_final=(state == len(self.matchers)))
+            control.add_state(
+                str(state), is_init=False,
+                is_final=(state == len(self.matchers)))
             control.add_transition(self.matchers[state - 1],
                                    str(state - 1), str(state))
         return control
@@ -145,6 +146,9 @@ class VerbConstruction(Construction):
         self.activated = False
         logging.info('VerbConstruction {0} created. Matchers: {1}'.format(
             self.name, self.matchers))
+        logging.info('Control: {0}'.format(self.control))
+        f = open('control.dot', 'w')
+        f.write(self.control.to_dot())
 
     def generate_control(self):
         arguments = self.matchers.keys()
@@ -160,7 +164,8 @@ class VerbConstruction(Construction):
             control.add_state(str(i), is_init=False, is_final=False)
 
         # last node of the hypercube
-        control.add_state(str(int(pow(2, len(arguments)))),
+        control.add_state(
+            str(int(pow(2, len(arguments)))),
             is_init=False, is_final=True)
 
         # first transition
@@ -173,7 +178,8 @@ class VerbConstruction(Construction):
             for arg in path:
                 increase = pow(2, arguments.index(arg))
                 new_state = actual_state + increase
-                control.add_transition(self.matchers[arg],
+                control.add_transition(
+                    self.matchers[arg],
                     [FillArgumentOperator(arg, self.working_area)],
                     str(actual_state), str(new_state))
 
@@ -222,8 +228,8 @@ class AVMConstruction(Construction):
         self.avm = avm
         self.phi = self.generate_phi()
         control = self.generate_control()
-        Construction.__init__(self, avm.name + 'Construction', control,
-            type_=Construction.AVM)
+        Construction.__init__(
+            self, avm.name + 'Construction', control, type_=Construction.AVM)
 
     def generate_phi(self):
         phi = {}
