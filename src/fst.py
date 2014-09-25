@@ -16,8 +16,32 @@ class FSA(object):
 
     def __str__(self):
         return "{0}\nstates: {1}\ntransitions: {2}\ninitial states: {3}\
-            final states: {4}".format(type(self), self.states,
-            self.transitions, self.init_states, self.final_states)
+            final states: {4}".format(
+            type(self), self.states, self.transitions,
+            self.init_states, self.final_states)
+
+    def to_dot(self):
+        lines = ['digraph finite_state_machine {\n\tdpi=80;']
+        #lines.append('\tordering=out;')
+        for state in self.states:
+            if state in self.final_states:
+                shape = 'doublecircle'
+            else:
+                shape = 'circle'
+            lines.append('\tnode [shape = {0}]; {1};'.format(shape, state))
+        for state1, edges in self.transitions.iteritems():
+            for transition, state2 in edges.iteritems():
+                if isinstance(state2, tuple):
+
+                    #TODO this should work nicely too
+                    #transition = "{0}:{1}".format(transition, state2[1])
+
+                    state2 = state2[0]
+
+                lines.append('\t{0} -> {1} [ label = "{2}" ];'.format(
+                    state1, state2, transition))
+        lines.append('}')
+        return '\n'.join(lines)
 
     def add_state(self, state, is_init=False, is_final=False):
         self.states.add(state)
