@@ -7,7 +7,7 @@ deep_cases = ['=AGT', '=PAT', '=DAT', '=FROM','=TO', '=POSS', '=LAM'] # "ACC", "
 #should be part of some langspec module, this is just a temporary hack
 deep_case_to_grammatical_case = {
     '=AGT': 'NOM',
-    '=PAT': 'ACC'
+    '=PAT': 'NOM'
 }
 
 # Special prefixes, separators, etc. that occur in definitions
