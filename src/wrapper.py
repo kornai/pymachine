@@ -102,7 +102,9 @@ if __name__ == "__main__":
         level=logging.INFO,
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    print 'building wrapper...'
     w = Wrapper(sys.argv[1])
+    print 'done!'
     #dg = w.lexicon.extract_definition_graph()
     #print dg
     test_sen = [
@@ -111,6 +113,7 @@ if __name__ == "__main__":
         ([
             ("sick", "sick/ADJ"),
             ("zebras", "zebra/NOUN<PLUR>")], 'NP')]
+    print 'running...'
     w.run(test_sen)
     #import pickle
     #pickle.dump(dg, open('foo', 'w'))
