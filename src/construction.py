@@ -29,9 +29,9 @@ class Construction(object):
         self.type_ = type_
 
     def check(self, seq):
-        logging.info((u"Checking {0} construction for matching with " +
-                     u"{1} machines").format(self.name,
-                     u" ".join(unicode(m) for m in seq)).encode("utf-8"))
+        logging.debug((u"Checking {0} construction for matching with " +
+                      u"{1} machines").format(self.name,
+                      u" ".join(unicode(m) for m in seq)).encode("utf-8"))
         self.control.reset()
         for machine in seq:
             self.control.read(machine)
@@ -187,11 +187,16 @@ class VerbConstruction(Construction):
         return control
 
     def discover_arguments(self, machine, depth=0):
+        if depth == 0:
+            self.traversed = set()
         logging.info('\t\t'*depth + 'discovering arguments of {0}...'.format(
             machine))
         for pi, p in enumerate(machine.partitions):
             logging.info('\t\t'*depth + 'partition #{0}: {1}'.format(pi, p))
             for mi, part_machine in enumerate(p):
+                if part_machine in self.traversed:
+                    continue
+                self.traversed.add(part_machine)
                 logging.info('\t\t'*depth + '\tmachine #{0}: {1}'.format(
                     mi, part_machine))
                 pn = part_machine.printname()
@@ -203,7 +208,7 @@ class VerbConstruction(Construction):
                     else:
                         #TODO get grammatical case from deep case!
                         #This is a temporary hack
-                        gr_case = deep_case_to_grammatical_case[pn]
+                        gr_case = deep_case_to_grammatical_case.get(pn, 'NOM')
                         self.matchers[pn] = KRPosMatcher(
                             "NOUN<CAS<{0}>>".format(gr_case))
 
