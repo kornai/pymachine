@@ -31,9 +31,9 @@ class Wrapper:
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
-            for s in items["definitions"].split(",")]
-        self.supp_dict_fn = items["supp_dict"]
-        self.plural_fn = items["plurals"]
+                          for s in items["definitions"].split(",")]
+        self.supp_dict_fn = items.get("supp_dict")
+        self.plural_fn = items.get("plurals")
 
     def __read_files(self):
         self.__read_definitions()
@@ -44,18 +44,21 @@ class Wrapper:
             # TODO HACK makefile needed
             if (file_name.endswith("generated") and
                     not os.path.exists(file_name)):
-                raise Exception("A definition file that should be generated" +
+                raise Exception(
+                    "A definition file that should be generated" +
                     " by pymachine/scripts/generate_translation_dict.sh" +
                     " does not exist: {0}".format(file_name))
-            definitions = read_defs(file(file_name),
-                self.plural_fn, printname_index, three_parts=True)
+            definitions = read_defs(
+                file(file_name), self.plural_fn, printname_index,
+                three_parts=True)
             logging.debug("{0}: {1}".format(file_name, definitions.keys()))
             logging.debug("{0}: {1}".format(file_name, definitions))
             self.lexicon.add_static(definitions.itervalues())
             self.lexicon.finalize_static()
 
     def __read_supp_dict(self):
-        self.supp_dict = sdreader(file(self.supp_dict_fn))
+        self.supp_dict = sdreader(
+            file(self.supp_dict_fn)) if self.supp_dict_fn else {}
 
     def __add_constructions(self):
         for construction in np_grammar.np_rules:
@@ -95,20 +98,19 @@ class Wrapper:
         return results
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s : " +
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     w = Wrapper(sys.argv[1])
     #dg = w.lexicon.extract_definition_graph()
     #print dg
     test_sen = [
-        ([
-            ("vets", "vet/NOUN<PLUR>")],
-        'NP'),
+        ([("vets", "vet/NOUN<PLUR>")], 'NP'),
         ("heal", "heal/VERB"),
         ([
             ("sick", "sick/ADJ"),
-            ("zebras", "zebra/NOUN<PLUR>")],
-        'NP')]
+            ("zebras", "zebra/NOUN<PLUR>")], 'NP')]
     w.run(test_sen)
     #import pickle
     #pickle.dump(dg, open('foo', 'w'))
