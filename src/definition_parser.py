@@ -525,7 +525,7 @@ def read(f, plur_filn, printname_index=0, add_indices=False,
     dp = DefinitionParser(plur_dict)
     for line in f:
         l = line.strip('\n')
-        logging.info("Parsing: {0}".format(l))
+        logging.debug("Parsing: {0}".format(l))
         try:
             m = dp.parse_into_machines(l, printname_index, add_indices,
                                        loop_to_defendum, three_parts)
@@ -533,7 +533,7 @@ def read(f, plur_filn, printname_index=0, add_indices=False,
                 logging.debug('dropping empty definition of '+m.printname())
                 continue
             d[m.printname()] = m
-            logging.info('\n'+m.to_debug_str())
+            logging.debug('\n'+m.to_debug_str())
         except pyparsing.ParseException, pe:
             print l
             logging.error("Error: "+str(pe))

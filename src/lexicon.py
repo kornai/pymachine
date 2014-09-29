@@ -351,6 +351,9 @@ class Lexicon:
             return
         
         for static_machine in self.static[printname]:
+            logging.info('activating machine:\n{0}'.format(static_machine))
+            logging.info(
+                'control dict:\n{0}'.format(static_machine.control.__dict__))
             machine = self.unify_recursively(static_machine)
 
             # change expand status in active store
@@ -409,7 +412,9 @@ class Lexicon:
                     return None
 #                logging.debug('ur activating machine')
                 active_machine = Machine(static_name)
-                active_control = copy.deepcopy(static_machine.control)
+                active_control = copy.copy(static_machine.control)
+                active_control.set_machine(active_machine)
+                #active_control = copy.deepcopy(static_machine.control)
                 active_machine.set_control(active_control)
                 self.__add_active_machine(active_machine)
 

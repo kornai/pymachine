@@ -133,7 +133,7 @@ class SpreadingActivation(object):
                     logging.info(
                         "ACCEPTED {0} sequences".format(len(accepted)))
                 for seq in accepted:
-                    logging.debug(
+                    logging.info(
                         u" ".join(unicode(m) for m in seq).encode('utf-8'))
 
                 # No we try to act() on these sequences. We stop at the first
