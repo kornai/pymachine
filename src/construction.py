@@ -29,9 +29,10 @@ class Construction(object):
         self.type_ = type_
 
     def check(self, seq):
-        logging.debug((u"Checking {0} construction for matching with " +
-                      u"{1} machines").format(self.name,
-                      u" ".join(unicode(m) for m in seq)).encode("utf-8"))
+        #don't create debug messages unless necessary, will slow down SA
+        #logging.debug((u"Checking {0} construction for matching with " +
+        #              u"{1} machines").format(self.name,
+        #              u" ".join(unicode(m) for m in seq)).encode("utf-8"))
         self.control.reset()
         for machine in seq:
             self.control.read(machine)
@@ -189,16 +190,16 @@ class VerbConstruction(Construction):
     def discover_arguments(self, machine, depth=0):
         if depth == 0:
             self.traversed = set()
-        logging.info('\t\t'*depth + 'discovering arguments of {0}...'.format(
-            machine))
+        #logging.info('\t\t'*depth + 'discovering arguments of {0}...'.format(
+        #    machine))
         for pi, p in enumerate(machine.partitions):
-            logging.info('\t\t'*depth + 'partition #{0}: {1}'.format(pi, p))
+            #logging.info('\t\t'*depth + 'partition #{0}: {1}'.format(pi, p))
             for mi, part_machine in enumerate(p):
                 if part_machine in self.traversed:
                     continue
                 self.traversed.add(part_machine)
-                logging.info('\t\t'*depth + '\tmachine #{0}: {1}'.format(
-                    mi, part_machine))
+                #logging.info('\t\t'*depth + '\tmachine #{0}: {1}'.format(
+                    #mi, part_machine))
                 pn = part_machine.printname()
                 # we are interested in deep cases and
                 # supplementary regexps
@@ -222,9 +223,9 @@ class VerbConstruction(Construction):
             res = Construction.check(self, seq)
             if res:
                 logging.debug('check is True!')
-            logging.debug("Result of check is {0}".format(res) +
-                          " and working area is:\n{0}".format(
-                              Machine.to_debug_str(self.working_area[0])))
+            #logging.debug("Result of check is {0}".format(res) +
+            #              " and working area is:\n{0}".format(
+            #                  Machine.to_debug_str(self.working_area[0])))
             return res
 
 class AVMConstruction(Construction):

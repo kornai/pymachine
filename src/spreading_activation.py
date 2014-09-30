@@ -115,7 +115,7 @@ class SpreadingActivation(object):
                     for i, seq in enumerate(itertools.permutations(
                             self.lexicon.active_machines(), elems + 1)):
                         count += 1
-                        if count % 100 == 0:
+                        if count % 10000 == 0:
                             logging.info("{0}".format(count))
 
                         if c.check(seq):

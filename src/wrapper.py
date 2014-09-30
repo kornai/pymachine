@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import pickle
 import sys
 import logging
 import ConfigParser
@@ -48,9 +49,20 @@ class Wrapper:
                     "A definition file that should be generated" +
                     " by pymachine/scripts/generate_translation_dict.sh" +
                     " does not exist: {0}".format(file_name))
-            definitions = read_defs(
-                file(file_name), self.plural_fn, printname_index,
-                three_parts=True)
+
+            if file_name.endswith('pickle'):
+                print 'loading definitions...'
+                definitions = pickle.load(file(file_name))
+            else:
+                print 'parsing definitions...'
+                definitions = read_defs(
+                    file(file_name), self.plural_fn, printname_index,
+                    three_parts=True)
+
+                print 'dumping definitions to file...'
+                f = open('definitions.pickle', 'w')
+                pickle.dump(definitions, f)
+
             logging.debug("{0}: {1}".format(file_name, definitions.keys()))
             logging.debug("{0}: {1}".format(file_name, definitions))
             self.lexicon.add_static(definitions.itervalues())
@@ -104,7 +116,7 @@ if __name__ == "__main__":
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     print 'building wrapper...'
     w = Wrapper(sys.argv[1])
-    print 'done!'
+
     #dg = w.lexicon.extract_definition_graph()
     #print dg
     test_sen = [

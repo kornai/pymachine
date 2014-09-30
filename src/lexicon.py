@@ -7,7 +7,6 @@ from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from pymachine.src.construction import Construction, AVMConstruction
 from pymachine.src.constants import id_sep
-import sys
 
 class Lexicon:
     """THE machine repository."""
@@ -50,7 +49,7 @@ class Lexicon:
 
     def add_static(self, what):
         """
-        Add lexical definition to the static collection 
+        Add lexical definition to the static collection
         while keeping prior links (parent links).
         @note We assume that a machine is added to the static graph only once.
         """
@@ -63,7 +62,7 @@ class Lexicon:
 
     # TODO: dog canonical == dog[faithful]!
     def __add_static_recursive(self, curr_from, replacement=None):
-        if replacement == None:
+        if replacement is None:
             replacement = {}
         #print "Processing word", curr_from
         #sys.stdout.flush()
@@ -77,8 +76,10 @@ class Lexicon:
                     curr_from.printname_ = curr_from.printname().lower()
                 #print "Not in replacement"
                 # Does this machine appear in the static tree?
-                from_already_seen = self.__get_disambig_incomplete(curr_from.printname())
-#                print "from already seen", curr_from.printname(), from_already_seen
+                from_already_seen = self.__get_disambig_incomplete(
+                    curr_from.printname())
+                #print ("from already seen", curr_from.printname(),
+                #       from_already_seen
                 # If not: simply adding the new machine/definition...
                 if len(from_already_seen) == 0:
                     #print "from already seen = 0"
@@ -90,10 +91,12 @@ class Lexicon:
                     # Otherwise add a placeholder + itself to static
                     else:
                         #print "adding as placeholder"
-                        from_already_seen = [Machine(curr_from.printname()), curr_from]
+                        from_already_seen = [
+                            Machine(curr_from.printname()), curr_from]
 
                     self.static[curr_from.printname()] = from_already_seen
-                    #print "Adding to static", curr_from.printname(), from_already_seen
+                    #print ("Adding to static", curr_from.printname(),
+                    #       from_already_seen
                     self.__add_to_disambig(curr_from.printname())
                     replacement[curr_from] = curr_from
 
@@ -128,13 +131,14 @@ class Lexicon:
             from_partitions = [[m for m in p] for p in curr_from.partitions]
             for part_i, part in enumerate(from_partitions):
                 for child in part:
-            #        print "found child", child
-                    # Remove to delete any parent links
-            #        print "part before", part, curr_from.partitions[part_i]
+                    #print "found child", child
+                    #Remove to delete any parent links
+                    #print "part before", part, curr_from.partitions[part_i]
                     curr_from.remove(child, part_i)
-            #        print "part after", part, curr_from.partitions[part_i]
-                    curr_to.append(self.__add_static_recursive(child, replacement),
-                                   part_i)
+                    #print "part after", part, curr_from.partitions[part_i]
+                    curr_to.append(
+                        self.__add_static_recursive(child, replacement),
+                        part_i)
 
         return replacement[curr_from]
 
@@ -145,16 +149,17 @@ class Lexicon:
     def __get_disambig_incomplete(self, print_name):
         """
         Returns the machine by its unique name. If the name is not in static,
-        but static_disambig contains the ambiguous name, which points to itself,
-        (and only itself,) then we replace the value in the mapping with the
-        unique name.
+        but static_disambig contains the ambiguous name, which points to
+        itself, (and only itself,) then we replace the value in the mapping
+        with the unique name.
 
         The above is needed because it is possible to encounter a word in the
         definition of another before we get to the word in the lexicon. If our
         word is referred to with its ambiguous name in the definition, we don't
-        know the id yet, so we have to insert the ambiguous name to static as
-        a placeholder. Once we see the definition of the word in question,
-        however, we can replace the ambiguous name with the fully qualified one.
+        know the id yet, so we have to insert the ambiguous name to static as a
+        placeholder. Once we see the definition of the word in question,
+        however, we can replace the ambiguous name with the fully qualified
+        one.
         """
         if print_name in self.static:
 #            print "XXX: printname", print_name, "in static"
@@ -189,8 +194,8 @@ class Lexicon:
                         return already_seen
                     else:
                         return self.static[ambig_name]
-                # Only fully qualified names. Our ambig is a valid reference, if
-                # there is only one.
+                # Only fully qualified names. Our ambig is a valid reference,
+                # if there is only one.
                 else:
 #                    print "else"
 #                    print ambig_name, print_name, len(names), names
@@ -238,7 +243,8 @@ class Lexicon:
         """
         for print_name, nodes in self.static.iteritems():
             if print_name != nodes[0].printname():
-                #len(nodes) > 1 and nodes[0].printname() != nodes[1].printname():
+                #len(nodes) > 1 and (
+                #   nodes[0].printname() != nodes[1].printname()):
                 nodes[0].printname_ = print_name
             # We don't care about deep cases here
             if not nodes[0].fancy():
@@ -253,9 +259,10 @@ class Lexicon:
     def extract_definition_graph(self, deep_cases=False):
         """
         Extracts the definition graph from the static graph. The former is a
-        "flattened" version of the latter: all canonical words in the definition
-        are connected to the definiendum, as well as the canonical version of
-        non-canonical terms. The structure of the definition is not preserved.
+        "flattened" version of the latter: all canonical words in the
+        definition are connected to the definiendum, as well as the canonical
+        version of non-canonical terms. The structure of the definition is not
+        preserved.
 
         @param deep_cases if @c False (the default), deep cases in the
                           definitions do not appear on the output graph.
@@ -275,7 +282,7 @@ class Lexicon:
         return def_graph
 
     def __build_definition_graph(self, root_def_m, static_m, def_graph, stop,
-                                       canonicals, deep_cases):
+                                 canonicals, deep_cases):
         """
         Walks through the machines reachable from @p static_m, and adds a
         reference to the corresponding canonical machines to the definition
@@ -283,17 +290,19 @@ class Lexicon:
         """
         for static_child in static_m.children():
             if not static_child.fancy():
-                cname = self.get_static_machine(static_child.printname())[0].printname()
+                cname = self.get_static_machine(
+                    static_child.printname())[0].printname()
                 def_child = def_graph[cname][0]
                 if def_child != root_def_m:
                     root_def_m.append(def_child)
-            elif deep_cases and static_child.deep_case() and \
-                 static_child.printname() not in stop:
+            elif (deep_cases and static_child.deep_case() and
+                    static_child.printname() not in stop):
                 root_def_m.append(Machine(static_child.printname()))
             if static_child.fancy() or static_child not in canonicals:
                 # deep cases are added by their printname to stop, because as
                 # of yet, hash is id-based for machines
-                if static_child not in stop and static_child.printname() not in stop:
+                if (static_child not in stop and
+                        static_child.printname() not in stop):
                     if static_child.fancy():
                         stop.add(static_child.printname())
                     else:
@@ -344,16 +353,16 @@ class Lexicon:
                             right now, but {0} is not active""".format(
                             printname))
         if printname not in self.static:
-            logging.warning(("expanding a machine ({0}) that is not in " + 
+            logging.warning(("expanding a machine ({0}) that is not in " +
                             "knowledge base ie. Lexicon.static").format(
                             repr(printname)))
             self.active[printname][machine] = True
             return
-        
+
         for static_machine in self.static[printname]:
-            logging.info('activating machine:\n{0}'.format(static_machine))
-            logging.info(
-                'control dict:\n{0}'.format(static_machine.control.__dict__))
+            #logging.info('activating machine:\n{0}'.format(static_machine))
+            #logging.info(
+            #    'control dict:\n{0}'.format(static_machine.control.__dict__))
             machine = self.unify_recursively(static_machine)
 
             # change expand status in active store
@@ -372,49 +381,52 @@ class Lexicon:
             return None
         # If we have already unified this machine: just return
         if (not isinstance(static_machine, str) and
-            not isinstance(static_machine, unicode)):
+                not isinstance(static_machine, unicode)):
             static_printname = static_machine.printname()
         else:
             static_printname = static_machine
         if static_printname in stop:
-#            logging.debug('ur stops')
+            #logging.debug('ur stops')
             return self.active[static_printname].keys()[0]
-        # If static_machine is a string, we don't have much to do
-#        logging.debug('ur static_machine {0}, type: {1}'.format(str(static_machine), str(type(static_machine))))
+        #If static_machine is a string, we don't have much to do
+        #logging.debug('ur static_machine {0}, type: {1}'.format(
+        #   str(static_machine), str(type(static_machine))))
         if isinstance(static_machine, str):
             if static_machine in self.active:
-                # FIXME: [0] is a hack, fix it 
-#                logging.debug('ur str in active')
+                # FIXME: [0] is a hack, fix it
+                #logging.debug('ur str in active')
                 return self.active[static_machine].keys()[0]
             else:
                 if static_machine.startswith('#'):
-#                    logging.debug('ur waking up')
+                    #logging.debug('ur waking up')
                     self.wake_avm_construction(static_machine)
                     return None
-#                logging.debug('ur activating str')
-                active_machine = Machine(static_machine,
-                                                 ConceptControl())
+                #logging.debug('ur activating str')
+                active_machine = Machine(static_machine, ConceptControl())
                 self.__add_active_machine(active_machine)
                 return active_machine
         # If it's a machine, we create the corresponding active one
         elif isinstance(static_machine, Machine):
             static_name = static_machine.printname()
-#            logging.debug('Does {0} start with #? {1}'.format(static_name, static_name.startswith('#')))
+            #logging.debug('Does {0} start with #? {1}'.format(
+            #   static_name, static_name.startswith('#')))
 
             if static_name in self.active:
-#                logging.debug('ur machine in active')
+                #logging.debug('ur machine in active')
                 active_machine = self.active[static_name].keys()[0]
             else:
-#                logging.debug('Not in active')
+                #logging.debug('Not in active')
                 if static_name.startswith('#'):
-#                    logging.debug('ur waking up')
+                    #logging.debug('ur waking up')
                     self.wake_avm_construction(static_name)
                     return None
-#                logging.debug('ur activating machine')
+                #logging.debug('ur activating machine')
                 active_machine = Machine(static_name)
                 active_control = copy.copy(static_machine.control)
-                active_control.set_machine(active_machine)
                 #active_control = copy.deepcopy(static_machine.control)
+                #deepcopy causes infinite recursion, I hope shallow copy
+                #works, since the active machine will update the control's
+                #machine attribute (and we don't know of anything else)
                 active_machine.set_control(active_control)
                 self.__add_active_machine(active_machine)
 
@@ -432,25 +444,25 @@ class Lexicon:
 
     def wake_avm_construction(self, avm_name):
         """
-        Copies an AVM construction from @c avm_constructions to @c constructions
-        (that is, "wakes" it up).
+        Copies an AVM construction from @c avm_constructions to
+        @c constructions (that is, "wakes" it up).
         """
         avm_construction = self.avm_constructions.get(avm_name[1:])
         # TODO
         if (avm_construction is not None and
-            avm_construction not in self.constructions):
+                avm_construction not in self.constructions):
             self.constructions.append(avm_construction)
 
     def activate(self):
         """Finds and returns the machines that should be activated by the
         machines already active. These machines are automatically added
         to self.active as well
-        
+
         When exactly a machine should be activated is still up for
         consideration; however, currently this method returns a machine if
         all non-primitive machines on its partitions are active."""
         activated = []
-        
+
         for printname, static_machines in self.static.iteritems():
             for static_machine in static_machines:
                 if printname in self.active:
@@ -459,12 +471,12 @@ class Lexicon:
                 for machine in chain(*static_machine.partitions):
                     has_machine = True
                     if (not unicode(machine).startswith(u'#') and
-                        unicode(machine) not in self.active):
+                            unicode(machine) not in self.active):
                         break
                 else:
                     if has_machine:
                         m = Machine(printname,
-                            copy.copy(static_machine.control))
+                                    copy.copy(static_machine.control))
                         self.add_active(m)
                         activated.append(m)
         return activated
@@ -516,4 +528,3 @@ class Lexicon:
     def test_static_graph_building():
         """Tests the static graph building procedure."""
         pass
-
