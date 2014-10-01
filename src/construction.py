@@ -133,10 +133,11 @@ class VerbConstruction(Construction):
     Hence, it is enough to maintain a single Machine as a placeholder for
     this element.
     """
-    def __init__(self, name, lexicon, supp_dict):
+    def __init__(self, name, lexicon, supp_dict, max_depth=3):
         self.name = name
         self.lexicon = lexicon
         self.supp_dict = supp_dict
+        self.max_depth = max_depth
         self.matchers = {}
         self.working_area = [Machine(None, KRPosControl('stem/VERB'))]
         # indexing 0th element in static because that is the canonical machine
@@ -188,18 +189,20 @@ class VerbConstruction(Construction):
         return control
 
     def discover_arguments(self, machine, depth=0):
+        if depth > self.max_depth:
+            return
         if depth == 0:
             self.traversed = set()
-        #logging.info('\t\t'*depth + 'discovering arguments of {0}...'.format(
-        #    machine))
+        logging.info('\t\t'*depth + 'discovering arguments of {0}...'.format(
+            machine))
         for pi, p in enumerate(machine.partitions):
-            #logging.info('\t\t'*depth + 'partition #{0}: {1}'.format(pi, p))
+            logging.info('\t\t'*depth + 'partition #{0}: {1}'.format(pi, p))
             for mi, part_machine in enumerate(p):
                 if part_machine in self.traversed:
                     continue
                 self.traversed.add(part_machine)
-                #logging.info('\t\t'*depth + '\tmachine #{0}: {1}'.format(
-                    #mi, part_machine))
+                logging.info('\t\t'*depth + '\tmachine #{0}: {1}'.format(
+                    mi, part_machine))
                 pn = part_machine.printname()
                 # we are interested in deep cases and
                 # supplementary regexps
