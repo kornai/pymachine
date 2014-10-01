@@ -4,6 +4,7 @@ import itertools
 
 from control import PluginControl
 from construction import Construction
+from pymachine.src.control import ConceptControl
 from np_parser import parse_chunk
 
 def powerset(iterable):
@@ -64,7 +65,10 @@ class SpreadingActivation(object):
         # for the whole lexicon
         plugin_found = False
         safety_zone = 0
-        while not plugin_found or safety_zone < 5:
+        iter_count = 0
+        while iter_count < 1:
+        #while not plugin_found or safety_zone < 5:
+            iter_count += 1
             if plugin_found:
                 safety_zone += 1
             active_dbg_str = ', '.join(
@@ -74,7 +78,7 @@ class SpreadingActivation(object):
                 k.encode('utf-8') for k in sorted(self.lexicon.static.keys()))
             logging.debug(
                 "\n\nACTIVE:" + str(last_active) + ' ' + active_dbg_str)
-            logging.info("\n\nACTIVE DICT: {}".format(self.lexicon.active))
+            logging.debug("\n\nACTIVE DICT: {}".format(self.lexicon.active))
             logging.debug("\n\nSTATIC:" + ' ' + static_dbg_str)
             logging.debug("\n\nSTATIC DICT: {}".format(self.lexicon.static))
 #            logging.debug('ACTIVE')
@@ -88,6 +92,9 @@ class SpreadingActivation(object):
 
                 self.lexicon.expand(machine)
 
+            logging.info("\n\nACTIVE DICT: {}".format(self.lexicon.active))
+            logging.info("\n\nACTIVE MACHINES: {}".format(
+                self.lexicon.active_machines()))
             # Step 2a: semantic constructions:
             for c in semantic_constructions:
                 # The machines that can take part in constructions
@@ -114,6 +121,10 @@ class SpreadingActivation(object):
                 #for elems in xrange(len(constable)):
                     for i, seq in enumerate(itertools.permutations(
                             self.lexicon.active_machines(), elems + 1)):
+                        if any(isinstance(machine.control, ConceptControl)
+                               for machine in seq):
+                            continue
+                        #logging.info('trying this: {0}'.format(seq))
                         count += 1
                         if count % 10000 == 0:
                             logging.info("{0}".format(count))
