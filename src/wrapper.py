@@ -9,6 +9,7 @@ import ConfigParser
 from pymachine.src.construction import VerbConstruction
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
+from machine import MachineGraph
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
 from sup_dic import supplementary_dictionary_reader as sdreader
@@ -101,6 +102,12 @@ class Wrapper:
             # results is a list of (url, data) tuples
             results = sa.activation_loop(machines)
             print 'results:', results
+            print 'machines:', machines
+
+            graph = MachineGraph.create_from_machines(machines)
+            f = open('machines.dot', 'w')
+            f.write(graph.to_dot())
+
             self.lexicon.clear_active()
         except Exception, e:
             import traceback
