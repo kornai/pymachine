@@ -8,14 +8,12 @@
 #between x and y, the order can be reversed with "!". E.g. HAS will trigger
 #x HAS y, !HAS will trigger Y HAS X
 
-abbrev	0,0
 acomp	0,-
 advcl	?,-
 advmod	0,-
 agent	1,-
 amod	0,-
 appos	0,0
-attr	?,?
 aux	0,1
 auxpass	0,1
 
@@ -45,8 +43,6 @@ dobj	2,-
 
 expl	-,-
 #We shouldn't have to do anything extra here if our theory is perfect, right?
-
-infmod	-,2
 
 iobj	?,?
 #I guess we deny that these really exist.
@@ -79,7 +75,8 @@ parataxis	?,?
 #need to see more examples first, might be handled at the sentence tokenization
 #level
 
-partmod	?,?
+#partmod	?,?
+#(obsoleted by vmod)
 #This should be two relations based on the role of the first element
 # "Truffles picked during the spring are tasty"	
 # partmod(truffles, picked)	-,2
@@ -108,7 +105,8 @@ prepc_without   -,- LACK
 prt	2,-
 punct -,-
 
-purpcl	-,-
+#purpcl	-,-
+#(obsoleted by advcl)
 #Maybe y CAUSE x, or do we have something standard for GOAL?
 
 quantmod	-,-
@@ -116,8 +114,6 @@ quantmod	-,-
 
 rcmod	-,2
 ref	-,-
-
-rel	2,-
 
 root	-,-
 #tells us what the predicate is
