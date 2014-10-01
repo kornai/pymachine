@@ -1,5 +1,6 @@
 import logging
 import copy
+from collections import defaultdict
 from itertools import chain
 
 from pymachine.src.control import Control
@@ -12,7 +13,8 @@ class Machine(object):
 
         self.set_control(control)
 
-        logging.debug(u"{0} created with {1} partitions".format(name, len(self.partitions)))
+        logging.debug(u"{0} created with {1} partitions".format(
+            name, len(self.partitions)))
         
         self.parents = set()
 
@@ -39,6 +41,10 @@ class Machine(object):
             for m in part:
                 m.add_parent_link(new_machine, part_i)
         return new_machine
+
+    def d_printname(self):
+        #TODO
+        return self.printname_.split('/')[0].replace('=', '_')
 
     def printname(self):
         return self.printname_
@@ -199,6 +205,47 @@ class Machine(object):
 
         if depth == 0:
             return u"\n".join(lines)
+
+class MachineGraph:
+    @staticmethod
+    def create_from_machines(iterable):
+        g = MachineGraph()
+        g.seen = set()
+        for machine in iterable:
+            g._get_edges_recursively(machine[0])
+
+        return g
+
+    def _get_edges_recursively(self, machine):
+        if machine in self.seen:
+            return
+        self.seen.add(machine)
+        for color, part in enumerate(machine.partitions):
+            for machine2 in part:
+                self.add_edge(machine, machine2, color)
+                self._get_edges_recursively(machine2)
+
+    def __init__(self):
+        self.machines = set()
+        self.edges_by_color = defaultdict(set)
+
+    def add_edge(self, m1, m2, color):
+        self.machines.add(m1)
+        self.machines.add(m2)
+        self.edges_by_color[color].add((m1, m2))
+
+    def to_dot(self):
+        lines = ['digraph finite_state_machine {', '\tdpi=100;']
+        #lines.append('\tordering=out;')
+        for machine in self.machines:
+            lines.append('\tnode [shape = circle]; {0};'.format(
+                         machine.d_printname()))
+        for color, edges in self.edges_by_color.iteritems():
+            for m1, m2 in edges:
+                lines.append('\t{0} -> {1} [ label = "{2}" ];'.format(
+                    m1.d_printname(), m2.d_printname(), color))
+        lines.append('}')
+        return '\n'.join(lines)
 
 def test_printname():
     m_unicode = Machine(u"\u00c1")
