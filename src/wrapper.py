@@ -130,7 +130,7 @@ if __name__ == "__main__":
         ([("vets", "vet/NOUN<PLUR>")], 'NP'),
         ("heal", "heal/VERB"),
         ([
-            ("sick", "sick/ADJ"),
+            #("sick", "sick/ADJ"),
             ("zebras", "zebra/NOUN<PLUR>")], 'NP')]
     print 'running...'
     w.run(test_sen)
