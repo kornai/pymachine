@@ -15,7 +15,7 @@ class Machine(object):
 
         logging.debug(u"{0} created with {1} partitions".format(
             name, len(self.partitions)))
-        
+
         self.parents = set()
 
     def __repr__(self):
@@ -27,7 +27,9 @@ class Machine(object):
     def __unicode__(self):
         if self.control is None:
             return u"{0} (no control)".format(self.printname())
-        return u"{0} ({1})".format(self.printname(), self.control.to_debug_str().replace('\n', ' '))
+        return u"{0} ({1})".format(
+            self.printname(),
+            self.control.to_debug_str().replace('\n', ' '))
 
     def __deepcopy__(self, memo):
         new_machine = self.__class__(self.printname_)
@@ -42,6 +44,18 @@ class Machine(object):
                 m.add_parent_link(new_machine, part_i)
         return new_machine
 
+    def unify(self, machine2):
+        for i, part in enumerate(machine2.partitions):
+            for m in part:
+                if m not in self.partitions[i]:
+                    self.partitions[i].append(m)
+                    m.add_parent_link(self, i)
+
+        for parent, i in machine2.parents:
+            parent.partitions[i].remove(machine2)
+            parent.partitions[i].append(self)
+            self.add_parent_link(parent, i)
+
     def d_printname(self):
         #TODO
         return self.printname_.split('/')[0].replace('=', '_')
@@ -54,21 +68,22 @@ class Machine(object):
         # control will be an FST representation later
         if not isinstance(control, Control) and control is not None:
             raise TypeError("control should be a Control instance, " +
-                "got {} instead".format(type(control)))
+                            "got {} instead".format(type(control)))
         self.control = control
         if control is not None:
             control.set_machine(self)
 
     def allNames(self):
-        return set([self.__unicode__()]).union(*[partition[0].allNames()
-            for partition in self.partitions])
+        return set([self.__unicode__()]).union(
+            *[partition[0].allNames() for partition in self.partitions])
 
     def children(self):
         """Returns all direct children of the machine."""
         return set(chain(*self.partitions))
 
     def unique_machines_in_tree(self):
-        """Returns all unique machines under (and including) the current one."""
+        """Returns all unique machines under (and including)
+        the current one."""
         def __recur(m):
             visited.add(m)
             for child in m.children():
@@ -87,19 +102,21 @@ class Machine(object):
                 self.append(what, which_partition)
         else:
             raise TypeError("append_all only accepts iterable objects.")
-        
+
     def append(self, what, which_partition=0):
         """
         Adds @p Machine instance to the specified partition.
         """
-        #logging.debug(u"{0}.append({1},{2})".format(self.printname(), # TODO printname
-                                                    #what.printname(), which_partition).encode("utf-8"))
+        # TODO printname
+        #logging.debug(u"{0}.append(
+        #   {1},{2})".format(self.printname(), what.printname(),
+        #   which_partition).encode("utf-8"))
         if len(self.partitions) > which_partition:
             if what in self.partitions[which_partition]:
                 return
         else:
             self.partitions += [[] for i in range(which_partition + 1 -
-                len(self.partitions))]
+                                len(self.partitions))]
 
         self.__append(what, which_partition)
 
@@ -111,7 +128,8 @@ class Machine(object):
         elif what is None:
             pass
         else:
-            raise TypeError("Only machines and strings can be added to partitions")
+            raise TypeError(
+                "Only machines and strings can be added to partitions")
 
     def remove_all(self, what_iter, which_partition=None):
         """ Mass remove function that calls remove() for every object """
@@ -145,7 +163,7 @@ class Machine(object):
         self.parents.remove((whose, part))
 
 ###################################
-### Machine-type-related methods 
+### Machine-type-related methods
 
     def unary(self):
         return len(self.partitions) == 1
@@ -167,13 +185,14 @@ class Machine(object):
     def fancy(self):
         return self.deep_case() or self.avm() or self.named_entity()
 
-    def to_debug_str(self, depth=0, max_depth=3, parents_to_display=3, stop=None):
+    def to_debug_str(self, depth=0, max_depth=3, parents_to_display=3,
+                     stop=None):
         """An even more detailed __str__, complete with object ids and
         recursive."""
         return self.__to_debug_str(0, max_depth, parents_to_display, stop=stop)
 
     def __to_debug_str(self, depth, max_depth=3, parents_to_display=3,
-            lines=None, stop=None, at_partition=""):
+                       lines=None, stop=None, at_partition=""):
         """Recursive helper method for to_debug_str.
         @param depth the depth of the recursion.
         @param max_depth the maximum recursion depth.
@@ -184,7 +203,7 @@ class Machine(object):
             lines = []
 
         pn = self.printname()
-        if (depth != 0 and self in stop ) or depth == max_depth:
+        if (depth != 0 and self in stop) or depth == max_depth:
             prnts_str = '...'
         else:
             prnts = [m[0].printname() + ':' + str(id(m[0])) + ':' + str(m[1])
@@ -192,10 +211,10 @@ class Machine(object):
             prnts_str = ','.join(prnts[:parents_to_display])
             if len(prnts) > parents_to_display:
                 prnts_str += ', ..'
-        lines.append(u'{0:>{1}}:{2}:{3} p[{4}]'.format(at_partition,
-            2 * depth + len(str(at_partition)), pn, id(self),
+        lines.append(u'{0:>{1}}:{2}:{3} p[{4}]'.format(
+            at_partition, 2 * depth + len(str(at_partition)), pn, id(self),
             prnts_str))
-        if not ((depth != 0 and self in stop ) or depth == max_depth):
+        if not ((depth != 0 and self in stop) or depth == max_depth):
             stop.add(self)
             for part_i in xrange(len(self.partitions)):
                 part = self.partitions[part_i]
@@ -256,4 +275,3 @@ def test_printname():
 
 if __name__ == "__main__":
     test_printname()
-
