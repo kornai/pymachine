@@ -35,7 +35,7 @@ class Construction(object):
         #              u" ".join(unicode(m) for m in seq)).encode("utf-8"))
         self.control.reset()
         for machine in seq:
-            self.control.read(machine)
+            self.control.read(machine, dry_run=True)
         return self.control.in_final()
 
     def run(self, seq):
@@ -58,6 +58,9 @@ class Construction(object):
         """@return a sequence of machines, or @c None, if last_check() failed.
         """
         logging.debug("Construction matched, running action")
+        self.control.reset()
+        for machine in seq:
+            self.control.read(machine)
         # arbitrary python code, now every construction will have it
         # hardcoded into the code, later it will be done by Machine objects
 
@@ -118,6 +121,7 @@ class NPConstruction(Construction):
         return True
 
     def act(self, seq):
+        logging.info('acting, operators: {}'.format(self.operators))
         for operator in self.operators:
             seq = operator.act(seq)
         return seq

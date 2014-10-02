@@ -130,7 +130,6 @@ class SpreadingActivation(object):
                             logging.info("{0}".format(count))
 
                         if c.check(seq):
-                            #quit()
                             accepted.append(seq)
 
                 # The sequence preference order is longer first
@@ -171,6 +170,8 @@ class SpreadingActivation(object):
                         break
                     else:
                         del accepted[-1]
+
+                    break  # TODO
 
             avm_constructions = set([c for c in self.lexicon.constructions
                                     if c.type_ == Construction.AVM])

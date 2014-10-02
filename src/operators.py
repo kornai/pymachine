@@ -70,18 +70,18 @@ class FeatCopyOperator(Operator):
         """
         Operator.__init__(self, working_area)
         self.from_m = from_m
-        self.to_m   = to_m
-        self.keys   = keys
+        self.to_m = to_m
+        self.keys = keys
 
     def act(self, seq):
         if not (isinstance(seq[self.from_m].control, KRPosControl) and
                 isinstance(seq[self.to_m].control, KRPosControl)):
-            raise TypeError("FeatCopyOperator can only work on machines with " +
-                            "KRPosControl as their controls.")
+            raise TypeError("FeatCopyOperator can only work on machines " +
+                            "with KRPosControl as their controls.")
         for key in self.keys:
             try:
                 seq[self.to_m].control.kr[key] = \
-                        seq[self.from_m].control.kr[key]
+                    seq[self.from_m].control.kr[key]
             except KeyError:
                 pass
         return seq
@@ -102,7 +102,8 @@ class AddArbitraryStringOperator(Operator):
     # later will be changed to have working_area, so postponed until then
     def __init__(self, X, arbitrary_string, part=0, working_area=None):
         """
-        @param X index of the machine to whose partition arbitrary_string will be appended.
+        @param X index of the machine to whose partition arbitrary_string will
+        be appended.
         @param part the partition index.
         """
         Operator.__init__(self, working_area)
@@ -116,11 +117,11 @@ class AddArbitraryStringOperator(Operator):
 
 class CreateBinaryOperator(Operator):
     """ Creates a binary machine and adds input machines to its partitions"""
-    
+
     def __init__(self, what, first, second, working_area=None):
         # TODO type checking of what to be binary
         Operator.__init__(self, working_area)
-        self.what = what 
+        self.what = what
         self.first = first
         self.second = second
 
@@ -149,7 +150,9 @@ class FillArgumentOperator(Operator):
         self.case = case
 
     def act(self, arg_mach):
-        logging.debug("FillArgOp acting on input {0} and working area {1}".format(arg_mach, self.working_area[0]))
+        logging.info(
+            "FillArgOp acting on input {0} and working area {1}".format(
+                arg_mach, self.working_area[0]))
         self.seen_by_act = set()
         self._act(arg_mach, self.working_area[0])
 
@@ -160,14 +163,25 @@ class FillArgumentOperator(Operator):
         else:
             self.seen_by_act.add(machine.printname())
 
-        logging.debug("FillArgOp _acting on input {0} and working area {1}".format(arg_mach, machine))
-        logging.debug('working area partitions: {0}'.format(machine.partitions))
+        logging.info(
+            "FillArgOp _acting on input {0} and working area {1}".format(
+                arg_mach, machine))
+        logging.debug(
+            'working area partitions: {0}'.format(machine.partitions))
+        success = False
         for part_ind, part in enumerate(machine.partitions):
             for submach_ind, submach in enumerate(part):
                 if submach.printname() == self.case:
+                    logging.info('Filling argument {0} of {1} with {2}'.format(
+                        self.case, machine, arg_mach))
+                    arg_mach.unify(submach)
                     part[submach_ind] = arg_mach  # TODO unify
+                    success = True
+                    break
                 else:
                     self._act(arg_mach, submach)
+            if success:
+                break
 
 class ExpandOperator(Operator):
     """Expands an active machine."""
@@ -182,7 +196,8 @@ class ExpandOperator(Operator):
         """
         @param input the machine read by the transition.
         """
-        logging.debug("ExpandOperator acting on input {0} and working area {0}".format(input, self.working_area[0]))
+        logging.debug(
+            "ExpandOperator acting on input {0} and working area {0}".format(
+                input, self.working_area[0]))
         self.lexicon.expand(input)
         self.working_area[0] = input
-

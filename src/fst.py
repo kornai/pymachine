@@ -94,7 +94,7 @@ class FSA(object):
     def in_final(self):
         return len(self.active_states & self.final_states) > 0
 
-    def read_machine(self, machine):
+    def read_machine(self, machine, dry_run=False):
         self.check_states()
         if self.active_states is None:
             self.init_active_states()
@@ -107,12 +107,12 @@ class FSA(object):
                     new_active_states.add(out_state)
         self.active_states = new_active_states
 
-    def read(self, what):
+    def read(self, what, dry_run=False):
         if isinstance(what, Machine) or isinstance(what, AVM):
-            self.read_machine(what)
+            self.read_machine(what, dry_run=dry_run)
         elif isinstance(what, Iterable):
             for what_ in what:
-                self.read(what_)
+                self.read(what_, dry_run=dry_run)
 
 class FST(FSA):
     def __init__(self):
@@ -125,9 +125,10 @@ class FST(FSA):
             raise TypeError("transition's matcher has to be of type Matcher")
         self.transitions[input_state][matcher] = (output_state, operators)
 
-    def read_machine(self, machine):
+    def read_machine(self, machine, dry_run=False):
         #This is called so often, it should not create debug messages
-
+        if not dry_run:
+            logging.debug('FST reading machine: {}'.format(machine))
         #logging.debug("FST.read_machine() called with {0}".format(machine))
         self.check_states()
         if self.active_states is None:
@@ -141,9 +142,16 @@ class FST(FSA):
                 if transition.match(machine):
                     #logging.info('FST: matching transitions: {}'.format(
                     #    transition))
-                    for op in operators:
-                        op.act(machine)
+                    if not dry_run:
+                        for op in operators:
+                            logging.debug('running operator: {}'.format(op))
+                            op.act(machine)
                     new_active_states.add(out_state)
+
+                    """TODO we now assume that there's only one edge from each
+                    state matching any given machine"""
+
+                    break
 
         # HACK no sink right now
         if len(new_active_states) > 0:
