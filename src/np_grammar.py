@@ -1,7 +1,6 @@
 from construction import NPConstruction
 from operators import AppendOperator, FeatChangeOperator, FeatCopyOperator, \
-                      AddArbitraryStringOperator, CreateBinaryOperator, \
-                      DeleteOperator
+                      AddArbitraryStringOperator, DeleteOperator
 
 np_rules = []
 
