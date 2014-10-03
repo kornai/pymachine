@@ -23,8 +23,8 @@ cc	-,-
 ccomp	?,1
 complm	0,0
 
-conj -,-
-#each coordinated element appears in it's own relations
+conj	-,-
+#each coordinated element appears in its own relations
 
 cop	-,-
 #but will be necessary to disambiguate nsubj and csubj
@@ -55,10 +55,11 @@ mwe	-,-
 neg	-,-
 #This'll trigger whatever it is that we'll do for negation
 
-nn	?,?
+nn	-,-
 # "there is no intelligent noun compund analysis. This is likely to be fixed
 # once the Penn Treebank represents the branching structure of NPs"
-# Until then, this'll trigger our own noun compound analysis
+# Until then, this should trigger our own noun compound analysis
+# Until we have that, do nothing
 
 npadvmod	0,-
 
@@ -86,24 +87,21 @@ parataxis	?,?
 pcomp	2,-
 pobj	2,-
 
-poss	-,- HAS
+poss	-,-	HAS
 #x HAS y
 
 possessive	-,-
 
 preconj	-,-
-predet -,-
+predet	-,-
 #These two can trigger something once we have quantification...
 
-prep	-,1
-#But will this work for prep(responsible, for) ???
-
-prepc_X	?,?
-#Different for each value of X, e.g. prepc_without(x,y) -> x LACK y
-prepc_without   -,- LACK
+prep_in	-,-	IN
+prep_of	-,-	!HAS
+prepc_without	-,-	LACK
 
 prt	2,-
-punct -,-
+punct	-,-
 
 #purpcl	-,-
 #(obsoleted by advcl)
@@ -118,7 +116,7 @@ ref	-,-
 root	-,-
 #tells us what the predicate is
 
-tmod	-,- AT
+tmod	-,-	AT
 #x AT y
 
 xcomp	2,-
