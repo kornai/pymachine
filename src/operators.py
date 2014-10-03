@@ -2,8 +2,7 @@
 
 import logging
 
-from pymachine.src.machine import Machine
-from pymachine.src.control import KRPosControl, ConceptControl
+from pymachine.src.control import KRPosControl
 
 class Operator(object):
     """The abstract superclass of the operator hierarchy."""
@@ -115,24 +114,20 @@ class AddArbitraryStringOperator(Operator):
         seq[self.X].append(self.arbitrary_string, self.part)
         return seq
 
-class CreateBinaryOperator(Operator):
-    """ Creates a binary machine and adds input machines to its partitions"""
+class AppendToBinaryOperator(Operator):
+    """appends two machines to the partitions of a binary relation"""
 
-    def __init__(self, what, first, second, working_area=None):
+    def __init__(self, bin_rel, first_pos, second_pos, working_area=None):
         # TODO type checking of what to be binary
         Operator.__init__(self, working_area)
-        self.what = what
-        self.first = first
-        self.second = second
+        self.bin_rel = bin_rel
+        self.first_pos = first_pos
+        self.second_pos = second_pos
 
     def act(self, seq):
-        # HACK zseder: I will assume input of act as a sequence even though
-        # I know this will be changed later, only in the sake of not seeming
-        # LAZY
-        m = Machine(self.what, ConceptControl(), 2)
-        m.append(self.first, 0)
-        m.append(self.second, 1)
-        return [m]
+        self.bin_rel.append(seq[self.first_pos], 1)
+        self.bin_rel.append(seq[self.second_pos], 2)
+        return [self.bin_rel]
 
 
 ###############################
@@ -150,7 +145,7 @@ class FillArgumentOperator(Operator):
         self.case = case
 
     def act(self, arg_mach):
-        logging.info(
+        logging.debug(
             "FillArgOp acting on input {0} and working area {1}".format(
                 arg_mach, self.working_area[0]))
         self.seen_by_act = set()
@@ -163,7 +158,7 @@ class FillArgumentOperator(Operator):
         else:
             self.seen_by_act.add(machine.printname())
 
-        logging.info(
+        logging.debug(
             "FillArgOp _acting on input {0} and working area {1}".format(
                 arg_mach, machine))
         logging.debug(
