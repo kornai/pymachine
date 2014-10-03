@@ -58,7 +58,12 @@ class Machine(object):
 
     def d_printname(self):
         #TODO
-        return self.printname_.split('/')[0].replace('=', '_')
+        pn = self.printname_.split('/')[0]
+        for c in ('=', '@', '-'):
+            pn = pn.replace(c, '_')
+        if pn == 'edge':
+            pn += '_'
+        return pn
 
     def printname(self):
         return self.printname_
@@ -227,22 +232,22 @@ class Machine(object):
 
 class MachineGraph:
     @staticmethod
-    def create_from_machines(iterable):
+    def create_from_machines(iterable, max_depth=None):
         g = MachineGraph()
         g.seen = set()
         for machine in iterable:
-            g._get_edges_recursively(machine[0])
+            g._get_edges_recursively(machine[0], max_depth)
 
         return g
 
-    def _get_edges_recursively(self, machine):
-        if machine in self.seen:
+    def _get_edges_recursively(self, machine, max_depth, depth=0):
+        if machine in self.seen or (max_depth and depth > max_depth):
             return
         self.seen.add(machine)
         for color, part in enumerate(machine.partitions):
             for machine2 in part:
                 self.add_edge(machine, machine2, color)
-                self._get_edges_recursively(machine2)
+                self._get_edges_recursively(machine2, max_depth, depth=depth+1)
 
     def __init__(self):
         self.machines = set()
