@@ -43,9 +43,9 @@ def get_rel_machine(rel, lexicon):
 
 def create_operators(edge1, edge2, rel, reverse):
     operators = []
-    if edge1:
+    if edge1 is not None:  # it can be zero, so don't check for truth value!
         operators.append(AppendOperator(0, 1, part=edge1))
-    if edge2:
+    if edge2 is not None:
         operators.append(AppendOperator(1, 0, part=edge2))
     if rel:
         if not reverse:

@@ -29,6 +29,7 @@ class Lexicon:
     def __add_active_machine(self, m, expanded=False):
         """Helper method for add_active()"""
         printname = m.printname()
+        #logging.info('activating machine: {}'.format(printname))
         if printname in self.active:
             already_expanded = self.active[printname].get(m, False)
             self.active[printname][m] = expanded | already_expanded

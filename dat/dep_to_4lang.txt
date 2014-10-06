@@ -18,7 +18,7 @@ aux	0,1
 auxpass	0,1
 
 cc	-,-
-#each coordinated element appears in it's own relations
+#each coordinated element appears in its own relations
 
 ccomp	?,1
 complm	0,0
@@ -98,6 +98,7 @@ predet	-,-
 
 prep_in	-,-	IN
 prep_of	-,-	!HAS
+prep_with	-,-	INSTRUMENT
 prepc_without	-,-	LACK
 
 prt	2,-

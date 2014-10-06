@@ -57,12 +57,15 @@ class Machine(object):
             self.add_parent_link(parent, i)
 
     def d_printname(self):
+        """printname for dot output"""
         #TODO
         pn = self.printname_.split('/')[0]
-        for c in ('=', '@', '-'):
+        for c in ('=', '@', '-', ','):
             pn = pn.replace(c, '_')
         if pn == 'edge':
             pn += '_'
+        elif pn == '$':
+            pn = '_dollars'
         return pn
 
     def printname(self):
@@ -236,12 +239,14 @@ class MachineGraph:
         g = MachineGraph()
         g.seen = set()
         for machine in iterable:
-            g._get_edges_recursively(machine[0], max_depth)
+            g._get_edges_recursively(machine, max_depth)
 
         return g
 
     def _get_edges_recursively(self, machine, max_depth, depth=0):
+        logging.info('getting edges for machine: {}'.format(machine))
         if machine in self.seen or (max_depth and depth > max_depth):
+            logging.info('already traversed, skipping...')
             return
         self.seen.add(machine)
         for color, part in enumerate(machine.partitions):
@@ -254,6 +259,7 @@ class MachineGraph:
         self.edges_by_color = defaultdict(set)
 
     def add_edge(self, m1, m2, color):
+        logging.info('adding edge: {} -> {}'.format(m1, m2))
         self.machines.add(m1)
         self.machines.add(m2)
         self.edges_by_color[color].add((m1, m2))

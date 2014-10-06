@@ -21,7 +21,7 @@ import np_grammar
 
 class Wrapper:
 
-    dep_regex = re.compile('([a-z]*)\((.*?)-([0-9]*), (.*?)-([0-9]*)\)')
+    dep_regex = re.compile('([a-z_]*)\((.*?)-([0-9]*), (.*?)-([0-9]*)\)')
 
     def __init__(self, cf):
         self.cfn = cf
@@ -92,7 +92,10 @@ class Wrapper:
         """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
         machines for w1 and w2, then run all operators associated with D on the
         sequence of the new machines (m1, m2)"""
-        dep, word1, id1, word2, id2 = Wrapper.dep_regex.match(string).groups()
+        dep_match = Wrapper.dep_regex.match(string)
+        if not dep_match:
+            raise Exception('cannot parse dependency: {0}'.format(string))
+        dep, word1, id1, word2, id2 = dep_match.groups()
         ana1, ana2 = ('???/UNKNOWN',) * 2
         machine1 = Machine(word1, KRPosControl(ana1))
         machine2 = Machine(word2, KRPosControl(ana2))
@@ -126,7 +129,8 @@ class Wrapper:
             print 'results:', results
             print 'machines:', machines
 
-            graph = MachineGraph.create_from_machines(machines, max_depth=1)
+            graph = MachineGraph.create_from_machines(
+                [m[0] for m in machines], max_depth=1)
             f = open('machines.dot', 'w')
             f.write(graph.to_dot())
 
@@ -167,8 +171,15 @@ if __name__ == "__main__":
     """
     print 'running...'
     #w.run(test_sen)
+    #quit()
     for line in sys.stdin:
         w.add_dependency(line)
+
+    active_machines = w.lexicon.active_machines()
+    logging.info('active machines: {}'.format(active_machines))
+    graph = MachineGraph.create_from_machines(active_machines)
+    f = open('machines.dot', 'w')
+    f.write(graph.to_dot())
     #import pickle
     #pickle.dump(dg, open('foo', 'w'))
     #dg = w.lexicon.extract_definition_graph()

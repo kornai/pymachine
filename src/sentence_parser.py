@@ -27,6 +27,7 @@ class SentenceParser:
             else:
                 # token
                 token = token_or_chunk#[0]
+                print 'token:', token
                 _, analysis = token
                 machines.append([Machine(analysis.split("/")[0], Control(analysis))])
         return machines

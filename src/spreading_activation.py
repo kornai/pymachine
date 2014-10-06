@@ -92,8 +92,8 @@ class SpreadingActivation(object):
 
                 self.lexicon.expand(machine)
 
-            logging.info("\n\nACTIVE DICT: {}".format(self.lexicon.active))
-            logging.info("\n\nACTIVE MACHINES: {}".format(
+            logging.debug("\n\nACTIVE DICT: {}".format(self.lexicon.active))
+            logging.debug("\n\nACTIVE MACHINES: {}".format(
                 self.lexicon.active_machines()))
             # Step 2a: semantic constructions:
             for c in semantic_constructions:
