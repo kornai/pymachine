@@ -124,6 +124,10 @@ class AppendToBinaryOperator(Operator):
         self.first_pos = first_pos
         self.second_pos = second_pos
 
+    def __str__(self):
+        return "{0}({1}, {2})".format(
+            self.bin_rel, self.first_pos, self.second_pos)
+
     def act(self, seq):
         self.bin_rel.append(seq[self.first_pos], 1)
         self.bin_rel.append(seq[self.second_pos], 2)
