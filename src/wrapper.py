@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
 import pickle
@@ -10,8 +10,7 @@ import ConfigParser
 from construction import VerbConstruction
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
-from pymachine.src.machine import Machine, MachineGraph
-from pymachine.src.control import KRPosControl
+from pymachine.src.machine import MachineGraph
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
 from sup_dic import supplementary_dictionary_reader as sdreader
@@ -48,6 +47,11 @@ class Wrapper:
         self.__read_definitions()
         self.__read_supp_dict()
         self.dep_to_op = dep_map_reader(self.dep_map_fn, self.lexicon)
+
+        logging.debug('dependency to operator map:')
+        for dep, ops in self.dep_to_op.iteritems():
+            for op in ops:
+                logging.debug("{} -> {}".format(dep, op))
 
     def __read_definitions(self):
         for file_name, printname_index in self.def_files:
@@ -92,16 +96,22 @@ class Wrapper:
         """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
         machines for w1 and w2, then run all operators associated with D on the
         sequence of the new machines (m1, m2)"""
+        logging.info('processing dependency: {}'.format(string))
         dep_match = Wrapper.dep_regex.match(string)
         if not dep_match:
             raise Exception('cannot parse dependency: {0}'.format(string))
         dep, word1, id1, word2, id2 = dep_match.groups()
-        ana1, ana2 = ('???/UNKNOWN',) * 2
-        machine1 = Machine(word1, KRPosControl(ana1))
-        machine2 = Machine(word2, KRPosControl(ana2))
+
+        machine1 = self.lexicon.get_machine(word1)
+        machine2 = self.lexicon.get_machine(word2)
+
         for machine in (machine1, machine2):
+            logging.info('activating {}'.format(machine))
             self.lexicon.add_active(machine)
-        for operator in self.dep_to_op[dep]:
+
+        for operator in self.dep_to_op.get(dep, []):
+            logging.info('operator {0} acting on machines {1} and {2}'.format(
+                operator, machine1, machine2))
             operator.act((machine1, machine2))
 
     def run(self, sentence):
