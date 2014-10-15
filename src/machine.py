@@ -244,9 +244,9 @@ class MachineGraph:
         return g
 
     def _get_edges_recursively(self, machine, max_depth, depth=0):
-        logging.info('getting edges for machine: {}'.format(machine))
+        logging.debug('getting edges for machine: {}'.format(machine))
         if machine in self.seen or (max_depth and depth > max_depth):
-            logging.info('already traversed, skipping...')
+            logging.debug('already traversed, skipping...')
             return
         self.seen.add(machine)
         for color, part in enumerate(machine.partitions):
@@ -259,7 +259,7 @@ class MachineGraph:
         self.edges_by_color = defaultdict(set)
 
     def add_edge(self, m1, m2, color):
-        logging.info('adding edge: {} -> {}'.format(m1, m2))
+        logging.debug('adding edge: {} -> {}'.format(m1, m2))
         self.machines.add(m1)
         self.machines.add(m2)
         self.edges_by_color[color].add((m1, m2))
