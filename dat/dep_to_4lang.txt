@@ -23,7 +23,7 @@ cc	-,-
 ccomp	?,1
 complm	0,0
 
-conj	-,-
+conj_and	-,-
 #each coordinated element appears in its own relations
 
 cop	-,-
@@ -96,8 +96,15 @@ preconj	-,-
 predet	-,-
 #These two can trigger something once we have quantification...
 
+#This'll be horribly wrong in some cases, e.g. "bread stays soft for several days"
+prep_for	-,-	FOR
+
 prep_in	-,-	IN
 prep_of	-,-	!HAS
+
+#we don't really have this, but I didn't know what to do. Perhaps "not" and IN combined somehow, but we don't have the syntax for it, plus we don't know how negation works
+
+prep_out_of	-,-	NOTIN
 prep_with	-,-	INSTRUMENT
 prepc_without	-,-	LACK
 
