@@ -3,6 +3,7 @@ from itertools import chain
 from collections import Iterable, defaultdict
 import copy
 
+from pymachine.src.control import KRPosControl
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from pymachine.src.construction import Construction, AVMConstruction
@@ -318,7 +319,7 @@ class Lexicon:
         @param what a construction, or an iterable thereof.
         """
         if isinstance(what, Construction):
-            logging.info('adding construction: {}'.format(
+            logging.debug('adding construction: {}'.format(
                 what))
             self.constructions.append(what)
         elif isinstance(what, Iterable):
@@ -529,3 +530,13 @@ class Lexicon:
     def test_static_graph_building():
         """Tests the static graph building procedure."""
         pass
+
+    def get_machine(self, printname):
+        if printname in self.active:
+            return self.active[printname].keys()[0]
+
+        cands = self.get_static_machine(printname)
+        if not cands:
+            return Machine(printname, KRPosControl('???/UNKNOWN'))
+
+        return cands[0]
