@@ -1,4 +1,6 @@
 #!/env/python
+import logging
+
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from operators import AppendOperator, AppendToBinaryOperator
@@ -12,15 +14,20 @@ def dep_map_reader(fn, lexicon):
         l = line.strip()
         if not l or l.startswith('#'):
             continue
+        logging.debug('parsing line: {}'.format(line))
         fields = l.split('\t')
         if len(fields) == 2:
             dep, edges = fields
+            rel = None
         elif len(fields) == 3:
             dep, edges, rel = fields
             if rel[0] == '!':
                 rel = rel[1:]
                 reverse = True
+            logging.debug(
+                'trying to find machine for this relation: {}'.format(rel))
             rel_machine = get_rel_machine(rel, lexicon)
+            logging.debug('found this: {}'.format(rel_machine))
         else:
             raise Exception('lines must have 2 or 3 fields: {}'.format(
                 fields))
