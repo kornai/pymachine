@@ -9,8 +9,8 @@ def dep_map_reader(fn, lexicon):
     dep_to_op = {}
     if not fn:
         return {}
-    rel_machine, reverse = None, False
     for line in file(fn):
+        rel_machine, reverse = None, False
         l = line.strip()
         if not l or l.startswith('#'):
             continue
@@ -18,7 +18,6 @@ def dep_map_reader(fn, lexicon):
         fields = l.split('\t')
         if len(fields) == 2:
             dep, edges = fields
-            rel = None
         elif len(fields) == 3:
             dep, edges, rel = fields
             if rel[0] == '!':
@@ -31,8 +30,12 @@ def dep_map_reader(fn, lexicon):
         else:
             raise Exception('lines must have 2 or 3 fields: {}'.format(
                 fields))
+
         edge1, edge2 = map(lambda s: int(s) if s not in ('-', '?') else None,
                            edges.split(','))
+        logging.debug(
+            'dependency: {0}, edge1: {1}, edge2: {2}, rel_machine: {3}'.format(
+                dep, edge1, edge2, rel_machine))
         dep_to_op[dep] = create_operators(edge1, edge2, rel_machine, reverse)
 
     return dep_to_op
