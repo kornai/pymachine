@@ -235,27 +235,35 @@ class Machine(object):
 
 class MachineGraph:
     @staticmethod
-    def create_from_machines(iterable, max_depth=None):
+    def create_from_machines(iterable, max_depth=None, whitelist=None):
         g = MachineGraph()
         g.seen = set()
+        logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
-            g._get_edges_recursively(machine, max_depth)
+            g._get_edges_recursively(machine, max_depth, whitelist)
 
         return g
 
-    def _get_edges_recursively(self, machine, max_depth, depth=0):
+    def _get_edges_recursively(self, machine, max_depth, whitelist,
+                               depth=0):
         logging.debug('getting edges for machine: {}'.format(machine))
         if machine in self.seen or (max_depth and depth > max_depth):
-            logging.debug('already traversed, skipping...')
+            return
+        elif whitelist and machine.printname() not in whitelist:
+            logging.debug('skipping {0}'.format(machine.printname()))
             return
         self.seen.add(machine)
         for color, part in enumerate(machine.partitions):
             for machine2 in part:
+                if whitelist and machine2.printname() not in whitelist:
+                    continue
                 self.add_edge(machine, machine2, color)
-                self._get_edges_recursively(machine2, max_depth, depth=depth+1)
+                self._get_edges_recursively(
+                    machine2, max_depth, whitelist, depth=depth+1)
 
     def __init__(self):
         self.machines = set()
+        self.edges = set()
         self.edges_by_color = defaultdict(set)
 
     def add_edge(self, m1, m2, color):
@@ -263,6 +271,7 @@ class MachineGraph:
         self.machines.add(m1)
         self.machines.add(m2)
         self.edges_by_color[color].add((m1, m2))
+        self.edges.add((m1.printname(), m2.printname(), color))
 
     def to_dot(self):
         lines = ['digraph finite_state_machine {', '\tdpi=100;']
