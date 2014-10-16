@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from copy import deepcopy
 import os
 import pickle
 import re
@@ -26,8 +27,16 @@ class Wrapper:
         self.cfn = cf
         self.__read_config()
 
+        self.wordlist = set()
+        self.__read_definitions()
+        self.__read_supp_dict()
+        self.reset_lexicon()
+
+    def reset_lexicon(self):
         self.lexicon = Lexicon()
-        self.__read_files()
+        self.__add_definitions()
+        #TODO
+        self.dep_to_op = dep_map_reader(self.dep_map_fn, self.lexicon)
         self.__add_constructions()
 
     def __read_config(self):
@@ -43,16 +52,6 @@ class Wrapper:
         self.supp_dict_fn = items.get("supp_dict")
         self.plural_fn = items.get("plurals")
 
-    def __read_files(self):
-        self.__read_definitions()
-        self.__read_supp_dict()
-        self.dep_to_op = dep_map_reader(self.dep_map_fn, self.lexicon)
-
-        logging.debug('dependency to operator map:')
-        for dep, ops in self.dep_to_op.iteritems():
-            for op in ops:
-                logging.debug("{} -> {}".format(dep, op))
-
     def __read_definitions(self):
         for file_name, printname_index in self.def_files:
             # TODO HACK makefile needed
@@ -64,20 +63,20 @@ class Wrapper:
                     " does not exist: {0}".format(file_name))
 
             if file_name.endswith('pickle'):
-                print 'loading definitions...'
-                definitions = pickle.load(file(file_name))
+                logging.debug('loading definitions...')
+                self.definitions = pickle.load(file(file_name))
             else:
-                print 'parsing definitions...'
-                definitions = read_defs(
+                logging.debug('parsing definitions...')
+                self.definitions = read_defs(
                     file(file_name), self.plural_fn, printname_index,
                     three_parts=True)
 
-                print 'dumping definitions to file...'
+                logging.debug('dumping definitions to file...')
                 f = open('definitions.pickle', 'w')
-                pickle.dump(definitions, f)
+                pickle.dump(self.definitions, f)
 
-            logging.debug("{0}: {1}".format(file_name, definitions.keys()))
-            logging.debug("{0}: {1}".format(file_name, definitions))
+    def __add_definitions(self):
+            definitions = deepcopy(self.definitions)
             self.lexicon.add_static(definitions.itervalues())
             self.lexicon.finalize_static()
 
@@ -91,26 +90,29 @@ class Wrapper:
         #add_verb_constructions(self.lexicon, self.supp_dict)
         #add_avm_constructions(self.lexicon, self.supp_dict)
 
-    def add_dependency(self, string):
+    def add_dependency(self, string, tok2lemma):
         #e.g. nsubjpass(pushed-7, salesman-5)
         """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
         machines for w1 and w2, then run all operators associated with D on the
         sequence of the new machines (m1, m2)"""
-        logging.info('processing dependency: {}'.format(string))
+        logging.debug('processing dependency: {}'.format(string))
         dep_match = Wrapper.dep_regex.match(string)
         if not dep_match:
             raise Exception('cannot parse dependency: {0}'.format(string))
         dep, word1, id1, word2, id2 = dep_match.groups()
-
-        machine1 = self.lexicon.get_machine(word1)
-        machine2 = self.lexicon.get_machine(word2)
+        lemma1 = tok2lemma[word1]
+        lemma2 = tok2lemma[word2]
+        self.wordlist.add(lemma1)
+        self.wordlist.add(lemma2)
+        machine1 = self.lexicon.get_machine(lemma1)
+        machine2 = self.lexicon.get_machine(lemma2)
 
         for machine in (machine1, machine2):
-            logging.info('activating {}'.format(machine))
+            logging.debug('activating {}'.format(machine))
             self.lexicon.add_active(machine)
 
         for operator in self.dep_to_op.get(dep, []):
-            logging.info('operator {0} acting on machines {1} and {2}'.format(
+            logging.debug('operator {0} acting on machines {1} and {2}'.format(
                 operator, machine1, machine2))
             operator.act((machine1, machine2))
 
@@ -122,12 +124,12 @@ class Wrapper:
             sa = SpreadingActivation(self.lexicon)
             machines = sp.parse(sentence)
             logging.debug('machines: {}'.format(machines))
-            logging.info('machines: {}'.format(
+            logging.debug('machines: {}'.format(
                 [m for m in machines]))
             for machine_list in machines:
                 for machine in machine_list:
                     if machine.control.kr['CAT'] == 'VERB':
-                        logging.info('adding verb construction for {}'.format(
+                        logging.debug('adding verb construction for {}'.format(
                             machine))
                         self.lexicon.add_construction(VerbConstruction(
                             machine.printname(), self.lexicon, self.supp_dict))
@@ -186,7 +188,7 @@ if __name__ == "__main__":
         w.add_dependency(line)
 
     active_machines = w.lexicon.active_machines()
-    logging.info('active machines: {}'.format(active_machines))
+    logging.debug('active machines: {}'.format(active_machines))
     graph = MachineGraph.create_from_machines(active_machines)
     f = open('machines.dot', 'w')
     f.write(graph.to_dot())
