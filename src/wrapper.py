@@ -23,6 +23,18 @@ class Wrapper:
 
     dep_regex = re.compile('([a-z_]*)\((.*?)-([0-9]*), (.*?)-([0-9]*)\)')
 
+    @staticmethod
+    def get_lemma(word, tok2lemma):
+        if word in tok2lemma:
+            return tok2lemma[word]
+        for char in ('.', ',', '='):
+            for part in word.split(char):
+                if part in tok2lemma:
+                    return tok2lemma[part]
+        raise Exception(
+            "can't find lemma for word '{}', tok2lemma: {}".format(
+                word, tok2lemma))
+
     def __init__(self, cf):
         self.cfn = cf
         self.__read_config()
@@ -100,8 +112,8 @@ class Wrapper:
         if not dep_match:
             raise Exception('cannot parse dependency: {0}'.format(string))
         dep, word1, id1, word2, id2 = dep_match.groups()
-        lemma1 = tok2lemma[word1]
-        lemma2 = tok2lemma[word2]
+        lemma1 = Wrapper.get_lemma(word1, tok2lemma)
+        lemma2 = Wrapper.get_lemma(word2, tok2lemma)
         self.wordlist.add(lemma1)
         self.wordlist.add(lemma2)
         machine1 = self.lexicon.get_machine(lemma1)
