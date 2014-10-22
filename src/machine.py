@@ -247,7 +247,8 @@ class MachineGraph:
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                depth=0):
         logging.debug('getting edges for machine: {}'.format(machine))
-        if machine in self.seen or (max_depth and depth > max_depth):
+        if machine in self.seen or (max_depth is not None and
+                                    depth > max_depth):
             return
         elif whitelist and machine.printname() not in whitelist:
             logging.debug('skipping {0}'.format(machine.printname()))
