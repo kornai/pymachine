@@ -98,6 +98,7 @@ predet	-,-
 
 #This'll be horribly wrong in some cases, e.g. "bread stays soft for several days"
 prep_for	-,-	FOR
+prep_from	-,-	from
 
 prep_in	-,-	IN
 prep_of	-,-	!HAS
