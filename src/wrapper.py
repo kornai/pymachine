@@ -21,19 +21,21 @@ import np_grammar
 
 class Wrapper:
 
-    dep_regex = re.compile('([a-z_]*)\((.*?)-([0-9]*), (.*?)-([0-9]*)\)')
+    dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
 
     @staticmethod
     def get_lemma(word, tok2lemma):
         if word in tok2lemma:
             return tok2lemma[word]
-        for char in ('.', ',', '='):
+        for char in ('.', ',', '=', '"', "'", '/'):
             for part in word.split(char):
                 if part in tok2lemma:
                     return tok2lemma[part]
-        raise Exception(
-            "can't find lemma for word '{}', tok2lemma: {}".format(
-                word, tok2lemma))
+        logging.warning(
+            "can't find lemma for word '{}', returning as is".format(
+                word))
+
+        return word
 
     def __init__(self, cf):
         self.cfn = cf
@@ -44,12 +46,17 @@ class Wrapper:
         self.__read_supp_dict()
         self.reset_lexicon()
 
-    def reset_lexicon(self):
-        self.lexicon = Lexicon()
-        self.__add_definitions()
-        #TODO
-        self.dep_to_op = dep_map_reader(self.dep_map_fn, self.lexicon)
-        self.__add_constructions()
+    def reset_lexicon(self, load_from=None, save_to=None):
+        if load_from:
+            self.lexicon = pickle.load(open(load_from))
+        else:
+            self.lexicon = Lexicon()
+            self.__add_definitions()
+            #TODO
+            self.dep_to_op = dep_map_reader(self.dep_map_fn, self.lexicon)
+            self.__add_constructions()
+        if save_to:
+            pickle.dump(self.lexicon, open(save_to, 'w'))
 
     def __read_config(self):
         machinepath = os.path.realpath(__file__).rsplit("/", 2)[0]
@@ -112,17 +119,16 @@ class Wrapper:
         if not dep_match:
             raise Exception('cannot parse dependency: {0}'.format(string))
         dep, word1, id1, word2, id2 = dep_match.groups()
-        lemma1 = Wrapper.get_lemma(word1, tok2lemma)
-        lemma2 = Wrapper.get_lemma(word2, tok2lemma)
-        self.wordlist.add(lemma1)
-        self.wordlist.add(lemma2)
-        machine1 = self.lexicon.get_machine(lemma1)
-        machine2 = self.lexicon.get_machine(lemma2)
-
-        for machine in (machine1, machine2):
+        machines = []
+        for word in word1, word2:
+            lemma = Wrapper.get_lemma(word, tok2lemma)
+            machine = self.lexicon.get_machine(lemma)
             logging.debug('activating {}'.format(machine))
             self.lexicon.add_active(machine)
+            self.lexicon.expand(machine)
+            machines.append(machine)
 
+        machine1, machine2 = machines
         for operator in self.dep_to_op.get(dep, []):
             logging.debug('operator {0} acting on machines {1} and {2}'.format(
                 operator, machine1, machine2))
