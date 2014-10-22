@@ -439,6 +439,8 @@ class Lexicon:
                 for ss_machine in part:
                     as_machine = self.unify_recursively(ss_machine, stop)
                     if as_machine is not None:
+                        #logging.info('adding {} to part {} of {}'.format(
+                        #    as_machine, i, active_machine))
                         active_machine.append(as_machine, i)
             return active_machine
         else:
