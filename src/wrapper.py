@@ -19,12 +19,18 @@ from dep_map import dep_map_reader
 #from demo_misc import add_verb_constructions, add_avm_constructions
 import np_grammar
 
+class KeyDefaultDict(dict):
+    def __missing__(self, key):
+        return key
+
 class Wrapper:
 
     dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
 
     @staticmethod
     def get_lemma(word, tok2lemma):
+        if len(tok2lemma) == 0:
+            return word
         if word in tok2lemma:
             return tok2lemma[word]
         for char in ('.', ',', '=', '"', "'", '/'):
@@ -41,6 +47,7 @@ class Wrapper:
         self.cfn = cf
         self.__read_config()
 
+        self.tok2lemma = {}
         self.wordlist = set()
         self.__read_definitions()
         self.__read_supp_dict()
@@ -132,15 +139,35 @@ class Wrapper:
             raise Exception(
                 "no unique root dependency: {}".format(dep_strings))
         root_word, root_id = root_deps[0][2]
-        pass
+
+        self._add_dependency(
+            'amod', (word, -1), (root_word, root_id), self.tok2lemma)
+        #TODO this is an ugly hack, we actually need to explicitly add a 0 edge
+
+        for dep, (word1, id1), (word2, id2) in deps:
+            if word1 == root_word:
+                self._add_dependency(
+                    dep, (word, id1), (word2, id2), self.tok2lemma)
+                continue
+
+            if word2 == root_word:
+                self._add_dependency(
+                    dep, (word1, id1), (word, id2), self.tok2lemma)
+                continue
+
+            self._add_dependency(
+                dep, (word1, id1), (word2, id2), self.tok2lemma)
 
     def add_dependency(self, string, tok2lemma):
         #e.g. nsubjpass(pushed-7, salesman-5)
+        logging.debug('processing dependency: {}'.format(string))
+        dep, (word1, id1), (word2, id2) = Wrapper.parse_dependency(string)
+        self._add_dependency(dep, (word1, id1), (word2, id2), tok2lemma)
+
+    def _add_dependency(self, dep, (word1, id1), (word2, id2), tok2lemma):
         """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
         machines for w1 and w2, then run all operators associated with D on the
         sequence of the new machines (m1, m2)"""
-        logging.debug('processing dependency: {}'.format(string))
-        dep, (word1, id1), (word2, id2) = Wrapper.parse_dependency(string)
         machines = []
         for word in word1, word2:
             lemma = Wrapper.get_lemma(word, tok2lemma)
