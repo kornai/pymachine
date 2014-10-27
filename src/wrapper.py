@@ -68,6 +68,7 @@ class Wrapper:
         self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
                           for s in items["definitions"].split(",")]
         self.dep_map_fn = items.get("dep_map")
+        self.longman_deps_path = items.get("longman_deps")
         self.supp_dict_fn = items.get("supp_dict")
         self.plural_fn = items.get("plurals")
 
@@ -109,16 +110,37 @@ class Wrapper:
         #add_verb_constructions(self.lexicon, self.supp_dict)
         #add_avm_constructions(self.lexicon, self.supp_dict)
 
+    def add_longman_deps(self):
+        for fn in os.listdir(self.longman_deps_path):
+            word, _ = fn.split('.')
+            deps = [line.strip()
+                    for line in open(os.path.join(self.longman_deps_path, fn))]
+            self.add_dep_definition(word, deps)
+
+    @staticmethod
+    def parse_dependency(string):
+        dep_match = Wrapper.dep_regex.match(string)
+        if not dep_match:
+            raise Exception('cannot parse dependency: {0}'.format(string))
+        dep, word1, id1, word2, id2 = dep_match.groups()
+        return dep, (word1, id1), (word2, id2)
+
+    def add_dep_definition(self, word, dep_strings):
+        deps = map(Wrapper.parse_dependency, dep_strings)
+        root_deps = filter(lambda d: d[0] == 'root', deps)
+        if len(root_deps) != 1:
+            raise Exception(
+                "no unique root dependency: {}".format(dep_strings))
+        root_word, root_id = root_deps[0][2]
+        pass
+
     def add_dependency(self, string, tok2lemma):
         #e.g. nsubjpass(pushed-7, salesman-5)
         """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
         machines for w1 and w2, then run all operators associated with D on the
         sequence of the new machines (m1, m2)"""
         logging.debug('processing dependency: {}'.format(string))
-        dep_match = Wrapper.dep_regex.match(string)
-        if not dep_match:
-            raise Exception('cannot parse dependency: {0}'.format(string))
-        dep, word1, id1, word2, id2 = dep_match.groups()
+        dep, (word1, id1), (word2, id2) = Wrapper.parse_dependency(string)
         machines = []
         for word in word1, word2:
             lemma = Wrapper.get_lemma(word, tok2lemma)
@@ -172,16 +194,9 @@ class Wrapper:
 
         return results
 
-if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s : " +
-        "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+def test_plain():
     print 'building wrapper...'
     w = Wrapper(sys.argv[1])
-
-    #dg = w.lexicon.extract_definition_graph()
-    #print dg
     test_sen = [
         ([
             ("The", "the/ART"),
@@ -191,17 +206,12 @@ if __name__ == "__main__":
             ("the", "the/ART"),
             ("elephant", "elephant/NOUN")], 'NP')]
 
-    """
-    test_sen = [
-        ([("vets", "vet/NOUN<PLUR>")], 'NP'),
-        ("heal", "heal/VERB"),
-        ([
-            #("sick", "sick/ADJ"),
-            ("zebras", "zebra/NOUN<PLUR>")], 'NP')]
-    """
     print 'running...'
-    #w.run(test_sen)
-    #quit()
+    w.run(test_sen)
+
+def test_dep():
+    print 'building wrapper...'
+    w = Wrapper(sys.argv[1])
     for line in sys.stdin:
         w.add_dependency(line)
 
@@ -210,7 +220,14 @@ if __name__ == "__main__":
     graph = MachineGraph.create_from_machines(active_machines)
     f = open('machines.dot', 'w')
     f.write(graph.to_dot())
-    #import pickle
-    #pickle.dump(dg, open('foo', 'w'))
-    #dg = w.lexicon.extract_definition_graph()
-    #print dg
+
+def build_ext_defs():
+    w = Wrapper(sys.argv[1])
+    w.add_longman_deps()
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s : " +
+        "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+    build_ext_defs()
