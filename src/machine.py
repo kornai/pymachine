@@ -256,8 +256,6 @@ class MachineGraph:
         self.seen.add(machine)
         for color, part in enumerate(machine.partitions):
             for machine2 in part:
-                if whitelist and machine2.printname() not in whitelist:
-                    continue
                 self.add_edge(machine, machine2, color)
                 self._get_edges_recursively(
                     machine2, max_depth, whitelist, depth=depth+1)
