@@ -5,7 +5,7 @@ from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from operators import AppendOperator, AppendToBinaryOperator
 
-def dep_map_reader(fn, lexicon):
+def dep_map_reader(fn, lexicon=None):
     dep_to_op = {}
     if not fn:
         return {}
@@ -25,7 +25,10 @@ def dep_map_reader(fn, lexicon):
                 reverse = True
             logging.debug(
                 'trying to find machine for this relation: {}'.format(rel))
-            rel_machine = get_rel_machine(rel, lexicon)
+            if lexicon is not None:
+                rel_machine = get_rel_machine(rel, lexicon)
+            else:
+                rel_machine = Machine(rel, ConceptControl(), 3)
             logging.debug('found this: {}'.format(rel_machine))
         else:
             raise Exception('lines must have 2 or 3 fields: {}'.format(
