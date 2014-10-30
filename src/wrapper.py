@@ -8,10 +8,14 @@ import sys
 import logging
 import ConfigParser
 
+from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, MorphAnalyzer
+
 from construction import VerbConstruction
 from sentence_parser import SentenceParser
 from lexicon import Lexicon
 from pymachine.src.machine import MachineGraph
+from pymachine.src.machine import Machine
+from pymachine.src.control import ConceptControl
 from spreading_activation import SpreadingActivation
 from definition_parser import read as read_defs
 from sup_dic import supplementary_dictionary_reader as sdreader
@@ -27,29 +31,55 @@ class Wrapper:
 
     dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
 
-    @staticmethod
-    def get_lemma(word, tok2lemma):
-        if len(tok2lemma) == 0:
-            return word
-        if word in tok2lemma:
-            return tok2lemma[word]
+    def get_lemma(self, word):
+        if word in self.tok2lemma:
+            return self.tok2lemma[word]
         for char in ('.', ',', '=', '"', "'", '/'):
             for part in word.split(char):
-                if part in tok2lemma:
-                    return tok2lemma[part]
-        logging.warning(
-            "can't find lemma for word '{}', returning as is".format(
-                word))
+                if part in self.tok2lemma:
+                    return self.tok2lemma[part]
 
-        return word
+        self.tok2lemma[word] = list(self.analyzer.analyze(
+            [[word]]))[0][0][1].split('||')[0].split('<')[0]
+        return self.tok2lemma[word]
 
-    def __init__(self, cf):
+    @staticmethod
+    def get_analyzer():
+        hunmorph_dir = os.environ['HUNMORPH_DIR']
+        return MorphAnalyzer(
+            Ocamorph(
+                os.path.join(hunmorph_dir, "ocamorph"),
+                os.path.join(hunmorph_dir, "morphdb_en.bin")),
+            Hundisambig(
+                os.path.join(hunmorph_dir, "hundisambig"),
+                os.path.join(hunmorph_dir, "en_wsj.model")))
+
+    @staticmethod
+    def get_tok2lemma(tok2lemma_fn):
+        tok2lemma = {}
+        if tok2lemma_fn is None:
+            return tok2lemma
+        for line in file(tok2lemma_fn):
+            try:
+                tok, lemma = line.decode('utf-8').strip().split('\t')
+            except (ValueError, UnicodeDecodeError), e:
+                raise Exception(
+                    'error parsing line in tok2lemma file: {0}\n{1}'.format(
+                        e, line))
+            tok2lemma[tok] = lemma
+
+        return tok2lemma
+
+    def __init__(self, cf, include_longman=False):
         self.cfn = cf
         self.__read_config()
 
-        self.tok2lemma = {}
+        self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
         self.wordlist = set()
+        self.dep_to_op = dep_map_reader(self.dep_map_fn)
         self.__read_definitions()
+        if include_longman:
+            self.get_longman_definitions()
         self.__read_supp_dict()
         self.reset_lexicon()
 
@@ -59,8 +89,6 @@ class Wrapper:
         else:
             self.lexicon = Lexicon()
             self.__add_definitions()
-            #TODO
-            self.dep_to_op = dep_map_reader(self.dep_map_fn, self.lexicon)
             self.__add_constructions()
         if save_to:
             pickle.dump(self.lexicon, open(save_to, 'w'))
@@ -75,11 +103,13 @@ class Wrapper:
         self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
                           for s in items["definitions"].split(",")]
         self.dep_map_fn = items.get("dep_map")
+        self.tok2lemma_fn = items.get("tok2lemma")
         self.longman_deps_path = items.get("longman_deps")
         self.supp_dict_fn = items.get("supp_dict")
         self.plural_fn = items.get("plurals")
 
     def __read_definitions(self):
+        self.definitions = {}
         for file_name, printname_index in self.def_files:
             # TODO HACK makefile needed
             if (file_name.endswith("generated") and
@@ -90,17 +120,19 @@ class Wrapper:
                     " does not exist: {0}".format(file_name))
 
             if file_name.endswith('pickle'):
-                logging.debug('loading definitions...')
-                self.definitions = pickle.load(file(file_name))
+                logging.debug('loading 4lang definitions...')
+                definitions = pickle.load(file(file_name))
             else:
-                logging.debug('parsing definitions...')
-                self.definitions = read_defs(
+                logging.debug('parsing 4lang definitions...')
+                definitions = read_defs(
                     file(file_name), self.plural_fn, printname_index,
                     three_parts=True)
 
-                logging.debug('dumping definitions to file...')
-                f = open('definitions.pickle', 'w')
-                pickle.dump(self.definitions, f)
+                logging.debug('dumping 4lang definitions to file...')
+                f = open('{0}.pickle'.format(file_name), 'w')
+                pickle.dump(definitions, f)
+
+            self.definitions.update(definitions)
 
     def __add_definitions(self):
             definitions = deepcopy(self.definitions)
@@ -117,12 +149,42 @@ class Wrapper:
         #add_verb_constructions(self.lexicon, self.supp_dict)
         #add_avm_constructions(self.lexicon, self.supp_dict)
 
-    def add_longman_deps(self):
-        for fn in os.listdir(self.longman_deps_path):
-            word, _ = fn.split('.')
-            deps = [line.strip()
-                    for line in open(os.path.join(self.longman_deps_path, fn))]
-            self.add_dep_definition(word, deps)
+    def get_longman_definitions(self):
+        #logging.info('adding Longman definitions')
+        self.analyzer = Wrapper.get_analyzer()
+        if self.longman_deps_path.endswith('pickle'):
+            logging.info('loading Longman definitions...')
+            definitions = pickle.load(file(self.longman_deps_path))
+            logging.info('done')
+
+        else:
+            files = os.listdir(self.longman_deps_path)
+
+            logging.info('only parsing first meanings for now')
+            files = filter(lambda fn: '_' not in fn, files)
+            #TODO
+
+            logging.info('will now parse {0} definitions'.format(len(files)))
+            definitions = {}
+            for c, fn in enumerate(files):
+                if c % 1000 == 0:
+                    logging.info('{0}...'.format(c))
+                word, _ = fn.split('.')
+                deps = [
+                    line.strip() for line in open(
+                        os.path.join(self.longman_deps_path, fn))]
+                machine = self.get_dep_definition(word, deps)
+                if machine is None:
+                    continue
+                definitions[word] = machine
+
+            logging.info('pickling Longman definitions...')
+            f = open('{0}.pickle'.format(self.longman_deps_path), 'w')
+            pickle.dump(definitions, f)
+
+        for word, machine in definitions.iteritems():
+            if word not in self.definitions:
+                self.definitions[word] = machine
 
     @staticmethod
     def parse_dependency(string):
@@ -132,49 +194,58 @@ class Wrapper:
         dep, word1, id1, word2, id2 = dep_match.groups()
         return dep, (word1, id1), (word2, id2)
 
-    def add_dep_definition(self, word, dep_strings):
+    def get_dep_definition(self, word, dep_strings):
         deps = map(Wrapper.parse_dependency, dep_strings)
         root_deps = filter(lambda d: d[0] == 'root', deps)
-        if len(root_deps) != 1:
-            raise Exception(
-                "no unique root dependency: {}".format(dep_strings))
         root_word, root_id = root_deps[0][2]
+        root_lemma = self.get_lemma(root_word)
+        if len(root_deps) != 1:
+            logging.warning(
+                'no unique root dependency, skipping word "{0}"'.format(word))
+            return None
 
-        self._add_dependency(
-            'amod', (word, -1), (root_word, root_id), self.tok2lemma)
-        #TODO this is an ugly hack, we actually need to explicitly add a 0 edge
-
+        word2machine = {}
         for dep, (word1, id1), (word2, id2) in deps:
-            if word1 == root_word:
-                self._add_dependency(
-                    dep, (word, id1), (word2, id2), self.tok2lemma)
-                continue
+            lemma1 = self.get_lemma(word1)
+            lemma2 = self.get_lemma(word2)
+            #logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+            machine1, machine2 = self._add_dependency(
+                dep, (lemma1, id1), (lemma2, id2), word2machine=word2machine)
+            word2machine[lemma1] = machine1
+            word2machine[lemma2] = machine2
 
-            if word2 == root_word:
-                self._add_dependency(
-                    dep, (word1, id1), (word, id2), self.tok2lemma)
-                continue
+        root_machine = word2machine[root_lemma]
+        machine = Machine(word, ConceptControl())
+        machine.append(root_machine, 0)
+        return machine
 
-            self._add_dependency(
-                dep, (word1, id1), (word2, id2), self.tok2lemma)
-
-    def add_dependency(self, string, tok2lemma):
+    def add_dependency(self, string):
         #e.g. nsubjpass(pushed-7, salesman-5)
         logging.debug('processing dependency: {}'.format(string))
         dep, (word1, id1), (word2, id2) = Wrapper.parse_dependency(string)
-        self._add_dependency(dep, (word1, id1), (word2, id2), tok2lemma)
+        lemma1 = self.get_lemma(word1)
+        lemma2 = self.get_lemma(word2)
+        self._add_dependency(dep, (lemma1, id1), (lemma2, id2),
+                             use_lexicon=True, activate_machines=True)
 
-    def _add_dependency(self, dep, (word1, id1), (word2, id2), tok2lemma):
+    def _add_dependency(self, dep, (word1, id1), (word2, id2),
+                        word2machine=None, use_lexicon=False,
+                        activate_machines=False):
         """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
         machines for w1 and w2, then run all operators associated with D on the
         sequence of the new machines (m1, m2)"""
         machines = []
-        for word in word1, word2:
-            lemma = Wrapper.get_lemma(word, tok2lemma)
-            machine = self.lexicon.get_machine(lemma)
-            logging.debug('activating {}'.format(machine))
-            self.lexicon.add_active(machine)
-            self.lexicon.expand(machine)
+        for word in (word1, word2):
+            if use_lexicon:
+                machine = self.lexicon.get_machine(word)
+            else:
+                machine = word2machine.get(word,
+                                           Machine(word, ConceptControl()))
+
+            if activate_machines:
+                logging.debug('activating {}'.format(machine))
+                self.lexicon.add_active(machine)
+                self.lexicon.expand(machine)
             machines.append(machine)
 
         machine1, machine2 = machines
@@ -182,6 +253,8 @@ class Wrapper:
             logging.debug('operator {0} acting on machines {1} and {2}'.format(
                 operator, machine1, machine2))
             operator.act((machine1, machine2))
+
+        return machine1, machine2
 
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
@@ -249,8 +322,8 @@ def test_dep():
     f.write(graph.to_dot())
 
 def build_ext_defs():
-    w = Wrapper(sys.argv[1])
-    w.add_longman_deps()
+    w = Wrapper(sys.argv[1], include_longman=True)
+    assert w  # silence pyflakes
 
 if __name__ == "__main__":
     logging.basicConfig(
