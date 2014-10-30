@@ -74,8 +74,13 @@ class Lexicon:
             if curr_from.deep_case():
                 replacement[curr_from] = curr_from
             else:
-                if curr_from.printname().isupper():
-                    curr_from.printname_ = curr_from.printname().lower()
+                try:
+                    if curr_from.printname().isupper():
+                        curr_from.printname_ = curr_from.printname().lower()
+                except AttributeError, e:
+                    logging.info('curr_from: {0}, type: {1}'.format(
+                        curr_from, type(curr_from)))
+                    raise Exception(e)
                 #print "Not in replacement"
                 # Does this machine appear in the static tree?
                 from_already_seen = self.__get_disambig_incomplete(
@@ -181,7 +186,11 @@ class Lexicon:
                 if ambig_name in names:
 #                    print "ambig_name in names"
                     # Ambiguous name -- we have not yet seen the definition.
-                    assert len(names) == 1
+                    #assert len(names) == 1
+                    if len(names) != 1:
+                        return []
+#                        raise Exception('ambiguous: {0}, maps to {1}'.format(
+#                            ambig_name, names))
 #                    print "XXX: ambiguous name alert!"
                     # We see a fully specified form: replace the ambiguous one
                     if ambig_name != print_name:
