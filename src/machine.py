@@ -235,28 +235,36 @@ class Machine(object):
 
 class MachineGraph:
     @staticmethod
-    def create_from_machines(iterable, max_depth=None, whitelist=None):
+    def create_from_machines(iterable, max_depth=None, whitelist=None,
+                             strict=False):
         g = MachineGraph()
         g.seen = set()
         logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
-            g._get_edges_recursively(machine, max_depth, whitelist)
+            g._get_edges_recursively(machine, max_depth, whitelist,
+                                     strict=strict)
 
         return g
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
-                               depth=0):
+                               strict=False, depth=0):
         logging.debug('getting edges for machine: {}'.format(machine))
         if machine in self.seen or (max_depth is not None and
                                     depth > max_depth):
             return
-        elif whitelist and machine.printname() not in whitelist:
-            logging.debug('skipping {0}'.format(machine.printname()))
-            return
         self.seen.add(machine)
+        printname = machine.printname()
+        if printname == 'from':
+            logging.info('from machine: {0}'.format(machine))
         for color, part in enumerate(machine.partitions):
             for machine2 in part:
-                self.add_edge(machine, machine2, color)
+                printname2 = machine2.printname()
+                if (whitelist is not None and printname not in whitelist and
+                        printname2 not in whitelist):
+                    continue
+                elif whitelist is None or (printname in whitelist and
+                                           printname2 in whitelist):
+                    self.add_edge(machine, machine2, color)
                 self._get_edges_recursively(
                     machine2, max_depth, whitelist, depth=depth+1)
 
