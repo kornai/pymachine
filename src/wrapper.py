@@ -27,6 +27,12 @@ class KeyDefaultDict(dict):
     def __missing__(self, key):
         return key
 
+def jaccard(s1, s2):
+    try:
+        return float(len(s1 & s2)) / len(s1 | s2)
+    except ZeroDivisionError:
+        return 0.0
+
 class Wrapper:
 
     dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
@@ -98,6 +104,7 @@ class Wrapper:
         if "MACHINEPATH" in os.environ:
             machinepath = os.environ["MACHINEPATH"]
         config = ConfigParser.SafeConfigParser({"machinepath": machinepath})
+        logging.info('reading machine config from {0}'.format(self.cfn))
         config.read(self.cfn)
         items = dict(config.items("machine"))
         self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
@@ -155,7 +162,6 @@ class Wrapper:
         if self.longman_deps_path.endswith('pickle'):
             logging.info('loading Longman definitions...')
             definitions = pickle.load(file(self.longman_deps_path))
-            logging.info('done')
 
         else:
             files = os.listdir(self.longman_deps_path)
@@ -185,6 +191,8 @@ class Wrapper:
         for word, machine in definitions.iteritems():
             if word not in self.definitions:
                 self.definitions[word] = machine
+
+        logging.info('done')
 
     @staticmethod
     def parse_dependency(string):
@@ -250,11 +258,53 @@ class Wrapper:
 
         machine1, machine2 = machines
         for operator in self.dep_to_op.get(dep, []):
-            logging.debug('operator {0} acting on machines {1} and {2}'.format(
+            logging.info('operator {0} acting on machines {1} and {2}'.format(
                 operator, machine1, machine2))
             operator.act((machine1, machine2))
 
         return machine1, machine2
+
+    def word_similarity(self, word1, word2, pos1, pos2):
+        lemma1, lemma2 = map(self.get_lemma, (word1, word2))
+        if lemma1 == lemma2:
+            return 1
+        logging.debug(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+        oov = filter(lambda l: l not in self.definitions, (lemma1, lemma2))
+        if oov:
+            logging.debug(u'OOV: {0}, no machine similarity')
+            return None
+
+        machine1, machine2 = map(self.definitions.get, (lemma1, lemma2))
+        #map(self.lexicon.add_active, (machine1, machine2))
+        #map(self.lexicon.expand, (machine1, machine2))
+        zero_links_1 = set(filter(
+            lambda s: not s.isupper(),
+            [m.printname() for m in machine1.partitions[0]]))
+        zero_links_2 = set(filter(
+            lambda s: not s.isupper(),
+            [m.printname() for m in machine2.partitions[0]]))
+        #logging.info('machine1 0-links: {0}, machine2 0-links: {1}'.format(
+        #    zero_links_1, zero_links_2))
+        #sim = jaccard(zero_links_1, zero_links_2)
+        union = zero_links_1 | zero_links_2
+        intersection = zero_links_1 & zero_links_2
+        if not intersection:
+            sim = 0
+        else:
+            sim = float(len(intersection)) / len(union)
+            #sim = float(len(intersection)) / min(len(zero_links_1),
+            #                                     len(zero_links_2))
+            logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+            logging.info(u'shared: {0}'.format(intersection))
+            logging.info('sim: {0}'.format(sim))
+
+        draw_graphs = True
+        if draw_graphs:
+            graph = MachineGraph.create_from_machines(
+                [machine1, machine2], max_depth=1)
+            f = open('graphs/{0}_{1}.dot'.format(lemma1, lemma2), 'w')
+            f.write(graph.to_dot())
+            return sim
 
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
