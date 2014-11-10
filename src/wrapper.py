@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from copy import deepcopy
 import os
 import pickle
@@ -298,13 +297,13 @@ class Wrapper:
             logging.info(u'shared: {0}'.format(intersection))
             logging.info('sim: {0}'.format(sim))
 
-        draw_graphs = True
+        draw_graphs = False
         if draw_graphs:
             graph = MachineGraph.create_from_machines(
                 [machine1, machine2], max_depth=1)
             f = open('graphs/{0}_{1}.dot'.format(lemma1, lemma2), 'w')
             f.write(graph.to_dot())
-            return sim
+        return sim
 
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
