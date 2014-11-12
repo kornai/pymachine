@@ -60,13 +60,18 @@ class Machine(object):
         """printname for dot output"""
         #TODO
         pn = self.printname_.split('/')[0]
-        for c in ('=', '@', '-', ','):
-            pn = pn.replace(c, '_')
-        if pn == 'edge':
-            pn += '_'
-        elif pn == '$':
-            pn = '_dollars'
-        return pn
+        return Machine.d_clean(pn)
+
+    @staticmethod
+    def d_clean(string):
+        s = string
+        for c in ('=', '@', '-', ',', "'", '"'):
+            s = s.replace(c, '_')
+        if s == 'edge':
+            s += '_'
+        elif s == '$':
+            s = '_dollars'
+        return s
 
     def printname(self):
         return self.printname_
@@ -254,8 +259,8 @@ class MachineGraph:
             return
         self.seen.add(machine)
         printname = machine.printname()
-        if printname == 'from':
-            logging.info('from machine: {0}'.format(machine))
+        #if printname == 'from':
+        #    logging.info('from machine: {0}'.format(machine))
         for color, part in enumerate(machine.partitions):
             for machine2 in part:
                 printname2 = machine2.printname()
@@ -281,17 +286,17 @@ class MachineGraph:
         self.edges.add((m1.printname(), m2.printname(), color))
 
     def to_dot(self):
-        lines = ['digraph finite_state_machine {', '\tdpi=100;']
+        lines = [u'digraph finite_state_machine {', '\tdpi=100;']
         #lines.append('\tordering=out;')
         for machine in self.machines:
-            lines.append('\tnode [shape = circle]; {0};'.format(
+            lines.append(u'\tnode [shape = circle]; {0};'.format(
                          machine.d_printname()))
         for color, edges in self.edges_by_color.iteritems():
             for m1, m2 in edges:
-                lines.append('\t{0} -> {1} [ label = "{2}" ];'.format(
+                lines.append(u'\t{0} -> {1} [ label = "{2}" ];'.format(
                     m1.d_printname(), m2.d_printname(), color))
         lines.append('}')
-        return '\n'.join(lines)
+        return u'\n'.join(lines)
 
 def test_printname():
     m_unicode = Machine(u"\u00c1")
