@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from copy import deepcopy
 import os
-import pickle
+import cPickle
 import re
 import sys
 import logging
@@ -35,17 +35,23 @@ def jaccard(s1, s2):
 class Wrapper:
 
     dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
+    num_re = re.compile(r'^[0-9.,]+$', re.UNICODE)
 
     def get_lemma(self, word):
         if word in self.tok2lemma:
             return self.tok2lemma[word]
+        elif Wrapper.num_re.match(word):
+            return word
         for char in ('.', ',', '=', '"', "'", '/'):
             for part in word.split(char):
                 if part in self.tok2lemma:
+                    logging.info('returning lemma of {0} instead of {1}')
                     return self.tok2lemma[part]
 
+        logging.info(u'analyzing {0}'.format(word))
         self.tok2lemma[word] = list(self.analyzer.analyze(
             [[word]]))[0][0][1].split('||')[0].split('<')[0]
+        logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
         return self.tok2lemma[word]
 
     @staticmethod
@@ -75,9 +81,10 @@ class Wrapper:
 
         return tok2lemma
 
-    def __init__(self, cf, include_longman=False):
+    def __init__(self, cf, include_longman=False, batch=False):
         self.cfn = cf
         self.__read_config()
+        self.batch = batch
 
         self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
         self.wordlist = set()
@@ -90,13 +97,13 @@ class Wrapper:
 
     def reset_lexicon(self, load_from=None, save_to=None):
         if load_from:
-            self.lexicon = pickle.load(open(load_from))
+            self.lexicon = cPickle.load(open(load_from))
         else:
             self.lexicon = Lexicon()
             self.__add_definitions()
             self.__add_constructions()
         if save_to:
-            pickle.dump(self.lexicon, open(save_to, 'w'))
+            cPickle.dump(self.lexicon, open(save_to, 'w'))
 
     def __read_config(self):
         machinepath = os.path.realpath(__file__).rsplit("/", 2)[0]
@@ -127,16 +134,16 @@ class Wrapper:
 
             if file_name.endswith('pickle'):
                 logging.debug('loading 4lang definitions...')
-                definitions = pickle.load(file(file_name))
+                definitions = cPickle.load(file(file_name))
             else:
-                logging.debug('parsing 4lang definitions...')
+                logging.info('parsing 4lang definitions...')
                 definitions = read_defs(
                     file(file_name), self.plural_fn, printname_index,
                     three_parts=True)
 
-                logging.debug('dumping 4lang definitions to file...')
+                logging.info('dumping 4lang definitions to file...')
                 f = open('{0}.pickle'.format(file_name), 'w')
-                pickle.dump(definitions, f)
+                cPickle.dump(definitions, f)
 
             self.definitions.update(definitions)
 
@@ -160,7 +167,7 @@ class Wrapper:
         self.analyzer = Wrapper.get_analyzer()
         if self.longman_deps_path.endswith('pickle'):
             logging.info('loading Longman definitions...')
-            definitions = pickle.load(file(self.longman_deps_path))
+            definitions = cPickle.load(file(self.longman_deps_path))
 
         else:
             files = os.listdir(self.longman_deps_path)
@@ -185,7 +192,7 @@ class Wrapper:
 
             logging.info('pickling Longman definitions...')
             f = open('{0}.pickle'.format(self.longman_deps_path), 'w')
-            pickle.dump(definitions, f)
+            cPickle.dump(definitions, f)
 
         for word, machine in definitions.iteritems():
             if word not in self.definitions:
@@ -263,11 +270,18 @@ class Wrapper:
 
         return machine1, machine2
 
+    def draw_word_graphs(self):
+        for word, machine in self.definitions.iteritems():
+            graph = MachineGraph.create_from_machines([machine])
+            clean_word = Machine.d_clean(word)
+            f = open('graphs/words/{0}.dot'.format(clean_word), 'w')
+            f.write(graph.to_dot().encode('utf-8'))
+
     def word_similarity(self, word1, word2, pos1, pos2):
         lemma1, lemma2 = map(self.get_lemma, (word1, word2))
+        #logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
         if lemma1 == lemma2:
             return 1
-        logging.debug(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
         oov = filter(lambda l: l not in self.definitions, (lemma1, lemma2))
         if oov:
             logging.debug(u'OOV: {0}, no machine similarity')
@@ -297,12 +311,12 @@ class Wrapper:
             logging.info(u'shared: {0}'.format(intersection))
             logging.info('sim: {0}'.format(sim))
 
-        draw_graphs = False
-        if draw_graphs:
+        draw_graphs = True
+        if draw_graphs and not self.batch:
             graph = MachineGraph.create_from_machines(
                 [machine1, machine2], max_depth=1)
             f = open('graphs/{0}_{1}.dot'.format(lemma1, lemma2), 'w')
-            f.write(graph.to_dot())
+            f.write(graph.to_dot().encode('utf-8'))
         return sim
 
     def run(self, sentence):
@@ -333,7 +347,7 @@ class Wrapper:
             graph = MachineGraph.create_from_machines(
                 [m[0] for m in machines], max_depth=1)
             f = open('machines.dot', 'w')
-            f.write(graph.to_dot())
+            f.write(graph.to_dot().encode('utf-8'))
 
             self.lexicon.clear_active()
         except Exception, e:
@@ -368,15 +382,18 @@ def test_dep():
     logging.debug('active machines: {}'.format(active_machines))
     graph = MachineGraph.create_from_machines(active_machines)
     f = open('machines.dot', 'w')
-    f.write(graph.to_dot())
+    f.write(graph.to_dot().encode('utf-8'))
 
 def build_ext_defs():
-    w = Wrapper(sys.argv[1], include_longman=True)
-    assert w  # silence pyflakes
+    return Wrapper(sys.argv[1], include_longman=True)
+
 
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
-    build_ext_defs()
+    w = build_ext_defs()
+    w.draw_word_graphs()
+    #f = open('wrapper.pickle', 'w')
+    #cPickle.dump(w, f)
