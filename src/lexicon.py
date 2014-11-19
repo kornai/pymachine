@@ -350,7 +350,7 @@ class Lexicon:
                 if isinstance(what, AVMConstruction):
                     self.avm_constructions[c.avm.name] = c
 
-    def expand(self, machine):
+    def expand(self, machine, zeros_only=False):
         """expanding a machine
         if machine is not active, we raise an exception
         if machine is active but not in knowledge base, we warn the user,
@@ -374,12 +374,14 @@ class Lexicon:
             #logging.info('activating machine:\n{0}'.format(static_machine))
             #logging.info(
             #    'control dict:\n{0}'.format(static_machine.control.__dict__))
-            machine = self.unify_recursively(static_machine)
+            machine = self.unify_recursively(
+                static_machine, zeros_only, first=True)
 
             # change expand status in active store
             self.active[printname][machine] = True
 
-    def unify_recursively(self, static_machine, stop=None):
+    def unify_recursively(self, static_machine, zeros_only, first=False,
+                          stop=None):
         """Returns the active machine that corresponds to @p static_machine. It
         recursively unifies all machines in all partitions of @p static_machine
         with machines in the active set. @p static_machine may be either a
@@ -446,7 +448,8 @@ class Lexicon:
             # Now we have to walk through the tree recursively
             for i, part in enumerate(static_machine.partitions):
                 for ss_machine in part:
-                    as_machine = self.unify_recursively(ss_machine, stop)
+                    as_machine = self.unify_recursively(
+                        ss_machine, zeros_only, first=False, stop=stop)
                     if as_machine is not None:
                         #logging.info('adding {} to part {} of {}'.format(
                         #    as_machine, i, active_machine))
