@@ -7,6 +7,13 @@ class WordSimilarity():
         self.wrapper = wrapper
 
     def get_links(self, machine):
+        self.seen = set()
+        return self._get_links(machine)
+
+    def _get_links(self, machine):
+        if machine in self.seen:
+            return
+        self.seen.add(machine)
         for hypernym in machine.partitions[0]:
             name = hypernym.printname()
             if name.isupper():
@@ -49,8 +56,8 @@ class WordSimilarity():
 
         machine1, machine2 = map(self.wrapper.definitions.get,
                                  (lemma1, lemma2))
-        links1 = set(link.split('/')[0] for link in self.get_links(machine1))
-        links2 = set(link.split('/')[0] for link in self.get_links(machine2))
+        links1 = set(self.get_links(machine1))
+        links2 = set(self.get_links(machine2))
         #logging.info('machine1 links: {0}, machine2 links: {1}'.format(
         #    links1, links2))
         logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
