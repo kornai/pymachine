@@ -2,7 +2,8 @@
 
 import logging
 
-from pymachine.src.control import KRPosControl
+from pymachine.src.control import KRPosControl, ConceptControl
+from pymachine.src.machine import Machine
 
 class Operator(object):
     """The abstract superclass of the operator hierarchy."""
@@ -117,7 +118,8 @@ class AddArbitraryStringOperator(Operator):
 class AppendToBinaryOperator(Operator):
     """appends two machines to the partitions of a binary relation"""
 
-    def __init__(self, bin_rel, first_pos, second_pos, working_area=None):
+    def __init__(self, bin_rel, first_pos, second_pos, reverse=False,
+                 working_area=None):
         # TODO type checking of what to be binary
         Operator.__init__(self, working_area)
         self.bin_rel = bin_rel
@@ -125,13 +127,22 @@ class AppendToBinaryOperator(Operator):
         self.second_pos = second_pos
 
     def __str__(self):
-        return "{0}({1}, {2})".format(
-            self.bin_rel, self.first_pos, self.second_pos)
+        return "{0}: {1}({2}, {3})".format(
+            type(self), self.bin_rel, self.first_pos, self.second_pos)
 
     def act(self, seq):
         self.bin_rel.append(seq[self.first_pos], 1)
         self.bin_rel.append(seq[self.second_pos], 2)
         return [self.bin_rel]
+
+class AppendToNewBinaryOperator(AppendToBinaryOperator):
+    """will create a new machine for the relation every time it's used"""
+
+    def act(self, seq):
+        rel_machine = Machine(self.bin_rel, ConceptControl(), 3)
+        rel_machine.append(seq[self.first_pos], 1)
+        rel_machine.append(seq[self.second_pos], 2)
+        return [rel_machine]
 
 
 ###############################
