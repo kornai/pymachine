@@ -74,6 +74,8 @@ class Machine(object):
         return s
 
     def printname(self):
+        if '/' in self.printname_:
+            return self.printname_.split('/')[0]
         return self.printname_
 
     def set_control(self, control):
