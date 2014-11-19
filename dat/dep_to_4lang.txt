@@ -33,7 +33,7 @@ csubj	1,?
 #1,0 for copular sentences, 1,- otherwise (just like with nsubj)
 
 csubjpass	2,-
-dep	-,-
+dep	0,-
 
 det	?,?
 #Articles will probably trigger some direct action and not have their own nodes
