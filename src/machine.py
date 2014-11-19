@@ -253,25 +253,45 @@ class MachineGraph:
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                strict=False, depth=0):
-        logging.debug('getting edges for machine: {}'.format(machine))
+        pn = machine.printname()
+        logging.info('getting edges for machine: {}'.format(machine))
+        logging.info("{0}: {1}".format(pn, machine.partitions))
+        #if pn.isupper():
+        #    if depth >= 2:
+        #        return
         if machine in self.seen or (max_depth is not None and
                                     depth > max_depth):
             return
         self.seen.add(machine)
-        printname = machine.printname()
         #if printname == 'from':
         #    logging.info('from machine: {0}'.format(machine))
+        edges = set()
+        neighbours = set()
         for color, part in enumerate(machine.partitions):
             for machine2 in part:
-                printname2 = machine2.printname()
-                if (whitelist is not None and printname not in whitelist and
-                        printname2 not in whitelist):
+                if machine2 in self.seen:
                     continue
-                elif whitelist is None or (printname in whitelist and
-                                           printname2 in whitelist):
-                    self.add_edge(machine, machine2, color)
-                self._get_edges_recursively(
-                    machine2, max_depth, whitelist, depth=depth+1)
+                neighbours.add(machine2)
+                edges.add((machine, machine2, color))
+        for parent, color in machine.parents:
+            if parent in self.seen:
+                continue
+            neighbours.add(parent)
+            edges.add((parent, machine, color))
+
+        for machine1, machine2, color in edges:
+            printname1 = machine1.printname()
+            printname2 = machine2.printname()
+            if (whitelist is not None and printname1 not in whitelist and
+                    printname2 not in whitelist):
+                continue
+            elif whitelist is None or (printname1 in whitelist and
+                                       printname2 in whitelist):
+                self.add_edge(machine1, machine2, color)
+
+        for neighbour in neighbours:
+            self._get_edges_recursively(
+                neighbour, max_depth, whitelist, depth=depth+1)
 
     def __init__(self):
         self.machines = set()
