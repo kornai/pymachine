@@ -270,54 +270,23 @@ class Wrapper:
 
         return machine1, machine2
 
+    def draw_single_graph(self, word):
+        for w, machine in self.definitions.iteritems():
+            if w != word:
+                continue
+            graph = MachineGraph.create_from_machines([machine])
+            clean_word = Machine.d_clean(w)
+            f = open('graphs/words/{0}.dot'.format(clean_word), 'w')
+            f.write(graph.to_dot().encode('utf-8'))
+
     def draw_word_graphs(self):
-        for word, machine in self.definitions.iteritems():
+        for c, (word, machine) in enumerate(self.definitions.iteritems()):
+            if c % 1000 == 0:
+                logging.info("{0}...".format(c))
             graph = MachineGraph.create_from_machines([machine])
             clean_word = Machine.d_clean(word)
             f = open('graphs/words/{0}.dot'.format(clean_word), 'w')
             f.write(graph.to_dot().encode('utf-8'))
-
-    def word_similarity(self, word1, word2, pos1, pos2):
-        lemma1, lemma2 = map(self.get_lemma, (word1, word2))
-        #logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
-        if lemma1 == lemma2:
-            return 1
-        oov = filter(lambda l: l not in self.definitions, (lemma1, lemma2))
-        if oov:
-            logging.debug(u'OOV: {0}, no machine similarity')
-            return None
-
-        machine1, machine2 = map(self.definitions.get, (lemma1, lemma2))
-        #map(self.lexicon.add_active, (machine1, machine2))
-        #map(self.lexicon.expand, (machine1, machine2))
-        zero_links_1 = set(filter(
-            lambda s: not s.isupper(),
-            [m.printname() for m in machine1.partitions[0]]))
-        zero_links_2 = set(filter(
-            lambda s: not s.isupper(),
-            [m.printname() for m in machine2.partitions[0]]))
-        #logging.info('machine1 0-links: {0}, machine2 0-links: {1}'.format(
-        #    zero_links_1, zero_links_2))
-        #sim = jaccard(zero_links_1, zero_links_2)
-        union = zero_links_1 | zero_links_2
-        intersection = zero_links_1 & zero_links_2
-        if not intersection:
-            sim = 0
-        else:
-            sim = float(len(intersection)) / len(union)
-            #sim = float(len(intersection)) / min(len(zero_links_1),
-            #                                     len(zero_links_2))
-            logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
-            logging.info(u'shared: {0}'.format(intersection))
-            logging.info('sim: {0}'.format(sim))
-
-        draw_graphs = True
-        if draw_graphs and not self.batch:
-            graph = MachineGraph.create_from_machines(
-                [machine1, machine2], max_depth=1)
-            f = open('graphs/{0}_{1}.dot'.format(lemma1, lemma2), 'w')
-            f.write(graph.to_dot().encode('utf-8'))
-        return sim
 
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
@@ -394,6 +363,8 @@ if __name__ == "__main__":
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     w = build_ext_defs()
+    #w.draw_single_graph('inmate')
+    #w.draw_single_graph('prisoner')
     w.draw_word_graphs()
     #f = open('wrapper.pickle', 'w')
     #cPickle.dump(w, f)
