@@ -8,10 +8,10 @@ class WordSimilarity():
 
     def get_links(self, machine):
         self.seen = set()
-        return self._get_links(machine)
+        return self._get_links(machine, depth=0)
 
-    def _get_links(self, machine):
-        if machine in self.seen:
+    def _get_links(self, machine, depth):
+        if machine in self.seen or depth > 5:
             return
         self.seen.add(machine)
         for hypernym in machine.partitions[0]:
@@ -19,7 +19,7 @@ class WordSimilarity():
             if name.isupper():
                 continue
             yield name
-            for link in self.get_links(hypernym):
+            for link in self._get_links(hypernym, depth=depth+1):
                 yield link
 
         for link in self.get_binary_links(machine):
@@ -45,13 +45,13 @@ class WordSimilarity():
 
     def word_similarity(self, word1, word2, pos1, pos2):
         lemma1, lemma2 = map(self.wrapper.get_lemma, (word1, word2))
-        #logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+        #logging.warning(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
         if lemma1 == lemma2:
             return 1
         oov = filter(lambda l: l not in self.wrapper.definitions,
                      (lemma1, lemma2))
         if oov:
-            logging.debug(u'OOV: {0}, no machine similarity')
+            #logging.warning(u'OOV: {0}, no machine similarity'.format(oov))
             return None
 
         machine1, machine2 = map(self.wrapper.definitions.get,
