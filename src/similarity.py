@@ -5,6 +5,7 @@ from pymachine.src.machine import MachineGraph
 class WordSimilarity():
     def __init__(self, wrapper):
         self.wrapper = wrapper
+        self.sim_cache = {}
 
     def get_links(self, machine):
         self.seen = set()
@@ -45,6 +46,8 @@ class WordSimilarity():
 
     def word_similarity(self, word1, word2, pos1, pos2):
         lemma1, lemma2 = map(self.wrapper.get_lemma, (word1, word2))
+        if (lemma1, lemma2) in self.sim_cache:
+            return self.sim_cache[(lemma1, lemma2)]
         #logging.warning(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
         if lemma1 == lemma2:
             return 1
@@ -60,8 +63,6 @@ class WordSimilarity():
         links2 = set(self.get_links(machine2))
         #logging.info('machine1 links: {0}, machine2 links: {1}'.format(
         #    links1, links2))
-        logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
-        logging.info(u'links1: {0}, links2: {1}'.format(links1, links2))
         union = links1 | links2
         intersection = links1 & links2
         if not intersection:
@@ -70,6 +71,8 @@ class WordSimilarity():
             sim = float(len(intersection)) / len(union)
             #sim = float(len(intersection)) / min(len(zero_links_1),
             #                                     len(zero_links_2))
+            logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+            logging.info(u'links1: {0}, links2: {1}'.format(links1, links2))
             logging.info(u'shared: {0}'.format(intersection))
             logging.info('sim: {0}'.format(sim))
 
@@ -79,4 +82,6 @@ class WordSimilarity():
                 [machine1, machine2], max_depth=1)
             f = open('graphs/{0}_{1}.dot'.format(lemma1, lemma2), 'w')
             f.write(graph.to_dot().encode('utf-8'))
+
+        self.sim_cache[(lemma1, lemma2)] = sim
         return sim
