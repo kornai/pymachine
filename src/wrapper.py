@@ -48,10 +48,10 @@ class Wrapper:
                     logging.info('returning lemma of {0} instead of {1}')
                     return self.tok2lemma[part]
 
-        logging.info(u'analyzing {0}'.format(word))
+        #logging.info(u'analyzing {0}'.format(word))
         self.tok2lemma[word] = list(self.analyzer.analyze(
             [[word]]))[0][0][1].split('||')[0].split('<')[0]
-        logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
+        #logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
         return self.tok2lemma[word]
 
     @staticmethod
