@@ -255,9 +255,9 @@ class MachineGraph:
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                strict=False, depth=0):
-        pn = machine.printname()
-        logging.info('getting edges for machine: {}'.format(machine))
-        logging.info("{0}: {1}".format(pn, machine.partitions))
+        #pn = machine.printname()
+        #logging.info('getting edges for machine: {}'.format(machine))
+        #logging.info("{0}: {1}".format(pn, machine.partitions))
         #if pn.isupper():
         #    if depth >= 2:
         #        return
