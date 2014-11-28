@@ -1,6 +1,7 @@
 import logging
 
 from pymachine.src.machine import MachineGraph
+from pymachine.src.utils import jaccard
 
 class WordSimilarity():
     def __init__(self, wrapper):
@@ -46,37 +47,36 @@ class WordSimilarity():
 
     def word_similarity(self, word1, word2, pos1, pos2):
         lemma1, lemma2 = map(self.wrapper.get_lemma, (word1, word2))
+        if lemma1 is None or lemma2 is None:
+            return None
         if (lemma1, lemma2) in self.sim_cache:
             return self.sim_cache[(lemma1, lemma2)]
         #logging.warning(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
         if lemma1 == lemma2:
             return 1
-        oov = filter(lambda l: l not in self.wrapper.definitions,
-                     (lemma1, lemma2))
-        if oov:
-            #logging.warning(u'OOV: {0}, no machine similarity'.format(oov))
-            return None
 
-        machine1, machine2 = map(self.wrapper.definitions.get,
-                                 (lemma1, lemma2))
+        machine1 = self.wrapper.definitions[lemma1]
+        machine2 = self.wrapper.definitions[lemma2]
+
         links1 = set(self.get_links(machine1))
         links2 = set(self.get_links(machine2))
+        pn1, pn2 = machine1.printname(), machine2.printname()
+        if pn1 in links2 or pn2 in links1:
+            logging.info("{0} and {1} connected by 0-path, returning 1".format(
+                pn1, pn2))
+            return 1
+        entities1 = filter(lambda l: "@" in l, links1)
+        entities2 = filter(lambda l: "@" in l, links2)
+        if entities1 or entities2:
+            sim = jaccard(entities1, entities2, log=True)
+        else:
+            sim = jaccard(links1, links2, log=True)
         #logging.info('machine1 links: {0}, machine2 links: {1}'.format(
         #    links1, links2))
-        union = links1 | links2
-        intersection = links1 & links2
-        if not intersection:
-            sim = 0
-        else:
-            sim = float(len(intersection)) / len(union)
             #sim = float(len(intersection)) / min(len(zero_links_1),
             #                                     len(zero_links_2))
-            logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
-            logging.info(u'links1: {0}, links2: {1}'.format(links1, links2))
-            logging.info(u'shared: {0}'.format(intersection))
-            logging.info('sim: {0}'.format(sim))
 
-        draw_graphs = False  # use with caution
+        draw_graphs = True  # use with caution
         if draw_graphs and not self.wrapper.batch:
             graph = MachineGraph.create_from_machines(
                 [machine1, machine2], max_depth=1)
