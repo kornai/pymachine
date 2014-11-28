@@ -7,7 +7,7 @@ import sys
 import logging
 import ConfigParser
 
-from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, MorphAnalyzer
+from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
 
 from construction import VerbConstruction
 from sentence_parser import SentenceParser
@@ -40,30 +40,53 @@ class Wrapper:
     def get_lemma(self, word):
         if word in self.tok2lemma:
             return self.tok2lemma[word]
+        elif word in self.oov:
+            return None
         elif Wrapper.num_re.match(word):
             return word
         for char in ('.', ',', '=', '"', "'", '/'):
             for part in word.split(char):
                 if part in self.tok2lemma:
-                    logging.info('returning lemma of {0} instead of {1}')
+                    logging.info(
+                        'returning lemma of {0} instead of {1}'.format(
+                            part, word))
                     return self.tok2lemma[part]
 
-        #logging.info(u'analyzing {0}'.format(word))
-        self.tok2lemma[word] = list(self.analyzer.analyze(
+        logging.info(u'analyzing {0}'.format(word))
+        disamb_lemma = list(self.analyzer.analyze(
             [[word]]))[0][0][1].split('||')[0].split('<')[0]
-        #logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
+
+        if disamb_lemma in self.definitions:
+            self.tok2lemma[word] = disamb_lemma
+        else:
+            candidates = self.morph_analyzer.analyze([[word]]).next().next()
+            for cand in candidates:
+                lemma = cand.split('||')[0].split('<')[0]
+                if lemma in self.definitions:
+                    self.tok2lemma[word] = lemma
+                    break
+            else:
+                logging.warning(u'OOV: {0} ({1})'.format(word, candidates))
+                self.oov.add(word)
+                return None
+
+        logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
         return self.tok2lemma[word]
 
     @staticmethod
     def get_analyzer():
         hunmorph_dir = os.environ['HUNMORPH_DIR']
-        return MorphAnalyzer(
-            Ocamorph(
-                os.path.join(hunmorph_dir, "ocamorph"),
-                os.path.join(hunmorph_dir, "morphdb_en.bin")),
+        ocamorph = Ocamorph(
+            os.path.join(hunmorph_dir, "ocamorph"),
+            os.path.join(hunmorph_dir, "morphdb_en.bin"))
+        ocamorph_analyzer = OcamorphAnalyzer(ocamorph)
+        morph_analyzer = MorphAnalyzer(
+            ocamorph,
             Hundisambig(
                 os.path.join(hunmorph_dir, "hundisambig"),
                 os.path.join(hunmorph_dir, "en_wsj.model")))
+
+        return morph_analyzer, ocamorph_analyzer
 
     @staticmethod
     def get_tok2lemma(tok2lemma_fn):
@@ -87,6 +110,7 @@ class Wrapper:
         self.batch = batch
 
         self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
+        self.oov = set()
         self.wordlist = set()
         self.dep_to_op = dep_map_reader(self.dep_map_fn)
         self.__read_definitions()
@@ -164,7 +188,7 @@ class Wrapper:
 
     def get_longman_definitions(self):
         #logging.info('adding Longman definitions')
-        self.analyzer = Wrapper.get_analyzer()
+        self.analyzer, self.morph_analyzer = Wrapper.get_analyzer()
         if self.longman_deps_path.endswith('pickle'):
             logging.info('loading Longman definitions...')
             definitions = cPickle.load(file(self.longman_deps_path))
