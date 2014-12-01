@@ -42,8 +42,10 @@ class Wrapper:
             return self.tok2lemma[word]
         elif word in self.oov:
             return None
-        elif Wrapper.num_re.match(word):
+        elif word in self.definitions:
+            self.tok2lemma[word] = word
             return word
+
         for char in ('.', ',', '=', '"', "'", '/'):
             for part in word.split(char):
                 if part in self.tok2lemma:
@@ -109,7 +111,8 @@ class Wrapper:
         self.__read_config()
         self.batch = batch
 
-        self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
+        self.tok2lemma = {}
+        #self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
         self.oov = set()
         self.wordlist = set()
         self.dep_to_op = dep_map_reader(self.dep_map_fn)
