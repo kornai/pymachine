@@ -8,6 +8,7 @@ import logging
 import ConfigParser
 
 from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
+from stemming.porter2 import stem
 
 from construction import VerbConstruction
 from sentence_parser import SentenceParser
@@ -46,14 +47,6 @@ class Wrapper:
             self.tok2lemma[word] = word
             return word
 
-        for char in ('.', ',', '=', '"', "'", '/'):
-            for part in word.split(char):
-                if part in self.tok2lemma:
-                    logging.info(
-                        'returning lemma of {0} instead of {1}'.format(
-                            part, word))
-                    return self.tok2lemma[part]
-
         logging.info(u'analyzing {0}'.format(word))
         disamb_lemma = list(self.analyzer.analyze(
             [[word]]))[0][0][1].split('||')[0].split('<')[0]
@@ -68,6 +61,14 @@ class Wrapper:
                     self.tok2lemma[word] = lemma
                     break
             else:
+                stemmed = stem(word)
+                if word != stemmed:
+                    stemmed_lemma = self.get_lemma(stemmed)
+                    if stemmed_lemma is not None:
+                        logging.warning(
+                            u'using stem {0} of {1}'.format(stemmed, word))
+                    self.tok2lemma[word] = stemmed_lemma
+                    return stemmed_lemma
                 logging.warning(u'OOV: {0} ({1})'.format(word, candidates))
                 self.oov.add(word)
                 return None
