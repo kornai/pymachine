@@ -7,10 +7,13 @@ class WordSimilarity():
     def __init__(self, wrapper):
         self.wrapper = wrapper
         self.sim_cache = {}
+        self.links_cache = {}
 
     def get_links(self, machine):
-        self.seen = set()
-        return self._get_links(machine, depth=0)
+        if machine not in self.links_cache:
+            self.seen = set()
+            self.links_cache[machine] = set(self._get_links(machine, depth=0))
+        return self.links_cache[machine]
 
     def _get_links(self, machine, depth):
         if machine in self.seen or depth > 5:
@@ -19,8 +22,10 @@ class WordSimilarity():
         for hypernym in machine.partitions[0]:
             name = hypernym.printname()
             if name.isupper():
-                continue
-            yield name
+                if name != '=AGT':
+                    continue
+            else:
+                yield name
             for link in self._get_links(hypernym, depth=depth+1):
                 yield link
 
@@ -51,15 +56,16 @@ class WordSimilarity():
             return None
         if (lemma1, lemma2) in self.sim_cache:
             return self.sim_cache[(lemma1, lemma2)]
-        #logging.warning(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+        logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
         if lemma1 == lemma2:
             return 1
 
         machine1 = self.wrapper.definitions[lemma1]
         machine2 = self.wrapper.definitions[lemma2]
 
-        links1 = set(self.get_links(machine1))
-        links2 = set(self.get_links(machine2))
+        links1 = self.get_links(machine1)
+        links2 = self.get_links(machine2)
+        logging.info('links1: {0}, links2: {1}'.format(links1, links2))
         pn1, pn2 = machine1.printname(), machine2.printname()
         if pn1 in links2 or pn2 in links1:
             logging.info("{0} and {1} connected by 0-path, returning 1".format(
@@ -83,5 +89,6 @@ class WordSimilarity():
             f = open('graphs/{0}_{1}.dot'.format(lemma1, lemma2), 'w')
             f.write(graph.to_dot().encode('utf-8'))
 
+        sim = sim if sim >= 0 else 0
         self.sim_cache[(lemma1, lemma2)] = sim
         return sim
