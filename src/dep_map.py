@@ -3,9 +3,9 @@ import logging
 
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
-from operators import AppendOperator, AppendToBinaryOperator, AppendToNewBinaryOperator  # nopep8
+from operators import AppendOperator, AppendToBinaryOperator, AppendToBinaryFromLexiconOperator  # nopep8
 
-def dep_map_reader(fn, lexicon=None):
+def dep_map_reader(fn):
     dep_to_op = {}
     if not fn:
         return {}
@@ -32,7 +32,7 @@ def dep_map_reader(fn, lexicon=None):
         logging.debug(
             'dependency: {0}, edge1: {1}, edge2: {2}, rel: {3}'.format(
                 dep, edge1, edge2, rel))
-        dep_to_op[dep] = create_operators(edge1, edge2, rel, lexicon, reverse)
+        dep_to_op[dep] = create_operators(edge1, edge2, rel, reverse)
 
     return dep_to_op
 
@@ -47,22 +47,14 @@ def get_rel_machine(rel, lexicon):
     else:
         return machines.keys()[0]
 
-def create_operators(edge1, edge2, rel, lexicon, reverse):
+def create_operators(edge1, edge2, rel, reverse):
     operators = []
     if edge1 is not None:  # it can be zero, so don't check for truth value!
         operators.append(AppendOperator(0, 1, part=edge1))
     if edge2 is not None:
         operators.append(AppendOperator(1, 0, part=edge2))
     if rel:
-        if lexicon is not None:
-            logging.debug(
-                'trying to find machine for this relation: {}'.format(rel))
-            rel_machine = get_rel_machine(rel, lexicon)
-            logging.debug('found this: {}'.format(rel_machine))
-            operator = AppendToBinaryOperator(rel, 0, 1, reverse=reverse)
-        else:
-            operator = AppendToNewBinaryOperator(rel, 0, 1, reverse=reverse)
-
-        operators.append(operator)
+        operators.append(
+            AppendToBinaryFromLexiconOperator(rel, 0, 1, reverse=reverse))
 
     return operators
