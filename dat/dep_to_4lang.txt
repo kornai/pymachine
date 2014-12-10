@@ -119,7 +119,9 @@ punct	-,-
 quantmod	-,-
 #No quantification yet...
 
-rcmod	-,2
+rcmod	-,-
+#relations expressed by a relative clause will also appear explicitly
+
 ref	-,-
 
 root	-,-
