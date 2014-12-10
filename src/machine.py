@@ -9,13 +9,10 @@ from constants import deep_pre, avm_pre, enc_pre
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):
         self.printname_ = name
+        if name.isupper():
+            part_num = 3  # TODO crude, but effective
         self.partitions = [[] for i in range(part_num)]
-
         self.set_control(control)
-
-        logging.debug(u"{0} created with {1} partitions".format(
-            name, len(self.partitions)))
-
         self.parents = set()
 
     def __repr__(self):
@@ -60,6 +57,9 @@ class Machine(object):
         """printname for dot output"""
         #TODO
         pn = self.printname_.split('/')[0]
+        if self.control is not None:
+            pn = "{0}_{1}".format(pn, str(id(self.control))[-2:])
+
         return Machine.d_clean(pn)
 
     @staticmethod
