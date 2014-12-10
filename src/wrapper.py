@@ -10,18 +10,19 @@ import ConfigParser
 from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
 from stemming.porter2 import stem
 
-from construction import VerbConstruction
-from sentence_parser import SentenceParser
-from lexicon import Lexicon
+from pymachine.src.construction import VerbConstruction
+from pymachine.src.sentence_parser import SentenceParser
+from pymachine.src.lexicon import Lexicon
+from pymachine.src.operators import AppendToBinaryFromLexiconOperator  # nopep8
 from pymachine.src.machine import MachineGraph
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
-from spreading_activation import SpreadingActivation
-from definition_parser import read as read_defs
-from sup_dic import supplementary_dictionary_reader as sdreader
-from dep_map import dep_map_reader
+from pymachine.src.spreading_activation import SpreadingActivation
+from pymachine.src.definition_parser import read as read_defs
+from pymachine.src.sup_dic import supplementary_dictionary_reader as sdreader
+from pymachine.src.dep_map import dep_map_reader
 #from demo_misc import add_verb_constructions, add_avm_constructions
-import np_grammar
+from pymachine.src import np_grammar
 
 class KeyDefaultDict(dict):
     def __missing__(self, key):
@@ -38,20 +39,22 @@ class Wrapper:
     dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
     num_re = re.compile(r'^[0-9.,]+$', re.UNICODE)
 
-    def get_lemma(self, word):
+    enable_stemming = False
+
+    def get_lemma(self, word, existing_only=False):
         if word in self.tok2lemma:
             return self.tok2lemma[word]
-        elif word in self.oov:
+        elif word in self.oov and existing_only:
             return None
         elif word in self.definitions:
             self.tok2lemma[word] = word
             return word
 
-        logging.info(u'analyzing {0}'.format(word))
+        #logging.info(u'analyzing {0}'.format(word))
         disamb_lemma = list(self.analyzer.analyze(
             [[word]]))[0][0][1].split('||')[0].split('<')[0]
 
-        if disamb_lemma in self.definitions:
+        if not existing_only or disamb_lemma in self.definitions:
             self.tok2lemma[word] = disamb_lemma
         else:
             candidates = self.morph_analyzer.analyze([[word]]).next().next()
@@ -61,19 +64,20 @@ class Wrapper:
                     self.tok2lemma[word] = lemma
                     break
             else:
-                stemmed = stem(word)
-                if word != stemmed:
-                    stemmed_lemma = self.get_lemma(stemmed)
-                    if stemmed_lemma is not None:
-                        logging.warning(
-                            u'using stem {0} of {1}'.format(stemmed, word))
-                    self.tok2lemma[word] = stemmed_lemma
-                    return stemmed_lemma
-                logging.warning(u'OOV: {0} ({1})'.format(word, candidates))
+                if Wrapper.enable_stemming:
+                    stemmed = stem(word)
+                    if word != stemmed:
+                        stemmed_lemma = self.get_lemma(stemmed)
+                        if stemmed_lemma is not None:
+                            logging.warning(
+                                u'using stem {0} of {1}'.format(stemmed, word))
+                        self.tok2lemma[word] = stemmed_lemma
+                        return stemmed_lemma
+                #logging.warning(u'OOV: {0} ({1})'.format(word, candidates))
                 self.oov.add(word)
                 return None
 
-        logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
+        #logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
         return self.tok2lemma[word]
 
     @staticmethod
@@ -173,7 +177,11 @@ class Wrapper:
                 f = open('{0}.pickle'.format(file_name), 'w')
                 cPickle.dump(definitions, f)
 
-            self.definitions.update(definitions)
+            for pn, machines in definitions.iteritems():
+                if pn not in self.definitions:
+                    self.definitions[pn] = machines
+                else:
+                    self.definitions[pn] |= machines
 
     def __add_definitions(self):
             definitions = deepcopy(self.definitions)
@@ -213,7 +221,12 @@ class Wrapper:
                 deps = [
                     line.strip() for line in open(
                         os.path.join(self.longman_deps_path, fn))]
-                machine = self.get_dep_definition(word, deps)
+                try:
+                    machine = self.get_dep_definition(word, deps)
+                except Exception, e:
+                    logging.error(
+                        "skipping {0} because of this: {1}".format(fn, e))
+                    continue
                 if machine is None:
                     continue
                 definitions[word] = machine
@@ -224,7 +237,7 @@ class Wrapper:
 
         for word, machine in definitions.iteritems():
             if word not in self.definitions:
-                self.definitions[word] = machine
+                self.definitions[word] = set([machine])
 
         logging.info('done')
 
@@ -237,6 +250,7 @@ class Wrapper:
         return dep, (word1, id1), (word2, id2)
 
     def get_dep_definition(self, word, dep_strings):
+        lexicon = Lexicon()
         deps = map(Wrapper.parse_dependency, dep_strings)
         root_deps = filter(lambda d: d[0] == 'root', deps)
         root_word, root_id = root_deps[0][2]
@@ -252,14 +266,15 @@ class Wrapper:
             lemma2 = self.get_lemma(word2)
             #logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
             machine1, machine2 = self._add_dependency(
-                dep, (lemma1, id1), (lemma2, id2), word2machine=word2machine)
+                dep, (lemma1, id1), (lemma2, id2), temp_lexicon=lexicon)
             word2machine[lemma1] = machine1
             word2machine[lemma2] = machine2
 
         root_machine = word2machine[root_lemma]
-        machine = Machine(word, ConceptControl())
-        machine.append(root_machine, 0)
-        return machine
+        #logging.info("root machine: {0}".format(root_machine))
+        word_machine = word2machine.get(word, Machine(word, ConceptControl()))
+        word_machine.append(root_machine, 0)
+        return word_machine
 
     def add_dependency(self, string):
         #e.g. nsubjpass(pushed-7, salesman-5)
@@ -271,50 +286,44 @@ class Wrapper:
                              use_lexicon=True, activate_machines=True)
 
     def _add_dependency(self, dep, (word1, id1), (word2, id2),
-                        word2machine=None, use_lexicon=False,
-                        activate_machines=False):
+                        temp_lexicon=None):
         """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
         machines for w1 and w2, then run all operators associated with D on the
         sequence of the new machines (m1, m2)"""
-        machines = []
-        for word in (word1, word2):
-            if use_lexicon:
-                machine = self.lexicon.get_machine(word)
-            else:
-                machine = word2machine.get(word,
-                                           Machine(word, ConceptControl()))
+        lexicon = temp_lexicon if temp_lexicon is not None else self.lexicon
+        #logging.info(
+        #    'adding dependency {0}({1}, {2})'.format(dep, word1, word2))
+        machine1, machine2 = map(lexicon.get_machine, (word1, word2))
 
-            if activate_machines:
-                logging.debug('activating {}'.format(machine))
-                self.lexicon.add_active(machine)
-                self.lexicon.expand(machine)
-            machines.append(machine)
-
-        machine1, machine2 = machines
         for operator in self.dep_to_op.get(dep, []):
-            logging.info('operator {0} acting on machines {1} and {2}'.format(
-                operator, machine1, machine2))
-            operator.act((machine1, machine2))
+            #logging.info('operator {0} acting on machines {1} and {2}'.format(
+            #    operator, machine1, machine2))
+            if isinstance(operator, AppendToBinaryFromLexiconOperator):
+                operator.act((machine1, machine2), lexicon)
+            else:
+                operator.act((machine1, machine2))
 
         return machine1, machine2
 
     def draw_single_graph(self, word):
-        for w, machine in self.definitions.iteritems():
+        for w, machines in self.definitions.iteritems():
             if w != word:
                 continue
-            graph = MachineGraph.create_from_machines([machine])
-            clean_word = Machine.d_clean(w)
-            f = open('graphs/words/{0}.dot'.format(clean_word), 'w')
-            f.write(graph.to_dot().encode('utf-8'))
+            for c, machine in enumerate(machines):
+                graph = MachineGraph.create_from_machines([machine])
+                clean_word = Machine.d_clean(w)
+                f = open('graphs/words/{0}_{1}.dot'.format(clean_word, c), 'w')
+                f.write(graph.to_dot().encode('utf-8'))
 
     def draw_word_graphs(self):
-        for c, (word, machine) in enumerate(self.definitions.iteritems()):
+        for c, (word, machines) in enumerate(self.definitions.iteritems()):
             if c % 1000 == 0:
                 logging.info("{0}...".format(c))
-            graph = MachineGraph.create_from_machines([machine])
-            clean_word = Machine.d_clean(word)
-            f = open('graphs/words/{0}.dot'.format(clean_word), 'w')
-            f.write(graph.to_dot().encode('utf-8'))
+            for i, machine in enumerate(machines):
+                graph = MachineGraph.create_from_machines([machine])
+                clean_word = Machine.d_clean(word)
+                f = open('graphs/words/{0}_{1}.dot'.format(clean_word, i), 'w')
+                f.write(graph.to_dot().encode('utf-8'))
 
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
@@ -391,8 +400,8 @@ if __name__ == "__main__":
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     w = build_ext_defs()
-    #w.draw_single_graph('inmate')
-    #w.draw_single_graph('prisoner')
-    w.draw_word_graphs()
+    #w.draw_single_graph('mountainous')
+    #w.draw_single_graph('airplane')
+    #w.draw_word_graphs()
     #f = open('wrapper.pickle', 'w')
     #cPickle.dump(w, f)
