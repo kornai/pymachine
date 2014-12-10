@@ -520,7 +520,7 @@ class DefinitionParser(object):
 
 def read(f, plur_filn, printname_index=0, add_indices=False,
          loop_to_defendum=True, three_parts=False):
-    d = {}
+    d = defaultdict(set)
     plur_dict = read_plur(open(plur_filn)) if plur_filn else {}
     dp = DefinitionParser(plur_dict)
     for line in f:
@@ -532,7 +532,7 @@ def read(f, plur_filn, printname_index=0, add_indices=False,
             if m.partitions[0] == []:
                 logging.debug('dropping empty definition of '+m.printname())
                 continue
-            d[m.printname()] = m
+            d[m.printname()].add(m)
             logging.debug('\n'+m.to_debug_str())
         except pyparsing.ParseException, pe:
             print l
