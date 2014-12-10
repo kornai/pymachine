@@ -3,7 +3,6 @@ from itertools import chain
 from collections import Iterable, defaultdict
 import copy
 
-from pymachine.src.control import KRPosControl
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from pymachine.src.construction import Construction, AVMConstruction
@@ -74,6 +73,7 @@ class Lexicon:
             if curr_from.deep_case():
                 replacement[curr_from] = curr_from
             else:
+                """
                 try:
                     if curr_from.printname().isupper():
                         curr_from.printname_ = curr_from.printname().lower()
@@ -81,6 +81,7 @@ class Lexicon:
                     logging.info('curr_from: {0}, type: {1}'.format(
                         curr_from, type(curr_from)))
                     raise Exception(e)
+                """
                 #print "Not in replacement"
                 # Does this machine appear in the static tree?
                 from_already_seen = self.__get_disambig_incomplete(
@@ -103,7 +104,7 @@ class Lexicon:
 
                     self.static[curr_from.printname()] = from_already_seen
                     #print ("Adding to static", curr_from.printname(),
-                    #       from_already_seen
+                    #       from_already_seen)
                     self.__add_to_disambig(curr_from.printname())
                     replacement[curr_from] = curr_from
 
@@ -545,12 +546,22 @@ class Lexicon:
         """Tests the static graph building procedure."""
         pass
 
-    def get_machine(self, printname):
+    def get_machine(self, printname, second=False):
+        if printname == 'have':
+            #logging.info('interpreting a form of "have" as "HAS"')
+            return self.get_machine("HAS")
+
         if printname in self.active:
             return self.active[printname].keys()[0]
 
         cands = self.get_static_machine(printname)
         if not cands:
-            return Machine(printname, KRPosControl('???/UNKNOWN'))
+            if second:
+                raise Exception(
+                    "no machine with printname {0}".format(printname) +
+                    "even after calling add_static for {0}".format(
+                        Machine(printname, ConceptControl())))
+            self.add_static(Machine(printname, ConceptControl()))
+            return self.get_machine(printname, second=True)  # sanity check
 
         return cands[0]
