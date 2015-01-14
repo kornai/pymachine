@@ -2,7 +2,7 @@ from collections import defaultdict, Iterable
 import logging
 assert logging  # silence pyflakes
 
-from pymachine.src.machine import Machine
+from pymachine.machine import Machine
 from matcher import Matcher
 from avm import AVM
 

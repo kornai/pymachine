@@ -3,10 +3,10 @@ from itertools import chain
 from collections import Iterable, defaultdict
 import copy
 
-from pymachine.src.machine import Machine
-from pymachine.src.control import ConceptControl
-from pymachine.src.construction import Construction, AVMConstruction
-from pymachine.src.constants import id_sep
+from pymachine.machine import Machine
+from pymachine.control import ConceptControl
+from pymachine.construction import Construction, AVMConstruction
+from pymachine.constants import id_sep
 
 class Lexicon:
     """THE machine repository."""

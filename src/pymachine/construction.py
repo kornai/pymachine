@@ -6,8 +6,8 @@ from copy import deepcopy as copy
 
 from fst import FSA, FST
 from matcher import KRPosMatcher
-from pymachine.src.machine import Machine
-from pymachine.src.control import KRPosControl
+from pymachine.machine import Machine
+from pymachine.control import KRPosControl
 from constants import deep_cases, deep_case_to_grammatical_case
 from avm import AVM
 from operators import ExpandOperator, FillArgumentOperator

@@ -10,19 +10,19 @@ import ConfigParser
 from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
 from stemming.porter2 import stem
 
-from pymachine.src.construction import VerbConstruction
-from pymachine.src.sentence_parser import SentenceParser
-from pymachine.src.lexicon import Lexicon
-from pymachine.src.operators import AppendToBinaryFromLexiconOperator  # nopep8
-from pymachine.src.utils import MachineGraph
-from pymachine.src.machine import Machine
-from pymachine.src.control import ConceptControl
-from pymachine.src.spreading_activation import SpreadingActivation
-from pymachine.src.definition_parser import read as read_defs
-from pymachine.src.sup_dic import supplementary_dictionary_reader as sdreader
-from pymachine.src.dep_map import dep_map_reader
+from pymachine.construction import VerbConstruction
+from pymachine.sentence_parser import SentenceParser
+from pymachine.lexicon import Lexicon
+from pymachine.operators import AppendToBinaryFromLexiconOperator  # nopep8
+from pymachine.utils import MachineGraph
+from pymachine.machine import Machine
+from pymachine.control import ConceptControl
+from pymachine.spreading_activation import SpreadingActivation
+from pymachine.definition_parser import read as read_defs
+from pymachine.sup_dic import supplementary_dictionary_reader as sdreader
+from pymachine.dep_map import dep_map_reader
 #from demo_misc import add_verb_constructions, add_avm_constructions
-from pymachine.src import np_grammar
+from pymachine import np_grammar
 
 class KeyDefaultDict(dict):
     def __missing__(self, key):
@@ -134,10 +134,8 @@ class Wrapper:
             cPickle.dump(self.lexicon, open(save_to, 'w'))
 
     def __read_config(self):
-        machinepath = os.path.realpath(__file__).rsplit("/", 2)[0]
-        if "MACHINEPATH" in os.environ:
-            machinepath = os.environ["MACHINEPATH"]
-        config = ConfigParser.SafeConfigParser({"machinepath": machinepath})
+        config = ConfigParser.SafeConfigParser(
+            {"4langpath": os.environ["FOURLANGPATH"]})
         logging.info('reading machine config from {0}'.format(self.cfn))
         config.read(self.cfn)
         items = dict(config.items("machine"))
@@ -161,7 +159,8 @@ class Wrapper:
                     " does not exist: {0}".format(file_name))
 
             if file_name.endswith('pickle'):
-                logging.debug('loading 4lang definitions...')
+                logging.info(
+                    'loading 4lang definitions from {}...'.format(file_name))
                 definitions = cPickle.load(file(file_name))
             else:
                 logging.info('parsing 4lang definitions...')
@@ -198,7 +197,8 @@ class Wrapper:
         #logging.info('adding Longman definitions')
         self.analyzer, self.morph_analyzer = Wrapper.get_analyzer()
         if self.longman_deps_path.endswith('pickle'):
-            logging.info('loading Longman definitions...')
+            logging.info('loading Longman definitions from {}...'.format(
+                self.longman_deps_path))
             definitions = cPickle.load(file(self.longman_deps_path))
 
         else:

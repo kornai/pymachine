@@ -4,7 +4,7 @@ import itertools
 
 from control import PluginControl
 from construction import Construction
-from pymachine.src.control import ConceptControl
+from pymachine.control import ConceptControl
 from np_parser import parse_chunk
 
 def powerset(iterable):

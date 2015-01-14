@@ -14,8 +14,8 @@ except ImportError:
 from hunmisc.xstring.encoding import decode_from_proszeky
 
 from constants import deep_cases, avm_pre, deep_pre, enc_pre, id_sep
-from pymachine.src.machine import Machine
-from pymachine.src.control import ConceptControl
+from pymachine.machine import Machine
+from pymachine.control import ConceptControl
 
 class ParserException(Exception):
     pass

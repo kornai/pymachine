@@ -2,7 +2,7 @@
 
 import logging
 
-from pymachine.src.control import KRPosControl
+from pymachine.control import KRPosControl
 
 class Operator(object):
     """The abstract superclass of the operator hierarchy."""

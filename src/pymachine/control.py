@@ -11,7 +11,7 @@ class Control(object):
 
     def set_machine(self, machine):
         """Sets the machine the control controls."""
-        from pymachine.src.machine import Machine
+        from pymachine.machine import Machine
         if not isinstance(machine, Machine) and machine is not None:
             raise TypeError("machine should be a Machine instance")
         self.machine = machine

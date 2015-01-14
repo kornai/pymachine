@@ -2,7 +2,7 @@ import logging
 import copy
 from itertools import chain
 
-from pymachine.src.control import Control
+from pymachine.control import Control
 from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
