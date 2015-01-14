@@ -1,5 +1,5 @@
-from pymachine.src.machine import Machine
-from pymachine.src.control import KRPosControl as Control
+from machine import Machine
+from control import KRPosControl as Control
 
 class SentenceParser:
     """This class will create machines from analyzed and chunked text"""

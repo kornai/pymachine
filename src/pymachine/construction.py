@@ -4,14 +4,14 @@ from collections import defaultdict
 from itertools import permutations
 from copy import deepcopy as copy
 
-from fst import FSA, FST
-from matcher import KRPosMatcher
-from pymachine.src.machine import Machine
-from pymachine.src.control import KRPosControl
-from constants import deep_cases, deep_case_to_grammatical_case
 from avm import AVM
-from operators import ExpandOperator, FillArgumentOperator
+from constants import deep_cases, deep_case_to_grammatical_case
+from control import KRPosControl
+from fst import FSA, FST
+from machine import Machine
+from matcher import KRPosMatcher
 from np_parser import parse_rule
+from operators import ExpandOperator, FillArgumentOperator
 
 class Construction(object):
     SEMANTIC, CHUNK, AVM = xrange(3)  # types

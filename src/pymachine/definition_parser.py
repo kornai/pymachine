@@ -4,18 +4,14 @@ import re
 import string
 from collections import defaultdict
 
-try:
-    import pyparsing
-    from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList  # nopep8
-except ImportError:
-    logging.critical("PyParsing has to be installed on the computer")
-    sys.exit(-1)
+import pyparsing
+from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList  # nopep8
 
 from hunmisc.xstring.encoding import decode_from_proszeky
 
 from constants import deep_cases, avm_pre, deep_pre, enc_pre, id_sep
-from pymachine.src.machine import Machine
-from pymachine.src.control import ConceptControl
+from control import ConceptControl
+from machine import Machine
 
 class ParserException(Exception):
     pass

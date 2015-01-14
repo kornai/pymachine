@@ -11,7 +11,7 @@ class Control(object):
 
     def set_machine(self, machine):
         """Sets the machine the control controls."""
-        from pymachine.src.machine import Machine
+        from machine import Machine
         if not isinstance(machine, Machine) and machine is not None:
             raise TypeError("machine should be a Machine instance")
         self.machine = machine
@@ -27,7 +27,6 @@ class Control(object):
             name, 2 * depth + len(str(name)),
             id(self)))
         return '\n'.join(lines)
-            
 
 class PosControl(Control):
     def __init__(self, pos, machine=None):
@@ -48,8 +47,7 @@ class KRPosControl(Control):
         lines.extend(Control.to_debug_str(self).split('\n'))
         for k, v in self.kr.items():
             lines.append('  {0:>{1}}:{2}'.format(
-                    k, 2 * depth + len(str(k)),
-                    str(v)))
+                k, 2 * depth + len(str(k)), str(v)))
         return '\n'.join(lines)
 
 class ConceptControl(Control):
@@ -84,6 +82,6 @@ class ElviraPluginControl(PluginControl):
                 elif m.printname() == 'AFTER_AT':
                     after = m.partitions[1][0]
             if before is not None and after is not None:
-                logging.debug('Elvira message: {0} -> {1}'.format(before, after))
+                logging.debug('Elvira message: {0} -> {1}'.format(before,
+                                                                  after))
                 return (self.plugin_url, [unicode(before), unicode(after)])
-
