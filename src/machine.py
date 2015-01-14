@@ -2,8 +2,8 @@ import logging
 import copy
 from itertools import chain
 
+from pymachine.src.control import Control
 from constants import deep_pre, avm_pre, enc_pre
-from control import Control
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=1):

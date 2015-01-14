@@ -2,7 +2,7 @@ from collections import defaultdict
 import logging
 
 from nltk.corpus import stopwords as nltk_stopwords
-from utils import average, harmonic_mean, jaccard, min_jaccard, MachineGraph, MachineTraverser, my_max  # nopep8
+from pymachine.src.utils import average, harmonic_mean, jaccard, min_jaccard, MachineGraph, MachineTraverser, my_max  # nopep8
 assert jaccard, min_jaccard  # silence pyflakes
 
 class WordSimilarity():

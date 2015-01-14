@@ -2,6 +2,7 @@ import sys
 import logging
 
 import matcher
+from pymachine.src.machine import Machine
 
 def parse_rule(rule):
     right = rule.split('->')[1].strip()

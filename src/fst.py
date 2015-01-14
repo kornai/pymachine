@@ -2,9 +2,9 @@ from collections import defaultdict, Iterable
 import logging
 assert logging  # silence pyflakes
 
-from avm import AVM
-from machine import Machine
+from pymachine.src.machine import Machine
 from matcher import Matcher
+from avm import AVM
 
 class FSA(object):
     def __init__(self):

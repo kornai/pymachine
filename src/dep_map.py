@@ -1,8 +1,8 @@
 #!/env/python
 import logging
 
-from control import ConceptControl
-from machine import Machine
+from pymachine.src.machine import Machine
+from pymachine.src.control import ConceptControl
 from operators import AppendOperator, AppendToBinaryOperator, AppendToBinaryFromLexiconOperator  # nopep8
 
 def dep_map_reader(fn):

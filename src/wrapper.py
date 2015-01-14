@@ -10,19 +10,29 @@ import ConfigParser
 from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
 from stemming.porter2 import stem
 
-from construction import VerbConstruction
-from sentence_parser import SentenceParser
-from lexicon import Lexicon
-from operators import AppendToBinaryFromLexiconOperator
-from utils import MachineGraph
-from machine import Machine
-from control import ConceptControl
-from spreading_activation import SpreadingActivation
-from definition_parser import read as read_defs
-from sup_dic import supplementary_dictionary_reader as sdreader
-from dep_map import dep_map_reader
+from pymachine.src.construction import VerbConstruction
+from pymachine.src.sentence_parser import SentenceParser
+from pymachine.src.lexicon import Lexicon
+from pymachine.src.operators import AppendToBinaryFromLexiconOperator  # nopep8
+from pymachine.src.utils import MachineGraph
+from pymachine.src.machine import Machine
+from pymachine.src.control import ConceptControl
+from pymachine.src.spreading_activation import SpreadingActivation
+from pymachine.src.definition_parser import read as read_defs
+from pymachine.src.sup_dic import supplementary_dictionary_reader as sdreader
+from pymachine.src.dep_map import dep_map_reader
 #from demo_misc import add_verb_constructions, add_avm_constructions
-import np_grammar
+from pymachine.src import np_grammar
+
+class KeyDefaultDict(dict):
+    def __missing__(self, key):
+        return key
+
+def jaccard(s1, s2):
+    try:
+        return float(len(s1 & s2)) / len(s1 | s2)
+    except ZeroDivisionError:
+        return 0.0
 
 class Wrapper:
 
