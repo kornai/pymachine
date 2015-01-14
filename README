@@ -1,4 +1,4 @@
-This subproject will be used to represent "machines"
+This project will be used to represent "machines"
 (see semantics book for details)
 python implementation goals:
   + working
