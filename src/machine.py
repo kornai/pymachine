@@ -1,6 +1,5 @@
 import logging
 import copy
-from collections import defaultdict
 from itertools import chain
 
 from pymachine.src.control import Control
@@ -239,86 +238,6 @@ class Machine(object):
 
         if depth == 0:
             return u"\n".join(lines)
-
-class MachineGraph:
-    @staticmethod
-    def create_from_machines(iterable, max_depth=None, whitelist=None,
-                             strict=False):
-        g = MachineGraph()
-        g.seen = set()
-        logging.debug('whitelist: {}'.format(whitelist))
-        for machine in iterable:
-            g._get_edges_recursively(machine, max_depth, whitelist,
-                                     strict=strict)
-
-        return g
-
-    def _get_edges_recursively(self, machine, max_depth, whitelist,
-                               strict=False, depth=0):
-        #pn = machine.printname()
-        #logging.info('getting edges for machine: {}'.format(machine))
-        #logging.info("{0}: {1}".format(pn, machine.partitions))
-        #if pn.isupper():
-        #    if depth >= 2:
-        #        return
-        if machine in self.seen or (max_depth is not None and
-                                    depth > max_depth):
-            return
-        self.seen.add(machine)
-        #if printname == 'from':
-        #    logging.info('from machine: {0}'.format(machine))
-        edges = set()
-        neighbours = set()
-        for color, part in enumerate(machine.partitions):
-            for machine2 in part:
-                if machine2 in self.seen:
-                    continue
-                neighbours.add(machine2)
-                edges.add((machine, machine2, color))
-        for parent, color in machine.parents:
-            if parent in self.seen:
-                continue
-            neighbours.add(parent)
-            edges.add((parent, machine, color))
-
-        for machine1, machine2, color in edges:
-            printname1 = machine1.printname()
-            printname2 = machine2.printname()
-            if (whitelist is not None and printname1 not in whitelist and
-                    printname2 not in whitelist):
-                continue
-            elif whitelist is None or (printname1 in whitelist and
-                                       printname2 in whitelist):
-                self.add_edge(machine1, machine2, color)
-
-        for neighbour in neighbours:
-            self._get_edges_recursively(
-                neighbour, max_depth, whitelist, depth=depth+1)
-
-    def __init__(self):
-        self.machines = set()
-        self.edges = set()
-        self.edges_by_color = defaultdict(set)
-
-    def add_edge(self, m1, m2, color):
-        logging.debug('adding edge: {} -> {}'.format(m1, m2))
-        self.machines.add(m1)
-        self.machines.add(m2)
-        self.edges_by_color[color].add((m1, m2))
-        self.edges.add((m1.printname(), m2.printname(), color))
-
-    def to_dot(self):
-        lines = [u'digraph finite_state_machine {', '\tdpi=100;']
-        #lines.append('\tordering=out;')
-        for machine in self.machines:
-            lines.append(u'\tnode [shape = circle]; {0};'.format(
-                         machine.d_printname()))
-        for color, edges in self.edges_by_color.iteritems():
-            for m1, m2 in edges:
-                lines.append(u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                    m1.d_printname(), m2.d_printname(), color))
-        lines.append('}')
-        return u'\n'.join(lines)
 
 def test_printname():
     m_unicode = Machine(u"\u00c1")
