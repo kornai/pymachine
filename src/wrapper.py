@@ -14,7 +14,7 @@ from pymachine.src.construction import VerbConstruction
 from pymachine.src.sentence_parser import SentenceParser
 from pymachine.src.lexicon import Lexicon
 from pymachine.src.operators import AppendToBinaryFromLexiconOperator  # nopep8
-from pymachine.src.machine import MachineGraph
+from pymachine.src.utils import MachineGraph
 from pymachine.src.machine import Machine
 from pymachine.src.control import ConceptControl
 from pymachine.src.spreading_activation import SpreadingActivation
@@ -39,9 +39,17 @@ class Wrapper:
     dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
     num_re = re.compile(r'^[0-9.,]+$', re.UNICODE)
 
-    enable_stemming = False
+    stem_first = True
 
-    def get_lemma(self, word, existing_only=False):
+    def get_lemma(self, word, existing_only=False, stem_first=True):
+        if stem_first:
+            stemmed_word = stem(word)
+            stemmed_lemma = self.get_lemma(
+                stemmed_word, existing_only=existing_only, stem_first=False)
+            if stemmed_lemma is not None:
+                self.tok2lemma[word] = stemmed_lemma
+                return stemmed_lemma
+
         if word in self.tok2lemma:
             return self.tok2lemma[word]
         elif word in self.oov and existing_only:
@@ -64,20 +72,9 @@ class Wrapper:
                     self.tok2lemma[word] = lemma
                     break
             else:
-                if Wrapper.enable_stemming:
-                    stemmed = stem(word)
-                    if word != stemmed:
-                        stemmed_lemma = self.get_lemma(stemmed)
-                        if stemmed_lemma is not None:
-                            logging.warning(
-                                u'using stem {0} of {1}'.format(stemmed, word))
-                        self.tok2lemma[word] = stemmed_lemma
-                        return stemmed_lemma
-                #logging.warning(u'OOV: {0} ({1})'.format(word, candidates))
                 self.oov.add(word)
                 return None
 
-        #logging.info(u'got this: {0}'.format(self.tok2lemma[word]))
         return self.tok2lemma[word]
 
     @staticmethod
@@ -111,11 +108,10 @@ class Wrapper:
 
         return tok2lemma
 
-    def __init__(self, cf, include_longman=False, batch=False):
+    def __init__(self, cf, batch=False, include_longman=False):
         self.cfn = cf
         self.__read_config()
         self.batch = batch
-
         self.tok2lemma = {}
         #self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
         self.oov = set()
@@ -400,8 +396,6 @@ if __name__ == "__main__":
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     w = build_ext_defs()
-    #w.draw_single_graph('mountainous')
-    #w.draw_single_graph('airplane')
     #w.draw_word_graphs()
     #f = open('wrapper.pickle', 'w')
     #cPickle.dump(w, f)
