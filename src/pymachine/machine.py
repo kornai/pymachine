@@ -57,7 +57,7 @@ class Machine(object):
         #TODO
         pn = self.printname_.split('/')[0]
         if self.control is not None:
-            pn = "{0}_{1}".format(pn, str(id(self.control))[-2:])
+            pn = u"{0}_{1}".format(pn, str(id(self.control))[-2:])
 
         return Machine.d_clean(pn)
 
