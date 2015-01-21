@@ -41,9 +41,14 @@ class Wrapper:
 
     stem_first = True
 
-    def get_lemma(self, word, existing_only=False, stem_first=True):
+    def get_lemma(self, word, existing_only=False, stem_first=False,
+                  debug=False):
+        if debug:
+            tried = []
         if stem_first:
             stemmed_word = stem(word)
+            if debug:
+                tried.append(stemmed_word)
             stemmed_lemma = self.get_lemma(
                 stemmed_word, existing_only=existing_only, stem_first=False)
             if stemmed_lemma is not None:
@@ -65,13 +70,20 @@ class Wrapper:
         if not existing_only or disamb_lemma in self.definitions:
             self.tok2lemma[word] = disamb_lemma
         else:
+            if debug:
+                tried.append(disamb_lemma)
             candidates = self.morph_analyzer.analyze([[word]]).next().next()
             for cand in candidates:
                 lemma = cand.split('||')[0].split('<')[0]
+                if debug:
+                    tried.append(lemma)
                 if lemma in self.definitions:
                     self.tok2lemma[word] = lemma
                     break
             else:
+                if debug:
+                    logging.info('new OOV: {0} (tried these: {1})'.format(
+                        word, tried))
                 self.oov.add(word)
                 return None
 

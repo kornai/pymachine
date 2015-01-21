@@ -33,6 +33,7 @@ class WordSimilarity():
         for hypernym in machine.partitions[0]:
             name = hypernym.printname()
             if name == '=AGT' or not name.isupper():
+                #if depth > 0 and name not in ("lack", "to"):  # TMP!!!
                 yield name, None
 
             for link, node in self._get_links_nodes(hypernym, depth=depth+1):
@@ -86,6 +87,7 @@ class WordSimilarity():
             #    self._all_pairs_similarity(machine1, machine2),
             #    self._links_and_nodes_similarity(machine1, machine2)))
             sim = self._links_and_nodes_similarity(machine1, machine2)
+            #                                      exclude_nodes=True)  # TMP!!
         elif sim_type == 'all_pairs':
             sim = self._all_pairs_similarity(machine1, machine2)
         elif sim_type == 'links_and_nodes':
@@ -169,8 +171,10 @@ class WordSimilarity():
 
     def word_similarity(self, word1, word2, pos1, pos2, sim_type='default',
                         fallback=lambda a, b, c, d: None):
-        lemma1, lemma2 = [self.wrapper.get_lemma(word, existing_only=True)
+        lemma1, lemma2 = [self.wrapper.get_lemma(word, existing_only=True,
+                                                 stem_first=True)
                           for word in (word1, word2)]
+        #logging.info(u'lemmas: {0}, {1}'.format(lemma1, lemma2))
         if lemma1 is None or lemma2 is None:
             return fallback(word1, word2, pos1, pos2)
         return self.lemma_similarity(lemma1, lemma2, sim_type)
