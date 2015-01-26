@@ -89,18 +89,16 @@ class Wrapper:
 
         return self.tok2lemma[word]
 
-    @staticmethod
-    def get_analyzer():
-        hunmorph_dir = os.environ['HUNMORPH_DIR']
+    def get_analyzer(self):
         ocamorph = Ocamorph(
-            os.path.join(hunmorph_dir, "ocamorph"),
-            os.path.join(hunmorph_dir, "morphdb_en.bin"))
+            os.path.join(self.hunmorph_path, "ocamorph"),
+            os.path.join(self.hunmorph_path, "morphdb_en.bin"))
         ocamorph_analyzer = OcamorphAnalyzer(ocamorph)
         morph_analyzer = MorphAnalyzer(
             ocamorph,
             Hundisambig(
-                os.path.join(hunmorph_dir, "hundisambig"),
-                os.path.join(hunmorph_dir, "en_wsj.model")))
+                os.path.join(self.hunmorph_path, "hundisambig"),
+                os.path.join(self.hunmorph_path, "en_wsj.model")))
 
         return morph_analyzer, ocamorph_analyzer
 
@@ -146,8 +144,7 @@ class Wrapper:
             cPickle.dump(self.lexicon, open(save_to, 'w'))
 
     def __read_config(self):
-        config = ConfigParser.SafeConfigParser(
-            {"4langpath": os.environ["FOURLANGPATH"]})
+        config = ConfigParser.SafeConfigParser()
         logging.info('reading machine config from {0}'.format(self.cfn))
         config.read(self.cfn)
         items = dict(config.items("machine"))
@@ -156,6 +153,7 @@ class Wrapper:
         self.dep_map_fn = items.get("dep_map")
         self.tok2lemma_fn = items.get("tok2lemma")
         self.longman_deps_path = items.get("longman_deps")
+        self.hunmorph_path = items.get("hunmorph_path")
         self.supp_dict_fn = items.get("supp_dict")
         self.plural_fn = items.get("plurals")
 
@@ -207,7 +205,7 @@ class Wrapper:
 
     def get_longman_definitions(self):
         #logging.info('adding Longman definitions')
-        self.analyzer, self.morph_analyzer = Wrapper.get_analyzer()
+        self.analyzer, self.morph_analyzer = self.get_analyzer()
         if self.longman_deps_path.endswith('pickle'):
             logging.info('loading Longman definitions from {}...'.format(
                 self.longman_deps_path))
