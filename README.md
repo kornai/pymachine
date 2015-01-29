@@ -1,7 +1,8 @@
 #Installation
 
 After cloning the repository, run
-    sudo python setup.py install
+    
+      sudo python setup.py install
 
 #Building/downloading definition graphs
 
