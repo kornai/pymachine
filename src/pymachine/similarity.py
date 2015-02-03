@@ -7,24 +7,25 @@ assert jaccard, min_jaccard  # silence pyflakes
 
 class WordSimilarity():
     def __init__(self, wrapper):
+        logging.info("society: {0}".format(wrapper.definitions['society']))
         self.wrapper = wrapper
         self.lemma_sim_cache = {}
-        self.machine_sim_cache = {}
         self.links_nodes_cache = {}
         self.stopwords = set(nltk_stopwords.words('english'))
 
-    def get_links_nodes(self, machine):
-        if machine not in self.links_nodes_cache:
-            self.seen_for_links = set()
-            links = set()
-            nodes = set()
-            for link, node in self._get_links_nodes(machine, depth=0):
-                if link is not None:
-                    links.add(link)
-                if node is not None:
-                    nodes.add(node)
-            self.links_nodes_cache[machine] = (links, nodes)
-        return self.links_nodes_cache[machine]
+    def get_links_nodes(self, machine, use_cache=True):
+        if use_cache and machine in self.links_nodes_cache:
+            return self.links_nodes_cache[machine]
+        self.seen_for_links = set()
+        links = set()
+        nodes = set()
+        for link, node in self._get_links_nodes(machine, depth=0):
+            if link is not None:
+                links.add(link)
+            if node is not None:
+                nodes.add(node)
+        self.links_nodes_cache[machine] = (links, nodes)
+        return links, nodes
 
     def _get_links_nodes(self, machine, depth):
         if machine in self.seen_for_links or depth > 5:
@@ -33,7 +34,7 @@ class WordSimilarity():
         for hypernym in machine.partitions[0]:
             name = hypernym.printname()
             if name == '=AGT' or not name.isupper():
-                #if depth > 0 and name not in ("lack", "to"):  # TMP!!!
+            #    if depth == 0 and name not in ("lack", "to"):  # TMP!!!
                 yield name, None
 
             for link, node in self._get_links_nodes(hypernym, depth=depth+1):
@@ -80,8 +81,7 @@ class WordSimilarity():
 
     def machine_similarity(self, machine1, machine2, sim_type):
         pn1, pn2 = machine1.printname(), machine2.printname()
-        if (pn1, pn2) in self.machine_sim_cache:
-            return self.machine_sim_cache[(pn1, pn2)]
+        logging.info(u'machine1: {0}, machine2: {1}'.format(pn1, pn2))
         if sim_type == 'default':
             #sim = harmonic_mean((
             #    self._all_pairs_similarity(machine1, machine2),
@@ -104,8 +104,6 @@ class WordSimilarity():
                                                    no_contain_score=True)
         else:
             raise Exception("unknown similarity type: {0}".format(sim_type))
-        self.machine_sim_cache[(pn1, pn2)] = sim
-        self.machine_sim_cache[(pn2, pn1)] = sim
         return sim
 
     def _all_pairs_similarity(self, machine1, machine2):
@@ -165,19 +163,27 @@ class WordSimilarity():
         else:
             sim = max(sim, jaccard(links1, links2))
             if not exclude_nodes:
-                sim = max(sim, jaccard(nodes1, nodes2))
+                node_sim = jaccard(nodes1, nodes2)
+                if node_sim > sim:
+                    logging.info(
+                        'picking node sim ({0}) over link sim ({1})'.format(
+                            node_sim, sim))
+                    sim = node_sim
 
         return sim
 
     def word_similarity(self, word1, word2, pos1, pos2, sim_type='default',
                         fallback=lambda a, b, c, d: None):
+        logging.info(u'words: {0}, {1}'.format(word1, word2))
         lemma1, lemma2 = [self.wrapper.get_lemma(word, existing_only=True,
                                                  stem_first=True)
                           for word in (word1, word2)]
-        #logging.info(u'lemmas: {0}, {1}'.format(lemma1, lemma2))
+        logging.info(u'lemmas: {0}, {1}'.format(lemma1, lemma2))
         if lemma1 is None or lemma2 is None:
             return fallback(word1, word2, pos1, pos2)
-        return self.lemma_similarity(lemma1, lemma2, sim_type)
+        sim = self.lemma_similarity(lemma1, lemma2, sim_type)
+        logging.info(u"S({0}, {1}) = {2}".format(word1, word2, sim))
+        return sim
 
     def lemma_similarity(self, lemma1, lemma2, sim_type):
         if (lemma1, lemma2) in self.lemma_sim_cache:
@@ -205,6 +211,7 @@ class WordSimilarity():
 
         sim = sim if sim >= 0 else 0
         self.lemma_sim_cache[(lemma1, lemma2)] = sim
+        self.lemma_sim_cache[(lemma2, lemma1)] = sim
         return sim
 
 class SentenceSimilarity():

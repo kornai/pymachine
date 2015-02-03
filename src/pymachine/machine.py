@@ -20,6 +20,9 @@ class Machine(object):
     def __str__(self):
         return unicode(self).encode('utf-8')
 
+    def __id__(self):
+        return unicode(self)
+
     def __unicode__(self):
         if self.control is None:
             return u"{0} (no control)".format(self.printname())
