@@ -122,6 +122,7 @@ class Wrapper:
         self.cfn = cf
         self.__read_config()
         self.batch = batch
+        self.analyzer, self.morph_analyzer = self.get_analyzer()
         self.tok2lemma = {}
         #self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
         self.oov = set()
@@ -205,7 +206,6 @@ class Wrapper:
 
     def get_longman_definitions(self):
         #logging.info('adding Longman definitions')
-        self.analyzer, self.morph_analyzer = self.get_analyzer()
         if self.longman_deps_path.endswith('pickle'):
             logging.info('loading Longman definitions from {}...'.format(
                 self.longman_deps_path))
@@ -396,16 +396,12 @@ def test_dep():
     f = open('machines.dot', 'w')
     f.write(graph.to_dot().encode('utf-8'))
 
-def build_ext_defs():
-    return Wrapper(sys.argv[1], include_longman=True)
-
-
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
-    w = build_ext_defs()
+    w = Wrapper(sys.argv[1], include_longman=False)
     #w.draw_word_graphs()
     #f = open('wrapper.pickle', 'w')
     #cPickle.dump(w, f)
