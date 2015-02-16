@@ -20,7 +20,7 @@ from pymachine.control import ConceptControl
 from pymachine.spreading_activation import SpreadingActivation
 from pymachine.definition_parser import read as read_defs
 from pymachine.sup_dic import supplementary_dictionary_reader as sdreader
-from pymachine.dep_map import dep_map_reader
+from pymachine.dependency import DepsToMachines
 #from demo_misc import add_verb_constructions, add_avm_constructions
 from pymachine import np_grammar
 
@@ -127,7 +127,7 @@ class Wrapper:
         #self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
         self.oov = set()
         self.wordlist = set()
-        self.dep_to_op = dep_map_reader(self.dep_map_fn)
+        self.deps_to_machines = DepsToMachines(self.dep_map_fn)
         self.__read_definitions()
         if include_longman:
             self.get_longman_definitions()
@@ -301,14 +301,7 @@ class Wrapper:
         #    'adding dependency {0}({1}, {2})'.format(dep, word1, word2))
         machine1, machine2 = map(lexicon.get_machine, (word1, word2))
 
-        for operator in self.dep_to_op.get(dep, []):
-            #logging.info('operator {0} acting on machines {1} and {2}'.format(
-            #    operator, machine1, machine2))
-            if isinstance(operator, AppendToBinaryFromLexiconOperator):
-                operator.act((machine1, machine2), lexicon)
-            else:
-                operator.act((machine1, machine2))
-
+        self.deps_to_machines.apply_dep(dep, machine1, machine2, lexicon)
         return machine1, machine2
 
     def draw_single_graph(self, word):
