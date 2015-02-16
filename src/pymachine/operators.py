@@ -122,8 +122,12 @@ class AppendToBinaryOperator(Operator):
         # TODO type checking of what to be binary
         Operator.__init__(self, working_area)
         self.bin_rel = bin_rel
-        self.first_pos = first_pos
-        self.second_pos = second_pos
+        if not reverse:
+            self.first_pos = first_pos
+            self.second_pos = second_pos
+        else:
+            self.first_pos = second_pos
+            self.second_pos = first_pos
 
     def __str__(self):
         return "{0}: {1}({2}, {3})".format(
