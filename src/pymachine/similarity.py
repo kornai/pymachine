@@ -1,8 +1,14 @@
 from collections import defaultdict
+from ConfigParser import ConfigParser
 import logging
+import os
 
+from gensim.models import Word2Vec
 from nltk.corpus import stopwords as nltk_stopwords
+from scipy.stats.stats import pearsonr
+
 from pymachine.utils import average, harmonic_mean, jaccard, min_jaccard, MachineGraph, MachineTraverser, my_max  # nopep8
+from pymachine.wrapper import Wrapper as MachineWrapper
 assert jaccard, min_jaccard  # silence pyflakes
 
 class WordSimilarity():
@@ -242,3 +248,123 @@ class SentenceSimilarity():
         return harmonic_mean((
             self.directional_sen_similarity(sen1, sen2, fallback),
             self.directional_sen_similarity(sen2, sen1, fallback)))
+
+
+class SimComparer():
+    def __init__(self, cfg_file):
+        self.config_file = cfg_file
+        self.config = ConfigParser()
+        self.config.read(cfg_file)
+        self.get_vec_sim()
+        self.get_machine_sim()
+
+    def get_vec_sim(self):
+        model_fn = self.config.get('vectors', 'model')
+        model_type = self.config.get('vectors', 'model_type')
+        logging.warning('Loading model: {0}'.format(model_fn))
+        if model_type == 'word2vec':
+            self.vec_model = Word2Vec.load_word2vec_format(model_fn,
+                                                           binary=True)
+        elif model_type == 'gensim':
+            self.vec_model = Word2Vec.load(model_fn)
+        else:
+            raise Exception('Unknown LSA model format')
+        logging.warning('Model loaded: {0}'.format(model_fn))
+
+    def vec_sim(self, w1, w2):
+        if w1 in self.vec_model and w2 in self.vec_model:
+            return self.vec_model.similarity(w1, w2)
+        return None
+
+    def get_machine_sim(self):
+        wrapper = MachineWrapper(
+            self.config_file, include_longman=True, batch=True)
+        self.sim_wrapper = WordSimilarity(wrapper)
+
+    def sim(self, w1, w2):
+        return self.sim_wrapper.word_similarity(w1, w2, -1, -1)
+
+    def get_words(self):
+        self.words = set((
+            line.strip() for line in open(
+                self.config.get('words', 'word_file'))))
+        logging.warning('read {0} words'.format(len(self.words)))
+
+    def get_machine_sims(self):
+        sim_file = self.config.get('misc', 'sim_file')
+        self.machine_sims = defaultdict(lambda: defaultdict(list))
+        recalculate_machine_sims = True
+        if os.path.exists(sim_file) and not recalculate_machine_sims:
+            for line in open(sim_file):
+                w1, w2, sim = line.strip().split('\t')
+                self.machine_sims[w1][w2] = float(sim)
+
+        recalculate_machine_sims = True
+        if recalculate_machine_sims:
+            out = open(sim_file, 'w')
+            count = 0
+            for w1 in self.non_oov:
+                for w2 in self.non_oov:
+                    if count % 100000 == 0:
+                        logging.warning("{0} pairs done".format(count))
+                    count += 1
+                    sim = self.sim(w1, w2)
+                    if sim is None:
+                        continue
+                    self.machine_sims[w1][w2] = sim
+                    out.write(
+                        u"{0}_{1}\t{2}\n".format(w1, w2, sim).encode('utf-8'))
+            out.close()
+
+    def get_vec_sims(self):
+        sim_file = self.config.get('vectors', 'sim_file')
+        out = open(sim_file, 'w')
+        self.vec_sims = defaultdict(lambda: defaultdict(list))
+        for w1 in self.non_oov:
+            for w2 in self.non_oov:
+                vec_sim = self.vec_sim(w1, w2)
+                self.vec_sims[w1][w2] = vec_sim
+                out.write(
+                    u"{0}_{1}\t{2}\n".format(w1, w2, vec_sim).encode('utf-8'))
+        out.close()
+
+    def get_sims(self):
+        self.get_words()
+        self.non_oov = set(
+            (word for word in self.words if word in self.vec_model))
+
+        logging.warning(
+            'kept {0} words after discarding those not in embedding'.format(
+                len(self.non_oov)))
+
+        self.get_machine_sims()
+        self.non_oov = set(self.machine_sims.keys())
+        logging.warning(
+            'kept {0} words after discarding those not in machine sim'.format(
+                len(self.non_oov)))
+        self.get_vec_sims()
+
+    def compare(self):
+        sims = [self.machine_sims[w1][w2]
+                for w1 in self.non_oov for w2 in self.non_oov]
+        vec_sims = [self.vec_sims[w1][w2]
+                    for w1 in self.non_oov for w2 in self.non_oov]
+
+        pearson = pearsonr(sims, vec_sims)
+        print "compared {0} distance pairs.".format(len(sims))
+        print "Pearson-correlation: {0}".format(pearson)
+
+def main():
+        logging.basicConfig(
+            level=logging.WARNING,
+            format="%(asctime)s : " +
+            "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
+
+        import sys
+        config_file = sys.argv[1]
+        comparer = SimComparer(config_file)
+        comparer.get_sims()
+        comparer.compare()
+
+if __name__ == '__main__':
+    main()
