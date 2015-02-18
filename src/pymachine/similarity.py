@@ -291,7 +291,7 @@ class SimComparer():
         logging.warning('read {0} words'.format(len(self.words)))
 
     def get_machine_sims(self):
-        sim_file = self.config.get('misc', 'sim_file')
+        sim_file = self.config.get('machine', 'sim_file')
         self.machine_sims = defaultdict(lambda: defaultdict(list))
         recalculate_machine_sims = True
         if os.path.exists(sim_file) and not recalculate_machine_sims:
