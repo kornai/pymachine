@@ -278,7 +278,7 @@ class SimComparer():
 
     def get_machine_sim(self):
         wrapper = MachineWrapper(
-            self.config_file, include_longman=True, batch=True)
+            self.config_file, include_longman=True, batch=False)
         self.sim_wrapper = WordSimilarity(wrapper)
 
     def sim(self, w1, w2):
@@ -305,6 +305,8 @@ class SimComparer():
             count = 0
             for w1 in self.non_oov:
                 for w2 in self.non_oov:
+                    if w1 in self.machine_sims[w2]:
+                        continue
                     if count % 100000 == 0:
                         logging.warning("{0} pairs done".format(count))
                     count += 1
@@ -322,6 +324,8 @@ class SimComparer():
         self.vec_sims = defaultdict(lambda: defaultdict(list))
         for w1 in self.non_oov:
             for w2 in self.non_oov:
+                if w1 in self.vec_sims[w2]:
+                    continue
                 vec_sim = self.vec_sim(w1, w2)
                 self.vec_sims[w1][w2] = vec_sim
                 out.write(
@@ -346,9 +350,9 @@ class SimComparer():
 
     def compare(self):
         sims = [self.machine_sims[w1][w2]
-                for w1 in self.non_oov for w2 in self.non_oov]
+                for w1 in self.machine_sims for w2 in self.machine_sims[w1]]
         vec_sims = [self.vec_sims[w1][w2]
-                    for w1 in self.non_oov for w2 in self.non_oov]
+                    for w1 in self.vec_sims for w2 in self.vec_sims[w1]]
 
         pearson = pearsonr(sims, vec_sims)
         print "compared {0} distance pairs.".format(len(sims))
@@ -356,7 +360,7 @@ class SimComparer():
 
 def main():
         logging.basicConfig(
-            level=logging.WARNING,
+            level=logging.INFO,
             format="%(asctime)s : " +
             "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
 
