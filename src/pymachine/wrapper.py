@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+import ConfigParser
 from copy import deepcopy
-import json
-import os
 import cPickle
+import json
+import logging
+import os
 import re
 import sys
-import logging
-import ConfigParser
+import traceback
 
 from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
 from stemming.porter2 import stem
@@ -37,7 +38,7 @@ def jaccard(s1, s2):
 
 class Wrapper:
 
-    dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
+    dep_regex = re.compile("([a-z_-]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
     num_re = re.compile(r'^[0-9.,]+$', re.UNICODE)
 
     stem_first = True
@@ -230,15 +231,23 @@ class Wrapper:
                 if entry["to_filter"]:
                     continue
                 word = entry['hw']
+                if not entry['senses']:
+                    #TODO these are words that only have pointers to an MWE
+                    #that they are part of.
+                    #logging.warning("word has no senses: {0}".format(word))
+                    continue
                 deps = entry['senses'][0]['definition']['deps']
-                #try:
-                machine = self.get_dep_definition(word, deps)
-                #except Exception, e:
-                #    logging.error(
-                #        "skipping {0} because of this: {1}".format(word, e))
-                #    logging.info("entry: {0}".format(entry))
-                #    sys.exit(-1)
-                #    continue
+                if not deps:
+                    #TODO see previous comment
+                    continue
+                try:
+                    machine = self.get_dep_definition(word, deps)
+                except Exception:
+                    logging.error(
+                        'skipping "{0}" because of an exception:'.format(word))
+                    logging.info("entry: {0}".format(entry))
+                    traceback.print_exc()
+                    continue
                 if machine is None:
                     continue
                 definitions[word] = machine
@@ -274,12 +283,14 @@ class Wrapper:
         deps = map(Wrapper.parse_dependency, dep_strings)
         #logging.info("parsed as: {0}".format(deps))
         root_deps = filter(lambda d: d[0] == 'root', deps)
-        root_word, root_id = root_deps[0][2]
-        root_lemma = self.get_lemma(root_word)
         if len(root_deps) != 1:
             logging.warning(
                 'no unique root dependency, skipping word "{0}"'.format(word))
             return None
+
+        root_word, root_id = root_deps[0][2]
+        root_lemma = self.get_lemma(root_word)
+        root_lemma = root_lemma.replace('/', '_PER_')
 
         word2machine = {}
         for dep, (word1, id1), (word2, id2) in deps:
@@ -290,8 +301,8 @@ class Wrapper:
             if not lemma2:
                 lemma2 = word2
             #TODO
-            if '/' in lemma1 or '/' in lemma2:
-                continue
+            lemma1 = lemma1.replace('/', '_PER_')
+            lemma2 = lemma2.replace('/', '_PER_')
             #logging.info('w1: {0}, w2: {1}'.format(word1, word2))
             #logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
             machine1, machine2 = self._add_dependency(
