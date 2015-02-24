@@ -1,7 +1,6 @@
 from collections import defaultdict
 from ConfigParser import ConfigParser
 import logging
-import os
 
 from gensim.models import Word2Vec
 from nltk.corpus import stopwords as nltk_stopwords
@@ -84,6 +83,7 @@ class WordSimilarity():
         pn = machine.printname()
         for link in links:
             if link == pn or pn in link:
+                self.log('link "{0}" is/contains name "{1}"'.format(link, pn))
                 return True
         else:
             return False
@@ -254,12 +254,12 @@ class SentenceSimilarity():
 
 
 class SimComparer():
-    def __init__(self, cfg_file):
+    def __init__(self, cfg_file, batch=True):
         self.config_file = cfg_file
         self.config = ConfigParser()
         self.config.read(cfg_file)
         self.get_vec_sim()
-        self.get_machine_sim()
+        self.get_machine_sim(batch)
 
     def get_vec_sim(self):
         model_fn = self.config.get('vectors', 'model')
@@ -279,9 +279,9 @@ class SimComparer():
             return self.vec_model.similarity(w1, w2)
         return None
 
-    def get_machine_sim(self):
+    def get_machine_sim(self, batch):
         wrapper = MachineWrapper(
-            self.config_file, include_longman=True, batch=True)
+            self.config_file, include_longman=True, batch=batch)
         self.sim_wrapper = WordSimilarity(wrapper)
 
     def sim(self, w1, w2):
@@ -289,50 +289,34 @@ class SimComparer():
 
     def get_words(self):
         self.words = set((
-            line.strip() for line in open(
+            line.strip().decode("utf-8") for line in open(
                 self.config.get('words', 'word_file'))))
         logging.warning('read {0} words'.format(len(self.words)))
 
     def get_machine_sims(self):
         sim_file = self.config.get('machine', 'sim_file')
-        self.machine_sims = defaultdict(lambda: defaultdict(list))
-        recalculate_machine_sims = True
-        if os.path.exists(sim_file) and not recalculate_machine_sims:
-            for line in open(sim_file):
-                w1, w2, sim = line.strip().split('\t')
-                self.machine_sims[w1][w2] = float(sim)
-
-        recalculate_machine_sims = True
-        if recalculate_machine_sims:
-            out = open(sim_file, 'w')
-            count = 0
-            for w1 in self.non_oov:
-                for w2 in self.non_oov:
-                    if w1 in self.machine_sims[w2]:
-                        continue
-                    if count % 100000 == 0:
-                        logging.warning("{0} pairs done".format(count))
-                    count += 1
-                    sim = self.sim(w1, w2)
-                    if sim is None:
-                        continue
-                    self.machine_sims[w1][w2] = sim
-                    out.write(
-                        u"{0}_{1}\t{2}\n".format(w1, w2, sim).encode('utf-8'))
-            out.close()
+        self.machine_sims = {}
+        out = open(sim_file, 'w')
+        count = 0
+        for w1, w2 in self.sorted_word_pairs:
+            if count % 100000 == 0:
+                logging.warning("{0} pairs done".format(count))
+            sim = self.sim(w1, w2)
+            self.machine_sims[(w1, w2)] = sim
+            count += 1
+            out.write(
+                u"{0}_{1}\t{2}\n".format(w1, w2, sim).encode('utf-8'))
+        out.close()
 
     def get_vec_sims(self):
         sim_file = self.config.get('vectors', 'sim_file')
         out = open(sim_file, 'w')
-        self.vec_sims = defaultdict(lambda: defaultdict(list))
-        for w1 in self.non_oov:
-            for w2 in self.non_oov:
-                if w1 in self.vec_sims[w2]:
-                    continue
-                vec_sim = self.vec_sim(w1, w2)
-                self.vec_sims[w1][w2] = vec_sim
-                out.write(
-                    u"{0}_{1}\t{2}\n".format(w1, w2, vec_sim).encode('utf-8'))
+        self.vec_sims = {}
+        for w1, w2 in self.sorted_word_pairs:
+            vec_sim = self.vec_sim(w1, w2)
+            self.vec_sims[(w1, w2)] = vec_sim
+            out.write(
+                u"{0}_{1}\t{2}\n".format(w1, w2, vec_sim).encode('utf-8'))
         out.close()
 
     def get_sims(self):
@@ -344,25 +328,31 @@ class SimComparer():
             'kept {0} words after discarding those not in embedding'.format(
                 len(self.non_oov)))
 
-        self.get_machine_sims()
-        self.non_oov = set(self.machine_sims.keys())
+        logging.warning('lemmatizing words to determine machine-OOVs...')
+        self.non_oov = set(
+            (word for word in self.non_oov
+                if self.sim_wrapper.wrapper.get_lemma(
+                    word, existing_only=True, stem_first=True) is not None))
+
         logging.warning(
             'kept {0} words after discarding those not in machine sim'.format(
                 len(self.non_oov)))
+
+        self.sorted_word_pairs = set()
+        for w1 in self.non_oov:
+            for w2 in self.non_oov:
+                if w1 != w2 and w1 == sorted([w1, w2])[0]:
+                    self.sorted_word_pairs.add((w1, w2))
+
+        self.get_machine_sims()
         self.get_vec_sims()
 
     def compare(self):
-        sorted_word_pairs = set()
-        for w1 in self.non_oov:
-            for w2 in self.non_oov:
-                if w1 == sorted([w1, w2])[0]:
-                    sorted_word_pairs.add((w1, w2))
-
-        sims = [self.machine_sims[w1][w2] for (w1, w2) in sorted_word_pairs]
-        vec_sims = [self.vec_sims[w1][w2] for (w1, w2) in sorted_word_pairs]
+        sims = [self.machine_sims[pair] for pair in self.sorted_word_pairs]
+        vec_sims = [self.vec_sims[pair] for pair in self.sorted_word_pairs]
 
         pearson = pearsonr(sims, vec_sims)
-        print "compared {0} distance pairs.".format(len(sorted_word_pairs))
+        print "compared {0} distance pairs.".format(len(sims))
         print "Pearson-correlation: {0}".format(pearson)
 
 def main():
@@ -373,7 +363,8 @@ def main():
 
         import sys
         config_file = sys.argv[1]
-        comparer = SimComparer(config_file)
+        batch = bool(int(sys.argv[2]))
+        comparer = SimComparer(config_file, batch=batch)
         comparer.get_sims()
         comparer.compare()
 
