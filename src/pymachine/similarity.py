@@ -82,7 +82,7 @@ class WordSimilarity():
     def contains(self, links, machine):
         pn = machine.printname()
         for link in links:
-            if link == pn or pn in link:
+            if link == pn or (pn in link and isinstance(link, tuple)):
                 self.log('link "{0}" is/contains name "{1}"'.format(link, pn))
                 return True
         else:
