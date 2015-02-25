@@ -45,6 +45,13 @@ class Wrapper:
 
     def get_lemma(self, word, existing_only=False, stem_first=False,
                   debug=False):
+
+        #we check if the word is in either of our caches
+        if word in self.tok2lemma:
+            return self.tok2lemma[word]
+        elif word in self.oov and existing_only:
+            return None
+
         if debug:
             tried = []
         if stem_first:
@@ -57,11 +64,7 @@ class Wrapper:
                 self.tok2lemma[word] = stemmed_lemma
                 return stemmed_lemma
 
-        if word in self.tok2lemma:
-            return self.tok2lemma[word]
-        elif word in self.oov and existing_only:
-            return None
-        elif word in self.definitions:
+        if word in self.definitions:
             self.tok2lemma[word] = word
             return word
 

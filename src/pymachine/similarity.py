@@ -57,9 +57,11 @@ class WordSimilarity():
     def get_binary_links_nodes(self, machine):
         for parent, partition in machine.parents:
             parent_pn = parent.printname()
-            if not parent_pn.isupper() or partition == 0:
+            #if not parent_pn.isupper() or partition == 0:
+            if partition == 0:
+                #haven't seen it yet but possible
                 continue
-            if partition == 1:
+            elif partition == 1:
                 links = set([(parent_pn, other.printname())
                             for other in parent.partitions[2]])
                 nodes = [m.printname() for m in parent.partitions[2]]
@@ -302,7 +304,13 @@ class SimComparer():
             if count % 100000 == 0:
                 logging.warning("{0} pairs done".format(count))
             sim = self.sim(w1, w2)
-            self.machine_sims[(w1, w2)] = sim
+            if sim is None:
+                logging.warning(
+                    u"sim is None for non-ooovs: {0} and {1}".format(w1, w2))
+                logging.warning("treating as 0 to avoid problems")
+                self.machine_sims[(w1, w2)] = 0
+            else:
+                self.machine_sims[(w1, w2)] = sim
             count += 1
             out.write(
                 u"{0}_{1}\t{2}\n".format(w1, w2, sim).encode('utf-8'))
