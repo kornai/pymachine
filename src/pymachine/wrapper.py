@@ -16,7 +16,7 @@ from pymachine.construction import VerbConstruction
 from pymachine.sentence_parser import SentenceParser
 from pymachine.lexicon import Lexicon
 from pymachine.operators import AppendToBinaryFromLexiconOperator  # nopep8
-from pymachine.utils import MachineGraph
+from pymachine.utils import MachineGraph, MachineTraverser
 from pymachine.machine import Machine
 from pymachine.control import ConceptControl
 from pymachine.spreading_activation import SpreadingActivation
@@ -228,32 +228,35 @@ class Wrapper:
             definitions = {}
             #entries = longman['entries']
             #print entries
-            for entry in longman['entries']:
-                #print entry
-                #logging.info("entry: {0}".format(entry))
-                if entry["to_filter"]:
-                    continue
-                word = entry['hw']
-                if not entry['senses']:
-                    #TODO these are words that only have pointers to an MWE
-                    #that they are part of.
-                    #logging.warning("word has no senses: {0}".format(word))
-                    continue
-                deps = entry['senses'][0]['definition']['deps']
-                if not deps:
-                    #TODO see previous comment
-                    continue
+            for c, (word, entry) in enumerate(longman.iteritems()):
+                if c % 1000 == 0:
+                    logging.info("added {0}...".format(c))
                 try:
+                    if entry["to_filter"]:
+                        continue
+                    #word = entry['hw']
+                    if not entry['senses']:
+                        #TODO these are words that only have pointers to an MWE
+                        #that they are part of.
+                        continue
+                    definition = entry['senses'][0]['definition']
+                    if definition is None:
+                        continue
+                    deps = definition['deps']
+                    if not deps:
+                        #TODO see previous comment
+                        continue
                     machine = self.get_dep_definition(word, deps)
+                    if machine is None:
+                        continue
+                    definitions[word] = machine
                 except Exception:
                     logging.error(
-                        'skipping "{0}" because of an exception:'.format(word))
+                        u'skipping "{0}" because of an exception:'.format(
+                            word))
                     logging.info("entry: {0}".format(entry))
                     traceback.print_exc()
                     continue
-                if machine is None:
-                    continue
-                definitions[word] = machine
 
             logging.info('done!')
             logging.info('pickling Longman definitions...')
@@ -361,6 +364,18 @@ class Wrapper:
                 f = open('graphs/words/{0}_{1}.dot'.format(clean_word, i), 'w')
                 f.write(graph.to_dot().encode('utf-8'))
 
+    def get_def_words(self, stream):
+        for headword, machines in self.definitions.iteritems():
+            if headword[0] == '@':
+                continue
+            for machine in machines:
+                def_words = [
+                    word for word in MachineTraverser.get_nodes(machine)
+                    if word[0] not in '=@']
+                stream.write(
+                    u"{0}\t{1}\n".format(
+                        headword, u"\t".join(def_words)).encode("utf-8"))
+
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
         messages that have to be sent to the active plugins."""
@@ -432,6 +447,8 @@ if __name__ == "__main__":
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     w = Wrapper(sys.argv[1], include_longman=True)
+    #w = Wrapper(sys.argv[1], include_longman=False)
+    #w.get_def_words(sys.stdout)
     #w.draw_word_graphs()
     #f = open('wrapper.pickle', 'w')
     #cPickle.dump(w, f)
