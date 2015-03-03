@@ -6,10 +6,10 @@ from pymachine.control import Control
 from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
-    def __init__(self, name, control=None, part_num=1):
+    def __init__(self, name, control=None, part_num=3):
         self.printname_ = name
-        if name.isupper():
-            part_num = 3  # TODO crude, but effective
+        #if name.isupper():
+        #    part_num = 3  # TODO crude, but effective
         self.partitions = [[] for i in range(part_num)]
         self.set_control(control)
         self.parents = set()

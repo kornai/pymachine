@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+import ConfigParser
 from copy import deepcopy
-import os
 import cPickle
+import json
+import logging
+import os
 import re
 import sys
-import logging
-import ConfigParser
+import traceback
 
 from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
 from stemming.porter2 import stem
@@ -14,7 +16,7 @@ from pymachine.construction import VerbConstruction
 from pymachine.sentence_parser import SentenceParser
 from pymachine.lexicon import Lexicon
 from pymachine.operators import AppendToBinaryFromLexiconOperator  # nopep8
-from pymachine.utils import MachineGraph
+from pymachine.utils import MachineGraph, MachineTraverser
 from pymachine.machine import Machine
 from pymachine.control import ConceptControl
 from pymachine.spreading_activation import SpreadingActivation
@@ -36,13 +38,20 @@ def jaccard(s1, s2):
 
 class Wrapper:
 
-    dep_regex = re.compile("([a-z_]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
+    dep_regex = re.compile("([a-z_-]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
     num_re = re.compile(r'^[0-9.,]+$', re.UNICODE)
 
     stem_first = True
 
     def get_lemma(self, word, existing_only=False, stem_first=False,
                   debug=False):
+
+        #we check if the word is in either of our caches
+        if word in self.tok2lemma:
+            return self.tok2lemma[word]
+        elif word in self.oov and existing_only:
+            return None
+
         if debug:
             tried = []
         if stem_first:
@@ -55,11 +64,7 @@ class Wrapper:
                 self.tok2lemma[word] = stemmed_lemma
                 return stemmed_lemma
 
-        if word in self.tok2lemma:
-            return self.tok2lemma[word]
-        elif word in self.oov and existing_only:
-            return None
-        elif word in self.definitions:
+        if word in self.definitions:
             self.tok2lemma[word] = word
             return word
 
@@ -207,39 +212,62 @@ class Wrapper:
     def get_longman_definitions(self):
         #logging.info('adding Longman definitions')
         if self.longman_deps_path.endswith('pickle'):
-            logging.info('loading Longman definitions from {}...'.format(
-                self.longman_deps_path))
+            logging.info(
+                'loading pre-compiled Longman definitions from {}...'.format(
+                    self.longman_deps_path))
             definitions = cPickle.load(file(self.longman_deps_path))
 
-        else:
-            files = os.listdir(self.longman_deps_path)
-
-            logging.info('only parsing first meanings for now')
-            files = filter(lambda fn: '_' not in fn, files)
-            #TODO
-
-            logging.info('will now parse {0} definitions'.format(len(files)))
+        elif self.longman_deps_path.endswith('json'):
+            logging.info('compiling Longman definitions from {}...'.format(
+                self.longman_deps_path))
+            logging.info('this may take a few minutes')
+            logging.info('loading JSON...')
+            longman = json.load(open(self.longman_deps_path))
+            logging.info('done!')
+            logging.info('building definitions...')
             definitions = {}
-            for c, fn in enumerate(files):
+            #entries = longman['entries']
+            #print entries
+            for c, (word, entry) in enumerate(longman.iteritems()):
                 if c % 1000 == 0:
-                    logging.info('{0}...'.format(c))
-                word, _ = fn.split('.')
-                deps = [
-                    line.strip() for line in open(
-                        os.path.join(self.longman_deps_path, fn))]
+                    logging.info("added {0}...".format(c))
                 try:
+                    if entry["to_filter"]:
+                        continue
+                    #word = entry['hw']
+                    if not entry['senses']:
+                        #TODO these are words that only have pointers to an MWE
+                        #that they are part of.
+                        continue
+                    definition = entry['senses'][0]['definition']
+                    if definition is None:
+                        continue
+                    deps = definition['deps']
+                    if not deps:
+                        #TODO see previous comment
+                        continue
                     machine = self.get_dep_definition(word, deps)
-                except Exception, e:
+                    if machine is None:
+                        continue
+                    definitions[word] = machine
+                except Exception:
                     logging.error(
-                        "skipping {0} because of this: {1}".format(fn, e))
+                        u'skipping "{0}" because of an exception:'.format(
+                            word))
+                    logging.info("entry: {0}".format(entry))
+                    traceback.print_exc()
                     continue
-                if machine is None:
-                    continue
-                definitions[word] = machine
 
+            logging.info('done!')
             logging.info('pickling Longman definitions...')
-            f = open('{0}.pickle'.format(self.longman_deps_path), 'w')
-            cPickle.dump(definitions, f)
+            pickle_fn = self.longman_deps_path.replace(".json", ".pickle")
+            with open(pickle_fn, 'w') as out_file:
+                cPickle.dump(definitions, out_file)
+            logging.info('done!')
+
+        else:
+            raise Exception(
+                'unknown format: {0}'.format(self.longman_deps_path))
 
         for word, machine in definitions.iteritems():
             if word not in self.definitions:
@@ -256,20 +284,32 @@ class Wrapper:
         return dep, (word1, id1), (word2, id2)
 
     def get_dep_definition(self, word, dep_strings):
+        #logging.info("word: {0}, deps: {1}".format(word, dep_strings))
         lexicon = Lexicon()
         deps = map(Wrapper.parse_dependency, dep_strings)
+        #logging.info("parsed as: {0}".format(deps))
         root_deps = filter(lambda d: d[0] == 'root', deps)
-        root_word, root_id = root_deps[0][2]
-        root_lemma = self.get_lemma(root_word)
         if len(root_deps) != 1:
             logging.warning(
                 'no unique root dependency, skipping word "{0}"'.format(word))
             return None
 
+        root_word, root_id = root_deps[0][2]
+        root_lemma = self.get_lemma(root_word)
+        root_lemma = root_lemma.replace('/', '_PER_')
+
         word2machine = {}
         for dep, (word1, id1), (word2, id2) in deps:
             lemma1 = self.get_lemma(word1)
             lemma2 = self.get_lemma(word2)
+            if not lemma1:
+                lemma1 = word1
+            if not lemma2:
+                lemma2 = word2
+            #TODO
+            lemma1 = lemma1.replace('/', '_PER_')
+            lemma2 = lemma2.replace('/', '_PER_')
+            #logging.info('w1: {0}, w2: {1}'.format(word1, word2))
             #logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
             machine1, machine2 = self._add_dependency(
                 dep, (lemma1, id1), (lemma2, id2), temp_lexicon=lexicon)
@@ -323,6 +363,18 @@ class Wrapper:
                 clean_word = Machine.d_clean(word)
                 f = open('graphs/words/{0}_{1}.dot'.format(clean_word, i), 'w')
                 f.write(graph.to_dot().encode('utf-8'))
+
+    def get_def_words(self, stream):
+        for headword, machines in self.definitions.iteritems():
+            if headword[0] == '@':
+                continue
+            for machine in machines:
+                def_words = [
+                    word for word in MachineTraverser.get_nodes(machine)
+                    if word[0] not in '=@']
+                stream.write(
+                    u"{0}\t{1}\n".format(
+                        headword, u"\t".join(def_words)).encode("utf-8"))
 
     def run(self, sentence):
         """Parses a sentence, runs the spreading activation and returns the
@@ -394,7 +446,9 @@ if __name__ == "__main__":
         level=logging.INFO,
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
-    w = Wrapper(sys.argv[1], include_longman=False)
+    w = Wrapper(sys.argv[1], include_longman=True)
+    #w = Wrapper(sys.argv[1], include_longman=False)
+    #w.get_def_words(sys.stdout)
     #w.draw_word_graphs()
     #f = open('wrapper.pickle', 'w')
     #cPickle.dump(w, f)

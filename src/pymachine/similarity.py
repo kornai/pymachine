@@ -1,7 +1,6 @@
 from collections import defaultdict
 from ConfigParser import ConfigParser
 import logging
-import os
 
 from gensim.models import Word2Vec
 from nltk.corpus import stopwords as nltk_stopwords
@@ -13,11 +12,14 @@ assert jaccard, min_jaccard  # silence pyflakes
 
 class WordSimilarity():
     def __init__(self, wrapper):
-        logging.info("society: {0}".format(wrapper.definitions['society']))
         self.wrapper = wrapper
         self.lemma_sim_cache = {}
         self.links_nodes_cache = {}
         self.stopwords = set(nltk_stopwords.words('english'))
+
+    def log(self, string):
+        if not self.wrapper.batch:
+            logging.info(string)
 
     def get_links_nodes(self, machine, use_cache=True):
         if use_cache and machine in self.links_nodes_cache:
@@ -55,9 +57,11 @@ class WordSimilarity():
     def get_binary_links_nodes(self, machine):
         for parent, partition in machine.parents:
             parent_pn = parent.printname()
-            if not parent_pn.isupper() or partition == 0:
+            #if not parent_pn.isupper() or partition == 0:
+            if partition == 0:
+                #haven't seen it yet but possible
                 continue
-            if partition == 1:
+            elif partition == 1:
                 links = set([(parent_pn, other.printname())
                             for other in parent.partitions[2]])
                 nodes = [m.printname() for m in parent.partitions[2]]
@@ -80,14 +84,15 @@ class WordSimilarity():
     def contains(self, links, machine):
         pn = machine.printname()
         for link in links:
-            if link == pn or pn in link:
+            if link == pn or (pn in link and isinstance(link, tuple)):
+                self.log('link "{0}" is/contains name "{1}"'.format(link, pn))
                 return True
         else:
             return False
 
     def machine_similarity(self, machine1, machine2, sim_type):
         pn1, pn2 = machine1.printname(), machine2.printname()
-        logging.info(u'machine1: {0}, machine2: {1}'.format(pn1, pn2))
+        self.log(u'machine1: {0}, machine2: {1}'.format(pn1, pn2))
         if sim_type == 'default':
             #sim = harmonic_mean((
             #    self._all_pairs_similarity(machine1, machine2),
@@ -134,7 +139,7 @@ class WordSimilarity():
         #sim = max((my_max((max_sims_by_word[w] for w in words1)),
         #           my_max((max_sims_by_word[w] for w in words2))))
         if sim:
-            logging.info(
+            self.log(
                 "{0} - {1} all_pairs similarity: {2} based on: {3}".format(
                     machine1.printname(), machine2.printname(), sim,
                     pair_sims_by_word))
@@ -153,12 +158,12 @@ class WordSimilarity():
             elif (not exclude_nodes) and (self.contains(nodes1, machine2) or
                                           self.contains(nodes2, machine1)):
                 sim = max(sim, 0.25)
-        logging.info('links1: {0}, links2: {1}'.format(links1, links2))
-        logging.info('nodes1: {0}, nodes2: {1}'.format(nodes1, nodes2))
+        self.log('links1: {0}, links2: {1}'.format(links1, links2))
+        self.log('nodes1: {0}, nodes2: {1}'.format(nodes1, nodes2))
         if True:
             pn1, pn2 = machine1.printname(), machine2.printname()
             if pn1 in links2 or pn2 in links1:
-                logging.info(
+                self.log(
                     "{0} and {1} connected by 0-path, returning 1".format(
                         pn1, pn2))
                 return 1
@@ -171,7 +176,7 @@ class WordSimilarity():
             if not exclude_nodes:
                 node_sim = jaccard(nodes1, nodes2)
                 if node_sim > sim:
-                    logging.info(
+                    self.log(
                         'picking node sim ({0}) over link sim ({1})'.format(
                             node_sim, sim))
                     sim = node_sim
@@ -180,15 +185,15 @@ class WordSimilarity():
 
     def word_similarity(self, word1, word2, pos1, pos2, sim_type='default',
                         fallback=lambda a, b, c, d: None):
-        logging.info(u'words: {0}, {1}'.format(word1, word2))
+        self.log(u'words: {0}, {1}'.format(word1, word2))
         lemma1, lemma2 = [self.wrapper.get_lemma(word, existing_only=True,
                                                  stem_first=True)
                           for word in (word1, word2)]
-        logging.info(u'lemmas: {0}, {1}'.format(lemma1, lemma2))
+        self.log(u'lemmas: {0}, {1}'.format(lemma1, lemma2))
         if lemma1 is None or lemma2 is None:
             return fallback(word1, word2, pos1, pos2)
         sim = self.lemma_similarity(lemma1, lemma2, sim_type)
-        logging.info(u"S({0}, {1}) = {2}".format(word1, word2, sim))
+        self.log(u"S({0}, {1}) = {2}".format(word1, word2, sim))
         return sim
 
     def lemma_similarity(self, lemma1, lemma2, sim_type):
@@ -196,7 +201,7 @@ class WordSimilarity():
             return self.lemma_sim_cache[(lemma1, lemma2)]
         elif lemma1 == lemma2:
             return 1
-        logging.info(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+        self.log(u'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
 
         machines1 = self.wrapper.definitions[lemma1]
         machines2 = self.wrapper.definitions[lemma2]
@@ -251,12 +256,12 @@ class SentenceSimilarity():
 
 
 class SimComparer():
-    def __init__(self, cfg_file):
+    def __init__(self, cfg_file, batch=True):
         self.config_file = cfg_file
         self.config = ConfigParser()
         self.config.read(cfg_file)
         self.get_vec_sim()
-        self.get_machine_sim()
+        self.get_machine_sim(batch)
 
     def get_vec_sim(self):
         model_fn = self.config.get('vectors', 'model')
@@ -276,9 +281,9 @@ class SimComparer():
             return self.vec_model.similarity(w1, w2)
         return None
 
-    def get_machine_sim(self):
+    def get_machine_sim(self, batch):
         wrapper = MachineWrapper(
-            self.config_file, include_longman=True, batch=True)
+            self.config_file, include_longman=True, batch=batch)
         self.sim_wrapper = WordSimilarity(wrapper)
 
     def sim(self, w1, w2):
@@ -286,46 +291,40 @@ class SimComparer():
 
     def get_words(self):
         self.words = set((
-            line.strip() for line in open(
+            line.strip().decode("utf-8") for line in open(
                 self.config.get('words', 'word_file'))))
         logging.warning('read {0} words'.format(len(self.words)))
 
     def get_machine_sims(self):
         sim_file = self.config.get('machine', 'sim_file')
-        self.machine_sims = defaultdict(lambda: defaultdict(list))
-        recalculate_machine_sims = True
-        if os.path.exists(sim_file) and not recalculate_machine_sims:
-            for line in open(sim_file):
-                w1, w2, sim = line.strip().split('\t')
-                self.machine_sims[w1][w2] = float(sim)
-
-        recalculate_machine_sims = True
-        if recalculate_machine_sims:
-            out = open(sim_file, 'w')
-            count = 0
-            for w1 in self.non_oov:
-                for w2 in self.non_oov:
-                    if count % 100000 == 0:
-                        logging.warning("{0} pairs done".format(count))
-                    count += 1
-                    sim = self.sim(w1, w2)
-                    if sim is None:
-                        continue
-                    self.machine_sims[w1][w2] = sim
-                    out.write(
-                        u"{0}_{1}\t{2}\n".format(w1, w2, sim).encode('utf-8'))
-            out.close()
+        self.machine_sims = {}
+        out = open(sim_file, 'w')
+        count = 0
+        for w1, w2 in self.sorted_word_pairs:
+            if count % 100000 == 0:
+                logging.warning("{0} pairs done".format(count))
+            sim = self.sim(w1, w2)
+            if sim is None:
+                logging.warning(
+                    u"sim is None for non-ooovs: {0} and {1}".format(w1, w2))
+                logging.warning("treating as 0 to avoid problems")
+                self.machine_sims[(w1, w2)] = 0
+            else:
+                self.machine_sims[(w1, w2)] = sim
+            count += 1
+            out.write(
+                u"{0}_{1}\t{2}\n".format(w1, w2, sim).encode('utf-8'))
+        out.close()
 
     def get_vec_sims(self):
         sim_file = self.config.get('vectors', 'sim_file')
         out = open(sim_file, 'w')
-        self.vec_sims = defaultdict(lambda: defaultdict(list))
-        for w1 in self.non_oov:
-            for w2 in self.non_oov:
-                vec_sim = self.vec_sim(w1, w2)
-                self.vec_sims[w1][w2] = vec_sim
-                out.write(
-                    u"{0}_{1}\t{2}\n".format(w1, w2, vec_sim).encode('utf-8'))
+        self.vec_sims = {}
+        for w1, w2 in self.sorted_word_pairs:
+            vec_sim = self.vec_sim(w1, w2)
+            self.vec_sims[(w1, w2)] = vec_sim
+            out.write(
+                u"{0}_{1}\t{2}\n".format(w1, w2, vec_sim).encode('utf-8'))
         out.close()
 
     def get_sims(self):
@@ -337,18 +336,28 @@ class SimComparer():
             'kept {0} words after discarding those not in embedding'.format(
                 len(self.non_oov)))
 
-        self.get_machine_sims()
-        self.non_oov = set(self.machine_sims.keys())
+        logging.warning('lemmatizing words to determine machine-OOVs...')
+        self.non_oov = set(
+            (word for word in self.non_oov
+                if self.sim_wrapper.wrapper.get_lemma(
+                    word, existing_only=True, stem_first=True) is not None))
+
         logging.warning(
             'kept {0} words after discarding those not in machine sim'.format(
                 len(self.non_oov)))
+
+        self.sorted_word_pairs = set()
+        for w1 in self.non_oov:
+            for w2 in self.non_oov:
+                if w1 != w2 and w1 == sorted([w1, w2])[0]:
+                    self.sorted_word_pairs.add((w1, w2))
+
+        self.get_machine_sims()
         self.get_vec_sims()
 
     def compare(self):
-        sims = [self.machine_sims[w1][w2]
-                for w1 in self.non_oov for w2 in self.non_oov]
-        vec_sims = [self.vec_sims[w1][w2]
-                    for w1 in self.non_oov for w2 in self.non_oov]
+        sims = [self.machine_sims[pair] for pair in self.sorted_word_pairs]
+        vec_sims = [self.vec_sims[pair] for pair in self.sorted_word_pairs]
 
         pearson = pearsonr(sims, vec_sims)
         print "compared {0} distance pairs.".format(len(sims))
@@ -356,13 +365,14 @@ class SimComparer():
 
 def main():
         logging.basicConfig(
-            level=logging.WARNING,
+            level=logging.INFO,
             format="%(asctime)s : " +
             "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
 
         import sys
         config_file = sys.argv[1]
-        comparer = SimComparer(config_file)
+        batch = bool(int(sys.argv[2]))
+        comparer = SimComparer(config_file, batch=batch)
         comparer.get_sims()
         comparer.compare()
 
