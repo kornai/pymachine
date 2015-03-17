@@ -16,7 +16,7 @@ from pymachine.construction import VerbConstruction
 from pymachine.sentence_parser import SentenceParser
 from pymachine.lexicon import Lexicon
 from pymachine.operators import AppendToBinaryFromLexiconOperator  # nopep8
-from pymachine.utils import MachineGraph, MachineTraverser
+from pymachine.utils import ensure_dir, MachineGraph, MachineTraverser
 from pymachine.machine import Machine
 from pymachine.control import ConceptControl
 from pymachine.spreading_activation import SpreadingActivation
@@ -355,12 +355,15 @@ class Wrapper:
                 f.write(graph.to_dot().encode('utf-8'))
 
     def draw_word_graphs(self):
+        ensure_dir('graphs/words')
         for c, (word, machines) in enumerate(self.definitions.iteritems()):
             if c % 1000 == 0:
                 logging.info("{0}...".format(c))
             for i, machine in enumerate(machines):
                 graph = MachineGraph.create_from_machines([machine])
                 clean_word = Machine.d_clean(word)
+                if clean_word[0] == 'X':
+                    clean_word = clean_word[1:]
                 f = open('graphs/words/{0}_{1}.dot'.format(clean_word, i), 'w')
                 f.write(graph.to_dot().encode('utf-8'))
 
@@ -449,6 +452,6 @@ if __name__ == "__main__":
     w = Wrapper(sys.argv[1], include_longman=True)
     #w = Wrapper(sys.argv[1], include_longman=False)
     #w.get_def_words(sys.stdout)
-    #w.draw_word_graphs()
+    w.draw_word_graphs()
     #f = open('wrapper.pickle', 'w')
     #cPickle.dump(w, f)

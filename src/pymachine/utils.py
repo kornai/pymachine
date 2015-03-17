@@ -1,5 +1,10 @@
 from collections import defaultdict
 import logging
+import os
+
+def ensure_dir(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
 
 class MachineTraverser():
     @staticmethod
@@ -95,12 +100,12 @@ class MachineGraph:
         lines = [u'digraph finite_state_machine {', '\tdpi=100;']
         #lines.append('\tordering=out;')
         for machine in self.machines:
-            lines.append(u'\tnode [shape = circle]; {0};'.format(
-                         machine.d_printname()))
+            lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
+                         machine.dot_id(), machine.dot_printname()))
         for color, edges in self.edges_by_color.iteritems():
             for m1, m2 in edges:
                 lines.append(u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                    m1.d_printname(), m2.d_printname(), color))
+                    m1.dot_id(), m2.dot_id(), color))
         lines.append('}')
         return u'\n'.join(lines)
 

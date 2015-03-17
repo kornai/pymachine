@@ -1,6 +1,7 @@
 import logging
 import copy
 from itertools import chain
+import re
 
 from pymachine.control import Control
 from constants import deep_pre, avm_pre, enc_pre
@@ -55,11 +56,19 @@ class Machine(object):
             parent.partitions[i].append(self)
             self.add_parent_link(parent, i)
 
-    def d_printname(self):
+    def dot_id(self):
+        if self.control is None:
+            return self.dot_printname()
+
+        return "{0}_{1}".format(
+            self.dot_printname(), str(id(self.control))[-2:])
+
+    def dot_printname(self):
         """printname for dot output"""
         #TODO
         pn = self.printname_.split('/')[0]
-        if self.control is not None:
+        #turning it off, not sure if we'll ever want this again
+        if False and self.control is not None:
             pn = u"{0}_{1}".format(pn, str(id(self.control))[-2:])
 
         return Machine.d_clean(pn)
@@ -67,12 +76,15 @@ class Machine(object):
     @staticmethod
     def d_clean(string):
         s = string
-        for c in ('=', '@', '-', ',', "'", '"'):
+        for c in '\\=@-,\'".!;':
             s = s.replace(c, '_')
-        if s == 'edge':
-            s += '_'
-        elif s == '$':
+        if s == '$':
             s = '_dollars'
+        elif s == '#':
+            s = '_number'
+        keywords = ("graph", "node", "strict", "edge")
+        if re.match('^[0-9]', s) or s in keywords:
+            s = "X" + s
         return s
 
     def printname(self):
