@@ -152,7 +152,11 @@ class Lexicon:
 
     def __add_to_disambig(self, print_name):
         """Adds @p print_name to the static_disambig."""
-        self.static_disambig[print_name.split(id_sep)[0]].add(print_name)
+        try:
+            self.static_disambig[print_name.split(id_sep)[0]].add(print_name)
+        except KeyError:
+            self.static_disambig[print_name.split(id_sep)[0]] = set(
+                [print_name])
 
     def __get_disambig_incomplete(self, print_name):
         """

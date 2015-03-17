@@ -286,6 +286,7 @@ class Wrapper:
     def get_dep_definition(self, word, dep_strings):
         #logging.info("word: {0}, deps: {1}".format(word, dep_strings))
         lexicon = Lexicon()
+        #lexicon = None
         deps = map(Wrapper.parse_dependency, dep_strings)
         #logging.info("parsed as: {0}".format(deps))
         root_deps = filter(lambda d: d[0] == 'root', deps)

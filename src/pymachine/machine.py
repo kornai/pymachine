@@ -60,7 +60,7 @@ class Machine(object):
         if self.control is None:
             return self.dot_printname()
 
-        return "{0}_{1}".format(
+        return u"{0}_{1}".format(
             self.dot_printname(), str(id(self.control))[-2:])
 
     def dot_printname(self):
