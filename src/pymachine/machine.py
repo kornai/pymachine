@@ -57,21 +57,13 @@ class Machine(object):
             self.add_parent_link(parent, i)
 
     def dot_id(self):
-        if self.control is None:
-            return self.dot_printname()
-
+        """node id for dot output"""
         return u"{0}_{1}".format(
-            self.dot_printname(), str(id(self.control))[-2:])
+            Machine.d_clean(self.dot_printname()), str(id(self))[-2:])
 
     def dot_printname(self):
         """printname for dot output"""
-        #TODO
-        pn = self.printname_.split('/')[0]
-        #turning it off, not sure if we'll ever want this again
-        if False and self.control is not None:
-            pn = u"{0}_{1}".format(pn, str(id(self.control))[-2:])
-
-        return Machine.d_clean(pn)
+        return self.printname_.split('/')[0]
 
     @staticmethod
     def d_clean(string):

@@ -1,5 +1,6 @@
 import logging
 
+from machine import Machine
 from operators import AppendOperator, AppendToBinaryOperator, AppendToBinaryFromLexiconOperator  # nopep8
 
 class DepsToMachines():
@@ -50,8 +51,11 @@ class Dependency():
         if edge2 is not None:
             operators.append(AppendOperator(1, 0, part=edge2))
         if rel:
+            rel_machine = Machine(rel)
             operators.append(
-                AppendToBinaryFromLexiconOperator(rel, 0, 1, reverse=reverse))
+                AppendToBinaryOperator(rel_machine, 0, 1, reverse=reverse))
+            #operators.append(
+            #    AppendToBinaryFromLexiconOperator(rel, 0, 1, reverse=reverse))
 
         return operators
 

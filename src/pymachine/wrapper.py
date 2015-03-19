@@ -284,20 +284,26 @@ class Wrapper:
         return dep, (word1, id1), (word2, id2)
 
     def get_dep_definition(self, word, dep_strings):
-        #logging.info("word: {0}, deps: {1}".format(word, dep_strings))
-        lexicon = Lexicon()
-        #lexicon = None
-        deps = map(Wrapper.parse_dependency, dep_strings)
-        #logging.info("parsed as: {0}".format(deps))
-        root_deps = filter(lambda d: d[0] == 'root', deps)
+        root_deps = filter(lambda s: s.startswith('root'), dep_strings)
         if len(root_deps) != 1:
             logging.warning(
                 'no unique root dependency, skipping word "{0}"'.format(word))
             return None
+        root_word, root_id = Wrapper.parse_dependency(root_deps[0])[2]
+        root_lemma = self.get_lemma(root_word).replace('/', '_PER_')
+        word2machine = self.get_machines_from_deps(dep_strings)
 
-        root_word, root_id = root_deps[0][2]
-        root_lemma = self.get_lemma(root_word)
-        root_lemma = root_lemma.replace('/', '_PER_')
+        root_machine = word2machine[root_lemma]
+        word_machine = word2machine.get(word, Machine(word, ConceptControl()))
+        word_machine.append(root_machine, 0)
+        return word_machine
+
+    def get_machines_from_deps(self, dep_strings):
+        deps = map(Wrapper.parse_dependency, dep_strings)
+        return self.get_machines_from_parsed_deps(self, deps)
+
+    def get_machines_from_parsed_deps(self, deps):
+        lexicon = Lexicon()
 
         word2machine = {}
         for dep, (word1, id1), (word2, id2) in deps:
@@ -310,18 +316,14 @@ class Wrapper:
             #TODO
             lemma1 = lemma1.replace('/', '_PER_')
             lemma2 = lemma2.replace('/', '_PER_')
-            #logging.info('w1: {0}, w2: {1}'.format(word1, word2))
-            #logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+            logging.info('w1: {0}, w2: {1}'.format(word1, word2))
+            logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
             machine1, machine2 = self._add_dependency(
                 dep, (lemma1, id1), (lemma2, id2), temp_lexicon=lexicon)
             word2machine[lemma1] = machine1
             word2machine[lemma2] = machine2
 
-        root_machine = word2machine[root_lemma]
-        #logging.info("root machine: {0}".format(root_machine))
-        word_machine = word2machine.get(word, Machine(word, ConceptControl()))
-        word_machine.append(root_machine, 0)
-        return word_machine
+        return word2machine
 
     def add_dependency(self, string):
         #e.g. nsubjpass(pushed-7, salesman-5)

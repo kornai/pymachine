@@ -99,13 +99,18 @@ class MachineGraph:
     def to_dot(self):
         lines = [u'digraph finite_state_machine {', '\tdpi=100;']
         #lines.append('\tordering=out;')
+        #sorting everything to make the process deterministic
+        node_lines = []
         for machine in self.machines:
-            lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
-                         machine.dot_id(), machine.dot_printname()))
+            node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
+                              machine.dot_id(), machine.dot_printname()))
+        lines += sorted(node_lines)
+        edge_lines = []
         for color, edges in self.edges_by_color.iteritems():
             for m1, m2 in edges:
-                lines.append(u'\t{0} -> {1} [ label = "{2}" ];'.format(
+                edge_lines.append(u'\t{0} -> {1} [ label = "{2}" ];'.format(
                     m1.dot_id(), m2.dot_id(), color))
+        lines += sorted(edge_lines)
         lines.append('}')
         return u'\n'.join(lines)
 
