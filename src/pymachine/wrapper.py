@@ -300,7 +300,7 @@ class Wrapper:
 
     def get_machines_from_deps(self, dep_strings):
         deps = map(Wrapper.parse_dependency, dep_strings)
-        return self.get_machines_from_parsed_deps(self, deps)
+        return self.get_machines_from_parsed_deps(deps)
 
     def get_machines_from_parsed_deps(self, deps):
         lexicon = Lexicon()
@@ -316,8 +316,8 @@ class Wrapper:
             #TODO
             lemma1 = lemma1.replace('/', '_PER_')
             lemma2 = lemma2.replace('/', '_PER_')
-            logging.info('w1: {0}, w2: {1}'.format(word1, word2))
-            logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+            #logging.info('w1: {0}, w2: {1}'.format(word1, word2))
+            #logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
             machine1, machine2 = self._add_dependency(
                 dep, (lemma1, id1), (lemma2, id2), temp_lexicon=lexicon)
             word2machine[lemma1] = machine1
