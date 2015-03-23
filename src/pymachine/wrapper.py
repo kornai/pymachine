@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from collections import defaultdict
 import ConfigParser
 from copy import deepcopy
 import cPickle
@@ -299,29 +300,54 @@ class Wrapper:
         return word_machine
 
     def get_machines_from_deps(self, dep_strings):
+        #deprecated, use get_machines_from_deps_and_corefs
         deps = map(Wrapper.parse_dependency, dep_strings)
         return self.get_machines_from_parsed_deps(deps)
 
     def get_machines_from_parsed_deps(self, deps):
-        lexicon = Lexicon()
+        #deprecated, use get_machines_from_deps_and_corefs
+        return self.get_machines_from_deps_and_corefs([deps], [])
 
+    def get_machines_from_deps_and_corefs(self, dep_lists, corefs):
+        coref_index = defaultdict(dict)
+        for (word, sen_no), mentions in corefs:
+            for m_word, m_sen_no in mentions:
+                coref_index[m_word][m_sen_no-1] = word
+
+        logging.info('coref index: {0}'.format(coref_index))
+
+        lexicon = Lexicon()
         word2machine = {}
-        for dep, (word1, id1), (word2, id2) in deps:
-            lemma1 = self.get_lemma(word1)
-            lemma2 = self.get_lemma(word2)
-            if not lemma1:
-                lemma1 = word1
-            if not lemma2:
-                lemma2 = word2
-            #TODO
-            lemma1 = lemma1.replace('/', '_PER_')
-            lemma2 = lemma2.replace('/', '_PER_')
-            #logging.info('w1: {0}, w2: {1}'.format(word1, word2))
-            #logging.info('lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
-            machine1, machine2 = self._add_dependency(
-                dep, (lemma1, id1), (lemma2, id2), temp_lexicon=lexicon)
-            word2machine[lemma1] = machine1
-            word2machine[lemma2] = machine2
+
+        for i, deps in enumerate(dep_lists):
+            for dep, (word1, id1), (word2, id2) in deps:
+                logging.info('w1: {0}, w2: {1}'.format(word1, word2))
+                c_word1 = coref_index[word1].get(i, word1)
+                c_word2 = coref_index[word2].get(i, word2)
+                if c_word1 != word1:
+                    logging.warning(
+                        "unifying '{0}' with canonical '{1}'".format(
+                            word1, c_word1))
+                if c_word2 != word2:
+                    logging.warning(
+                        "unifying '{0}' with canonical '{1}'".format(
+                            word2, c_word2))
+
+                logging.info('cw1: {0}, cw2: {1}'.format(c_word1, c_word2))
+                lemma1 = self.get_lemma(c_word1)
+                lemma2 = self.get_lemma(c_word2)
+
+                #TODO
+                lemma1 = lemma1.replace('/', '_PER_')
+                lemma2 = lemma2.replace('/', '_PER_')
+
+                #logging.info(
+                    #'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
+                machine1, machine2 = self._add_dependency(
+                    dep, (lemma1, id1), (lemma2, id2), temp_lexicon=lexicon)
+
+                word2machine[lemma1] = machine1
+                word2machine[lemma2] = machine2
 
         return word2machine
 

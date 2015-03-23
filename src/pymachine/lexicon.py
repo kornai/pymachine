@@ -565,6 +565,8 @@ class Lexicon:
                     "no machine with printname {0}".format(printname) +
                     "even after calling add_static for {0}".format(
                         Machine(printname, ConceptControl())))
+            #logging.warning(
+                #"creating new machine for '{0}'".format(printname))
             self.add_static(Machine(printname, ConceptControl()))
             return self.get_machine(printname, second=True)  # sanity check
 
