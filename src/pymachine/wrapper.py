@@ -124,7 +124,7 @@ class Wrapper:
 
         return tok2lemma
 
-    def __init__(self, cf, batch=False, include_longman=False):
+    def __init__(self, cf, batch=False, include_longman=True):
         self.cfn = cf
         self.__read_config()
         self.batch = batch
@@ -321,7 +321,7 @@ class Wrapper:
 
         for i, deps in enumerate(dep_lists):
             for dep, (word1, id1), (word2, id2) in deps:
-                logging.info('w1: {0}, w2: {1}'.format(word1, word2))
+                #logging.info('w1: {0}, w2: {1}'.format(word1, word2))
                 c_word1 = coref_index[word1].get(i, word1)
                 c_word2 = coref_index[word2].get(i, word2)
                 if c_word1 != word1:
@@ -333,9 +333,14 @@ class Wrapper:
                         "unifying '{0}' with canonical '{1}'".format(
                             word2, c_word2))
 
-                logging.info('cw1: {0}, cw2: {1}'.format(c_word1, c_word2))
-                lemma1 = self.get_lemma(c_word1)
-                lemma2 = self.get_lemma(c_word2)
+                #logging.info('cw1: {0}, cw2: {1}'.format(c_word1, c_word2))
+                lemma1 = self.get_lemma(
+                    c_word1, debug=True, existing_only=True)
+                lemma2 = self.get_lemma(
+                    c_word2, debug=True, existing_only=True)
+
+                lemma1 = c_word1 if lemma1 is None else lemma1
+                lemma2 = c_word2 if lemma2 is None else lemma2
 
                 #TODO
                 lemma1 = lemma1.replace('/', '_PER_')
@@ -373,15 +378,13 @@ class Wrapper:
         self.deps_to_machines.apply_dep(dep, machine1, machine2, lexicon)
         return machine1, machine2
 
-    def draw_single_graph(self, word):
-        for w, machines in self.definitions.iteritems():
-            if w != word:
-                continue
-            for c, machine in enumerate(machines):
-                graph = MachineGraph.create_from_machines([machine])
-                clean_word = Machine.d_clean(w)
-                f = open('graphs/words/{0}_{1}.dot'.format(clean_word, c), 'w')
-                f.write(graph.to_dot().encode('utf-8'))
+    def draw_single_graph(self, word, path):
+        clean_word = Machine.d_clean(word)
+        for c, machine in enumerate(self.definitions[word]):
+            graph = MachineGraph.create_from_machines([machine])
+            file_name = os.path.join(path, '{0}_{1}.dot'.format(clean_word, c))
+            with open(file_name, 'w') as file_obj:
+                file_obj.write(graph.to_dot().encode('utf-8'))
 
     def draw_word_graphs(self):
         ensure_dir('graphs/words')
