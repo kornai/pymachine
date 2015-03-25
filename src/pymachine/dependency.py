@@ -1,7 +1,6 @@
 import logging
 
-from machine import Machine
-from operators import AppendOperator, AppendToBinaryOperator, AppendToBinaryFromLexiconOperator  # nopep8
+from operators import AppendOperator, AppendToNewBinaryOperator, AppendToBinaryFromLexiconOperator  # nopep8
 
 class DepsToMachines():
     def __init__(self, dep_map_fn):
@@ -51,9 +50,8 @@ class Dependency():
         if edge2 is not None:
             operators.append(AppendOperator(1, 0, part=edge2))
         if rel:
-            rel_machine = Machine(rel)
             operators.append(
-                AppendToBinaryOperator(rel_machine, 0, 1, reverse=reverse))
+                AppendToNewBinaryOperator(rel, 0, 1, reverse=reverse))
             #operators.append(
             #    AppendToBinaryFromLexiconOperator(rel, 0, 1, reverse=reverse))
 

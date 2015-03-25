@@ -3,6 +3,7 @@
 import logging
 
 from pymachine.control import KRPosControl
+from pymachine.machine import Machine
 
 class Operator(object):
     """The abstract superclass of the operator hierarchy."""
@@ -134,9 +135,23 @@ class AppendToBinaryOperator(Operator):
             type(self), self.bin_rel, self.first_pos, self.second_pos)
 
     def act(self, seq):
+        logging.info("appending machines {0} and {1} to binary {2}".format(
+            seq[self.first_pos], seq[self.second_pos], self.bin_rel))
         self.bin_rel.append(seq[self.first_pos], 1)
         self.bin_rel.append(seq[self.second_pos], 2)
         return [self.bin_rel]
+
+class AppendToNewBinaryOperator(AppendToBinaryOperator):
+    """will create a new binary machine every time it's used"""
+
+    def act(self, seq):
+        #logging.info(
+            #"appending machines {0} and {1} to new binary {2}".format(
+                #seq[self.first_pos], seq[self.second_pos], self.bin_rel))
+        rel_machine = Machine(self.bin_rel)
+        rel_machine.append(seq[self.first_pos], 1)
+        rel_machine.append(seq[self.second_pos], 2)
+        return [rel_machine]
 
 class AppendToBinaryFromLexiconOperator(AppendToBinaryOperator):
     """will use the lexicon passed to its act function to find the binary

@@ -21,14 +21,11 @@ class Machine(object):
     def __str__(self):
         return unicode(self).encode('utf-8')
 
-    def __id__(self):
-        return unicode(self)
-
     def __unicode__(self):
         if self.control is None:
-            return u"{0} (no control)".format(self.printname())
-        return u"{0} ({1})".format(
-            self.printname(),
+            return u"{0} ({1}), no control".format(self.printname(), id(self))
+        return u"{0} ({1}), {2}".format(
+            self.printname(), id(self),
             self.control.to_debug_str().replace('\n', ' '))
 
     def __deepcopy__(self, memo):

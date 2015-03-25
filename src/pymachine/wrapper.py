@@ -314,7 +314,7 @@ class Wrapper:
             for m_word, m_sen_no in mentions:
                 coref_index[m_word][m_sen_no-1] = word
 
-        logging.info('coref index: {0}'.format(coref_index))
+        #logging.info('coref index: {0}'.format(coref_index))
 
         lexicon = Lexicon()
         word2machine = {}
