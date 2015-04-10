@@ -1,17 +1,10 @@
 #!/usr/bin/env python
-from collections import defaultdict
-import ConfigParser
 from copy import deepcopy
 import cPickle
-import json
 import logging
 import os
 import re
 import sys
-import traceback
-
-from hunmisc.utils.huntool_wrapper import Hundisambig, Ocamorph, OcamorphAnalyzer, MorphAnalyzer  # nopep8
-from stemming.porter2 import stem
 
 from pymachine.construction import VerbConstruction
 from pymachine.sentence_parser import SentenceParser
@@ -19,12 +12,9 @@ from pymachine.lexicon import Lexicon
 from pymachine.operators import AppendToBinaryFromLexiconOperator  # nopep8
 from pymachine.utils import ensure_dir, MachineGraph, MachineTraverser
 from pymachine.machine import Machine
-from pymachine.control import ConceptControl
 from pymachine.spreading_activation import SpreadingActivation
 from pymachine.definition_parser import read as read_defs
 from pymachine.sup_dic import supplementary_dictionary_reader as sdreader
-from pymachine.dependency import DepsToMachines
-#from demo_misc import add_verb_constructions, add_avm_constructions
 from pymachine import np_grammar
 
 class KeyDefaultDict(dict):
@@ -39,101 +29,13 @@ def jaccard(s1, s2):
 
 class Wrapper:
 
-    dep_regex = re.compile("([a-z_-]*)\((.*?)-([0-9]*)'*, (.*?)-([0-9]*)'*\)")
     num_re = re.compile(r'^[0-9.,]+$', re.UNICODE)
 
-    stem_first = True
-
-    def get_lemma(self, word, existing_only=False, stem_first=False,
-                  debug=False):
-
-        #we check if the word is in either of our caches
-        if word in self.tok2lemma:
-            return self.tok2lemma[word]
-        elif word in self.oov and existing_only:
-            return None
-
-        if debug:
-            tried = []
-        if stem_first:
-            stemmed_word = stem(word)
-            if debug:
-                tried.append(stemmed_word)
-            stemmed_lemma = self.get_lemma(
-                stemmed_word, existing_only=existing_only, stem_first=False)
-            if stemmed_lemma is not None:
-                self.tok2lemma[word] = stemmed_lemma
-                return stemmed_lemma
-
-        if word in self.definitions:
-            self.tok2lemma[word] = word
-            return word
-
-        #logging.info(u'analyzing {0}'.format(word))
-        disamb_lemma = list(self.analyzer.analyze(
-            [[word]]))[0][0][1].split('||')[0].split('<')[0]
-
-        if not existing_only or disamb_lemma in self.definitions:
-            self.tok2lemma[word] = disamb_lemma
-        else:
-            if debug:
-                tried.append(disamb_lemma)
-            candidates = self.morph_analyzer.analyze([[word]]).next().next()
-            for cand in candidates:
-                lemma = cand.split('||')[0].split('<')[0]
-                if debug:
-                    tried.append(lemma)
-                if lemma in self.definitions:
-                    self.tok2lemma[word] = lemma
-                    break
-            else:
-                if debug:
-                    logging.info('new OOV: {0} (tried these: {1})'.format(
-                        word, tried))
-                self.oov.add(word)
-                return None
-
-        return self.tok2lemma[word]
-
-    def get_analyzer(self):
-        ocamorph = Ocamorph(
-            os.path.join(self.hunmorph_path, "ocamorph"),
-            os.path.join(self.hunmorph_path, "morphdb_en.bin"))
-        ocamorph_analyzer = OcamorphAnalyzer(ocamorph)
-        morph_analyzer = MorphAnalyzer(
-            ocamorph,
-            Hundisambig(
-                os.path.join(self.hunmorph_path, "hundisambig"),
-                os.path.join(self.hunmorph_path, "en_wsj.model")))
-
-        return morph_analyzer, ocamorph_analyzer
-
-    @staticmethod
-    def get_tok2lemma(tok2lemma_fn):
-        tok2lemma = {}
-        if tok2lemma_fn is None:
-            return tok2lemma
-        for line in file(tok2lemma_fn):
-            try:
-                tok, lemma = line.decode('utf-8').strip().split('\t')
-            except (ValueError, UnicodeDecodeError), e:
-                raise Exception(
-                    'error parsing line in tok2lemma file: {0}\n{1}'.format(
-                        e, line))
-            tok2lemma[tok] = lemma
-
-        return tok2lemma
-
-    def __init__(self, cf, batch=False, include_longman=True):
-        self.cfn = cf
+    def __init__(self, cfg, batch=False, include_longman=True):
+        self.cfg = cfg
         self.__read_config()
         self.batch = batch
-        self.analyzer, self.morph_analyzer = self.get_analyzer()
-        self.tok2lemma = {}
-        #self.tok2lemma = Wrapper.get_tok2lemma(self.tok2lemma_fn)
-        self.oov = set()
         self.wordlist = set()
-        self.deps_to_machines = DepsToMachines(self.dep_map_fn)
         self.__read_definitions()
         if include_longman:
             self.get_longman_definitions()
@@ -151,16 +53,12 @@ class Wrapper:
             cPickle.dump(self.lexicon, open(save_to, 'w'))
 
     def __read_config(self):
-        config = ConfigParser.SafeConfigParser()
-        logging.info('reading machine config from {0}'.format(self.cfn))
-        config.read(self.cfn)
-        items = dict(config.items("machine"))
+        items = dict(self.cfg.items("machine"))
         self.def_files = [(s.split(":")[0].strip(), int(s.split(":")[1]))
                           for s in items["definitions"].split(",")]
         self.dep_map_fn = items.get("dep_map")
         self.tok2lemma_fn = items.get("tok2lemma")
         self.longman_deps_path = items.get("longman_deps")
-        self.hunmorph_path = items.get("hunmorph_path")
         self.supp_dict_fn = items.get("supp_dict")
         self.plural_fn = items.get("plurals")
 
@@ -207,176 +105,24 @@ class Wrapper:
     def __add_constructions(self):
         for construction in np_grammar.np_rules:
             self.lexicon.add_construction(construction)
-        #add_verb_constructions(self.lexicon, self.supp_dict)
-        #add_avm_constructions(self.lexicon, self.supp_dict)
+        # add_verb_constructions(self.lexicon, self.supp_dict)
+        # add_avm_constructions(self.lexicon, self.supp_dict)
 
     def get_longman_definitions(self):
-        #logging.info('adding Longman definitions')
+        logging.info('adding Longman definitions')
         if self.longman_deps_path.endswith('pickle'):
             logging.info(
                 'loading pre-compiled Longman definitions from {}...'.format(
                     self.longman_deps_path))
             definitions = cPickle.load(file(self.longman_deps_path))
 
-        elif self.longman_deps_path.endswith('json'):
-            logging.info('compiling Longman definitions from {}...'.format(
-                self.longman_deps_path))
-            logging.info('this may take a few minutes')
-            logging.info('loading JSON...')
-            longman = json.load(open(self.longman_deps_path))
-            logging.info('done!')
-            logging.info('building definitions...')
-            definitions = {}
-            #entries = longman['entries']
-            #print entries
-            for c, (word, entry) in enumerate(longman.iteritems()):
-                if c % 1000 == 0:
-                    logging.info("added {0}...".format(c))
-                try:
-                    if entry["to_filter"]:
-                        continue
-                    #word = entry['hw']
-                    if not entry['senses']:
-                        #TODO these are words that only have pointers to an MWE
-                        #that they are part of.
-                        continue
-                    definition = entry['senses'][0]['definition']
-                    if definition is None:
-                        continue
-                    deps = definition['deps']
-                    if not deps:
-                        #TODO see previous comment
-                        continue
-                    machine = self.get_dep_definition(word, deps)
-                    if machine is None:
-                        continue
-                    definitions[word] = machine
-                except Exception:
-                    logging.error(
-                        u'skipping "{0}" because of an exception:'.format(
-                            word))
-                    logging.info("entry: {0}".format(entry))
-                    traceback.print_exc()
-                    continue
-
-            logging.info('done!')
-            logging.info('pickling Longman definitions...')
-            pickle_fn = self.longman_deps_path.replace(".json", ".pickle")
-            with open(pickle_fn, 'w') as out_file:
-                cPickle.dump(definitions, out_file)
-            logging.info('done!')
-
         else:
-            raise Exception(
-                'unknown format: {0}'.format(self.longman_deps_path))
-
+            raise Exception("building machines from deps has moved to 4lang")
         for word, machine in definitions.iteritems():
             if word not in self.definitions:
                 self.definitions[word] = set([machine])
 
         logging.info('done')
-
-    @staticmethod
-    def parse_dependency(string):
-        dep_match = Wrapper.dep_regex.match(string)
-        if not dep_match:
-            raise Exception('cannot parse dependency: {0}'.format(string))
-        dep, word1, id1, word2, id2 = dep_match.groups()
-        return dep, (word1, id1), (word2, id2)
-
-    def get_dep_definition(self, word, dep_strings):
-        root_deps = filter(lambda s: s.startswith('root'), dep_strings)
-        if len(root_deps) != 1:
-            logging.warning(
-                'no unique root dependency, skipping word "{0}"'.format(word))
-            return None
-        root_word, root_id = Wrapper.parse_dependency(root_deps[0])[2]
-        root_lemma = self.get_lemma(root_word).replace('/', '_PER_')
-        word2machine = self.get_machines_from_deps(dep_strings)
-
-        root_machine = word2machine[root_lemma]
-        word_machine = word2machine.get(word, Machine(word, ConceptControl()))
-        word_machine.append(root_machine, 0)
-        return word_machine
-
-    def get_machines_from_deps(self, dep_strings):
-        #deprecated, use get_machines_from_deps_and_corefs
-        deps = map(Wrapper.parse_dependency, dep_strings)
-        return self.get_machines_from_parsed_deps(deps)
-
-    def get_machines_from_parsed_deps(self, deps):
-        #deprecated, use get_machines_from_deps_and_corefs
-        return self.get_machines_from_deps_and_corefs([deps], [])
-
-    def get_machines_from_deps_and_corefs(self, dep_lists, corefs):
-        coref_index = defaultdict(dict)
-        for (word, sen_no), mentions in corefs:
-            for m_word, m_sen_no in mentions:
-                coref_index[m_word][m_sen_no-1] = word
-
-        #logging.info('coref index: {0}'.format(coref_index))
-
-        lexicon = Lexicon()
-        word2machine = {}
-
-        for i, deps in enumerate(dep_lists):
-            for dep, (word1, id1), (word2, id2) in deps:
-                #logging.info('w1: {0}, w2: {1}'.format(word1, word2))
-                c_word1 = coref_index[word1].get(i, word1)
-                c_word2 = coref_index[word2].get(i, word2)
-                if c_word1 != word1:
-                    logging.warning(
-                        "unifying '{0}' with canonical '{1}'".format(
-                            word1, c_word1))
-                if c_word2 != word2:
-                    logging.warning(
-                        "unifying '{0}' with canonical '{1}'".format(
-                            word2, c_word2))
-
-                #logging.info('cw1: {0}, cw2: {1}'.format(c_word1, c_word2))
-                lemma1 = self.get_lemma(
-                    c_word1, debug=True, existing_only=True)
-                lemma2 = self.get_lemma(
-                    c_word2, debug=True, existing_only=True)
-
-                lemma1 = c_word1 if lemma1 is None else lemma1
-                lemma2 = c_word2 if lemma2 is None else lemma2
-
-                #TODO
-                lemma1 = lemma1.replace('/', '_PER_')
-                lemma2 = lemma2.replace('/', '_PER_')
-
-                #logging.info(
-                    #'lemma1: {0}, lemma2: {1}'.format(lemma1, lemma2))
-                machine1, machine2 = self._add_dependency(
-                    dep, (lemma1, id1), (lemma2, id2), temp_lexicon=lexicon)
-
-                word2machine[lemma1] = machine1
-                word2machine[lemma2] = machine2
-
-        return word2machine
-
-    def add_dependency(self, string):
-        #e.g. nsubjpass(pushed-7, salesman-5)
-        logging.debug('processing dependency: {}'.format(string))
-        dep, (word1, id1), (word2, id2) = Wrapper.parse_dependency(string)
-        lemma1 = self.get_lemma(word1)
-        lemma2 = self.get_lemma(word2)
-        self._add_dependency(dep, (lemma1, id1), (lemma2, id2),
-                             use_lexicon=True, activate_machines=True)
-
-    def _add_dependency(self, dep, (word1, id1), (word2, id2),
-                        temp_lexicon=None):
-        """Given a triplet from Stanford Dep.: D(w1,w2), we create and activate
-        machines for w1 and w2, then run all operators associated with D on the
-        sequence of the new machines (m1, m2)"""
-        lexicon = temp_lexicon if temp_lexicon is not None else self.lexicon
-        #logging.info(
-        #    'adding dependency {0}({1}, {2})'.format(dep, word1, word2))
-        machine1, machine2 = map(lexicon.get_machine, (word1, word2))
-
-        self.deps_to_machines.apply_dep(dep, machine1, machine2, lexicon)
-        return machine1, machine2
 
     def draw_single_graph(self, word, path):
         clean_word = Machine.d_clean(word)
@@ -482,8 +228,8 @@ if __name__ == "__main__":
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
     w = Wrapper(sys.argv[1], include_longman=True)
-    #w = Wrapper(sys.argv[1], include_longman=False)
-    #w.get_def_words(sys.stdout)
+    # w = Wrapper(sys.argv[1], include_longman=False)
+    # w.get_def_words(sys.stdout)
     w.draw_word_graphs()
-    #f = open('wrapper.pickle', 'w')
-    #cPickle.dump(w, f)
+    # f = open('wrapper.pickle', 'w')
+    # cPickle.dump(w, f)
