@@ -31,14 +31,14 @@ class Wrapper:
 
     num_re = re.compile(r'^[0-9.,]+$', re.UNICODE)
 
-    def __init__(self, cfg, batch=False, include_longman=True):
+    def __init__(self, cfg, batch=False, include_ext=True):
         self.cfg = cfg
         self.__read_config()
         self.batch = batch
         self.wordlist = set()
         self.__read_definitions()
-        if include_longman:
-            self.get_longman_definitions()
+        if include_ext:
+            self.get_ext_definitions()
         self.__read_supp_dict()
         self.reset_lexicon()
 
@@ -58,7 +58,7 @@ class Wrapper:
                           for s in items["definitions"].split(",")]
         self.dep_map_fn = items.get("dep_map")
         self.tok2lemma_fn = items.get("tok2lemma")
-        self.longman_deps_path = items.get("longman_deps")
+        self.ext_defs_path = items.get("ext_definitions")
         self.supp_dict_fn = items.get("supp_dict")
         self.plural_fn = items.get("plurals")
 
@@ -108,13 +108,12 @@ class Wrapper:
         # add_verb_constructions(self.lexicon, self.supp_dict)
         # add_avm_constructions(self.lexicon, self.supp_dict)
 
-    def get_longman_definitions(self):
-        logging.info('adding Longman definitions')
-        if self.longman_deps_path.endswith('pickle'):
+    def get_ext_definitions(self):
+        if self.ext_defs_path.endswith('pickle'):
             logging.info(
-                'loading pre-compiled Longman definitions from {}...'.format(
-                    self.longman_deps_path))
-            definitions = cPickle.load(file(self.longman_deps_path))
+                'loading external definitions from {}...'.format(
+                    self.ext_defs_path))
+            definitions = cPickle.load(file(self.ext_defs_path))
 
         else:
             raise Exception("building machines from deps has moved to 4lang")
@@ -227,9 +226,5 @@ if __name__ == "__main__":
         level=logging.INFO,
         format="%(asctime)s : " +
         "%(module)s (%(lineno)s) - %(levelname)s - %(message)s")
-    w = Wrapper(sys.argv[1], include_longman=True)
-    # w = Wrapper(sys.argv[1], include_longman=False)
-    # w.get_def_words(sys.stdout)
+    w = Wrapper(sys.argv[1])
     w.draw_word_graphs()
-    # f = open('wrapper.pickle', 'w')
-    # cPickle.dump(w, f)
