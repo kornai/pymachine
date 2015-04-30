@@ -8,9 +8,10 @@ from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=3):
+        assert name
         self.printname_ = name
-        #if name.isupper():
-        #    part_num = 3  # TODO crude, but effective
+        # if name.isupper():
+        #     part_num = 3  # TODO crude, but effective
         self.partitions = [[] for i in range(part_num)]
         self.set_control(control)
         self.parents = set()
@@ -125,10 +126,10 @@ class Machine(object):
         """
         Adds @p Machine instance to the specified partition.
         """
-        # TODO printname
-        #logging.debug(u"{0}.append(
-        #   {1},{2})".format(self.printname(), what.printname(),
-        #   which_partition).encode("utf-8"))
+        #  TODO printname
+        # logging.debug(u"{0}.append(
+        #    {1},{2})".format(self.printname(), what.printname(),
+        #    which_partition).encode("utf-8"))
         if len(self.partitions) > which_partition:
             if what in self.partitions[which_partition]:
                 return
@@ -180,8 +181,8 @@ class Machine(object):
     def del_parent_link(self, whose, part):
         self.parents.remove((whose, part))
 
-###################################
-### Machine-type-related methods
+# ##################################
+# ## Machine-type-related methods
 
     def unary(self):
         return len(self.partitions) == 1
