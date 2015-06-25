@@ -57,7 +57,7 @@ class Machine(object):
     def dot_id(self):
         """node id for dot output"""
         return u"{0}_{1}".format(
-            Machine.d_clean(self.dot_printname()), str(id(self))[-2:])
+            Machine.d_clean(self.dot_printname()), str(id(self))[-4:])
 
     def dot_printname(self):
         """printname for dot output"""

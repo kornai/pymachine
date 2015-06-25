@@ -21,7 +21,7 @@ class MachineTraverser():
             return
         self.seen_for_nodes.add(machine)
         name = machine.printname()
-        if not name.isupper() and not name in exclude_words:
+        if not name.isupper() and name not in exclude_words:
             yield name
         for part in machine.partitions:
             for submachine in part:
@@ -44,18 +44,18 @@ class MachineGraph:
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                strict=False, depth=0):
-        #pn = machine.printname()
-        #logging.info('getting edges for machine: {}'.format(machine))
-        #logging.info("{0}: {1}".format(pn, machine.partitions))
-        #if pn.isupper():
-        #    if depth >= 2:
-        #        return
+        # pn = machine.printname()
+        # logging.info('getting edges for machine: {}'.format(machine))
+        # logging.info("{0}: {1}".format(pn, machine.partitions))
+        # if pn.isupper():
+        #     if depth >= 2:
+        #         return
         if machine in self.seen or (max_depth is not None and
                                     depth > max_depth):
             return
         self.seen.add(machine)
-        #if printname == 'from':
-        #    logging.info('from machine: {0}'.format(machine))
+        # if printname == 'from':
+        #     logging.info('from machine: {0}'.format(machine))
         edges = set()
         neighbours = set()
         for color, part in enumerate(machine.partitions):
@@ -98,8 +98,8 @@ class MachineGraph:
 
     def to_dot(self):
         lines = [u'digraph finite_state_machine {', '\tdpi=100;']
-        #lines.append('\tordering=out;')
-        #sorting everything to make the process deterministic
+        # lines.append('\tordering=out;')
+        # sorting everything to make the process deterministic
         node_lines = []
         for machine in self.machines:
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
@@ -143,7 +143,7 @@ def average(seq):
             raise Exception("can't add this to a float: {0}".format(
                 repr(element)))
     return total / length
-    #return sum(seq) / float(len(seq))
+    # return sum(seq) / float(len(seq))
 
 def my_max(seq, default=0.0):
     try:
