@@ -8,7 +8,7 @@ from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=3):
-        assert name
+        # assert name
         self.printname_ = name
         # if name.isupper():
         #     part_num = 3  # TODO crude, but effective
@@ -24,10 +24,9 @@ class Machine(object):
 
     def __unicode__(self):
         if self.control is None:
-            return u"{0} ({1}), no control".format(self.printname(), id(self))
-        return u"{0} ({1}), {2}".format(
-            self.printname(), id(self),
-            self.control.to_debug_str().replace('\n', ' '))
+            return u"{0}, no control".format(self.unique_name())
+        return u"{0}, {1}".format(
+            self.unique_name(), self.control.to_debug_str().replace('\n', ' '))
 
     def __deepcopy__(self, memo):
         new_machine = self.__class__(self.printname_)
@@ -81,6 +80,9 @@ class Machine(object):
         if '/' in self.printname_:
             return self.printname_.split('/')[0]
         return self.printname_
+
+    def unique_name(self):
+        return u"{0}_{1}".format(self.printname(), id(self))
 
     def set_control(self, control):
         """Sets the control."""

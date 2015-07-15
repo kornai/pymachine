@@ -520,6 +520,9 @@ class DefinitionParser(object):
 
 def read(f, plur_filn, printname_index=0, add_indices=False,
          loop_to_defendum=True, three_parts=False):
+    logging.warning(
+        "Will now discard all but the first definition of each \
+        headword!".upper())
     d = defaultdict(set)
     plur_dict = read_plur(open(plur_filn)) if plur_filn else {}
     dp = DefinitionParser(plur_dict)
@@ -532,6 +535,11 @@ def read(f, plur_filn, printname_index=0, add_indices=False,
             if m.partitions[0] == []:
                 logging.debug('dropping empty definition of '+m.printname())
                 continue
+            pn = m.printname()
+            if pn in d:
+                continue
+                # logging.warning('duplicate pn: {0}, machines: {1}, {2}'.format(
+                #    pn, d[pn], "{0}:{1}".format(m, m.partitions)))
             d[m.printname()].add(m)
             logging.debug('\n'+m.to_debug_str())
         except pyparsing.ParseException, pe:
@@ -550,7 +558,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING,
                         format="%(asctime)s : %(module)s (%(lineno)s) " +
                         "- %(levelname)s - %(message)s")
-    plur_dict = read_plur(open('../../res/4lang/4lang.plural'))
+    plur_dict = read_plur(open('/home/recski/projects/4lang/4lang.plural'))
     dp = DefinitionParser(plur_dict)
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
