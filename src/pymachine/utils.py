@@ -1,6 +1,8 @@
-from collections import defaultdict
 import logging
 import os
+
+import networkx as nx
+from networkx.readwrite import json_graph
 
 def ensure_dir(path):
     if not os.path.exists(path):
@@ -10,6 +12,7 @@ class MachineTraverser():
     @staticmethod
     def get_nodes(machine, exclude_words=[]):
         traverser = MachineTraverser()
+        logging.info('getting nodes for: {0}'.format(machine.printname()))
         return traverser._get_nodes(machine, depth=0,
                                     exclude_words=set(exclude_words))
 
@@ -21,13 +24,19 @@ class MachineTraverser():
             return
         self.seen_for_nodes.add(machine)
         name = machine.printname()
+        logging.info('traversing: {0}'.format(name))
         if not name.isupper() and name not in exclude_words:
             yield name
+
         for part in machine.partitions:
             for submachine in part:
                 for node in self._get_nodes(submachine, depth=depth+1,
                                             exclude_words=exclude_words):
                     yield node
+        for parent, _ in machine.parents:
+            for node in self._get_nodes(parent, depth=depth+1,
+                                        exclude_words=exclude_words):
+                yield node
 
 class MachineGraph:
     @staticmethod
@@ -78,38 +87,45 @@ class MachineGraph:
                 continue
             elif whitelist is None or (printname1 in whitelist and
                                        printname2 in whitelist):
-                self.add_edge(machine1, machine2, color)
+                self.add_edge(
+                    machine1.unique_name(), machine2.unique_name(), color)
 
         for neighbour in neighbours:
             self._get_edges_recursively(
                 neighbour, max_depth, whitelist, depth=depth+1)
 
     def __init__(self):
-        self.machines = set()
-        self.edges = set()
-        self.edges_by_color = defaultdict(set)
+        self.G = nx.MultiDiGraph()
 
-    def add_edge(self, m1, m2, color):
-        logging.debug('adding edge: {} -> {}'.format(m1, m2))
-        self.machines.add(m1)
-        self.machines.add(m2)
-        self.edges_by_color[color].add((m1, m2))
-        self.edges.add((m1.printname(), m2.printname(), color))
+    def add_edge(self, node1, node2, color):
+        logging.debug('adding edge: {} -> {}'.format(node1, node2))
+        self.G.add_nodes_from([node1, node2])
+        self.G.add_edge(node1, node2, color=color)
+
+    def to_dict(self):
+        return json_graph.adjacency.adjacency_data(self.G)
+
+    @staticmethod
+    def from_dict(d):
+        return json_graph.adjacency.adjacency_graph(d)
 
     def to_dot(self):
         lines = [u'digraph finite_state_machine {', '\tdpi=100;']
         # lines.append('\tordering=out;')
         # sorting everything to make the process deterministic
         node_lines = []
-        for machine in self.machines:
+        for node in self.G.nodes_iter():
+            printname = node.split('_')[0]
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
-                              machine.dot_id(), machine.dot_printname()))
+                node, printname))
         lines += sorted(node_lines)
         edge_lines = []
-        for color, edges in self.edges_by_color.iteritems():
-            for m1, m2 in edges:
-                edge_lines.append(u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                    m1.dot_id(), m2.dot_id(), color))
+        for node1, adjacency in self.G.adjacency_iter():
+            for node2, edges in adjacency.iteritems():
+                for i, attributes in edges.iteritems():
+                    edge_lines.append(
+                        u'\t{0} -> {1} [ label = "{2}" ];'.format(
+                            node1, node2, attributes['color']))
         lines += sorted(edge_lines)
         lines.append('}')
         return u'\n'.join(lines)

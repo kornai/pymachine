@@ -23,5 +23,5 @@ setup(
 
     dependency_links=[
         "https://github.com/zseder/hunmisc/tarball/master#egg=hunmisc"],
-    install_requires=["hunmisc", "pyparsing", "stemming"],
+    install_requires=["hunmisc", "pyparsing", "stemming", "networkx"],
 )
