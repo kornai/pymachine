@@ -24,7 +24,7 @@ class MachineTraverser():
             return
         self.seen_for_nodes.add(machine)
         name = machine.printname()
-        logging.info('traversing: {0}'.format(name))
+        logging.info(u'traversing: {0}'.format(name))
         if not name.isupper() and name not in exclude_words:
             yield name
 
@@ -54,11 +54,11 @@ class MachineGraph:
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                strict=False, depth=0):
         # pn = machine.printname()
-        # logging.info('getting edges for machine: {}'.format(machine))
+        # logging.info('getting edges for machine: {}'.format(pn))
         # logging.info("{0}: {1}".format(pn, machine.partitions))
-        # if pn.isupper():
-        #     if depth >= 2:
-        #         return
+        #  if pn.isupper():
+        #      if depth >= 2:
+        #          return
         if machine in self.seen or (max_depth is not None and
                                     depth > max_depth):
             return
@@ -98,7 +98,7 @@ class MachineGraph:
         self.G = nx.MultiDiGraph()
 
     def add_edge(self, node1, node2, color):
-        logging.debug('adding edge: {} -> {}'.format(node1, node2))
+        # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
         self.G.add_nodes_from([node1, node2])
         self.G.add_edge(node1, node2, color=color)
 
