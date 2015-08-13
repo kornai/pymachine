@@ -12,7 +12,7 @@ class MachineTraverser():
     @staticmethod
     def get_nodes(machine, exclude_words=[]):
         traverser = MachineTraverser()
-        logging.info('getting nodes for: {0}'.format(machine.printname()))
+        # logging.info('getting nodes for: {0}'.format(machine.printname()))
         return traverser._get_nodes(machine, depth=0,
                                     exclude_words=set(exclude_words))
 
@@ -24,7 +24,7 @@ class MachineTraverser():
             return
         self.seen_for_nodes.add(machine)
         name = machine.printname()
-        logging.info(u'traversing: {0}'.format(name))
+        # logging.info(u'traversing: {0}'.format(name))
         if not name.isupper() and name not in exclude_words:
             yield name
 
