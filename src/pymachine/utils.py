@@ -117,7 +117,7 @@ class MachineGraph:
         for node in self.G.nodes_iter():
             printname = node.split('_')[0]
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
-                node, printname))
+                node, printname).replace('-', '_'))
         lines += sorted(node_lines)
         edge_lines = []
         for node1, adjacency in self.G.adjacency_iter():
@@ -125,7 +125,8 @@ class MachineGraph:
                 for i, attributes in edges.iteritems():
                     edge_lines.append(
                         u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                            node1, node2, attributes['color']))
+                            node1.replace('-', '_'),
+                            node2.replace('-', '_'), attributes['color']))
         lines += sorted(edge_lines)
         lines.append('}')
         return u'\n'.join(lines)

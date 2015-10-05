@@ -60,7 +60,7 @@ class Machine(object):
 
     def dot_printname(self):
         """printname for dot output"""
-        return self.printname_.split('/')[0]
+        return self.printname_.split('/')[0].replace('-', '_')
 
     @staticmethod
     def d_clean(string):
