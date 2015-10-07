@@ -67,9 +67,8 @@ class Machine(object):
         s = string
         for c in '\\=@-,\'".!;':
             s = s.replace(c, '_')
-        if s == '$':
-            s = '_dollars'
-        elif s == '#':
+        s = s.replace('$', '_dollars')
+        if s == '#':
             s = '_number'
         keywords = ("graph", "node", "strict", "edge")
         if re.match('^[0-9]', s) or s in keywords:

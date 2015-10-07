@@ -4,6 +4,8 @@ import os
 import networkx as nx
 from networkx.readwrite import json_graph
 
+from pymachine.machine import Machine
+
 def ensure_dir(path):
     if not os.path.exists(path):
         os.mkdir(path)
@@ -44,7 +46,7 @@ class MachineGraph:
                              strict=False):
         g = MachineGraph()
         g.seen = set()
-        logging.debug('whitelist: {}'.format(whitelist))
+        # logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
             g._get_edges_recursively(machine, max_depth, whitelist,
                                      strict=strict)
@@ -54,8 +56,8 @@ class MachineGraph:
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                strict=False, depth=0):
         # pn = machine.printname()
-        # logging.info('getting edges for machine: {}'.format(pn))
-        # logging.info("{0}: {1}".format(pn, machine.partitions))
+        # logging.info(u'getting edges for machine: {}'.format(pn))
+        # logging.info("{0}".format(machine.partitions))
         #  if pn.isupper():
         #      if depth >= 2:
         #          return
@@ -115,18 +117,21 @@ class MachineGraph:
         # sorting everything to make the process deterministic
         node_lines = []
         for node in self.G.nodes_iter():
-            printname = node.split('_')[0]
+            d_node = Machine.d_clean(node)
+            printname = Machine.d_clean(d_node.split('_')[0])
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
-                node, printname).replace('-', '_'))
+                d_node, printname).replace('-', '_'))
         lines += sorted(node_lines)
         edge_lines = []
         for node1, adjacency in self.G.adjacency_iter():
+            d_node1 = Machine.d_clean(node1)
             for node2, edges in adjacency.iteritems():
+                d_node2 = Machine.d_clean(node2)
                 for i, attributes in edges.iteritems():
                     edge_lines.append(
                         u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                            node1.replace('-', '_'),
-                            node2.replace('-', '_'), attributes['color']))
+                            d_node1.replace('-', '_'),
+                            d_node2.replace('-', '_'), attributes['color']))
         lines += sorted(edge_lines)
         lines.append('}')
         return u'\n'.join(lines)
