@@ -65,7 +65,7 @@ class Machine(object):
     @staticmethod
     def d_clean(string):
         s = string
-        for c in '\\=@-,\'".!;':
+        for c in '\\=@-,\'".!:;':
             s = s.replace(c, '_')
         s = s.replace('$', '_dollars')
         if s == '#':
