@@ -44,14 +44,13 @@ class Machine(object):
     def unify(self, machine2):
         for i, part in enumerate(machine2.partitions):
             for m in part:
-                if m not in self.partitions[i]:
-                    self.partitions[i].append(m)
-                    m.add_parent_link(self, i)
+                self.append(m, i)
+                machine2.remove(m, i)
 
-        for parent, i in machine2.parents:
-            parent.partitions[i].remove(machine2)
-            parent.partitions[i].append(self)
-            self.add_parent_link(parent, i)
+        # for parent, i in copy.deepcopy(machine2.parents):
+        for parent, i in list(machine2.parents):
+            parent.remove(machine2, i)
+            parent.append(self, i)
 
     def dot_id(self):
         """node id for dot output"""
@@ -65,7 +64,7 @@ class Machine(object):
     @staticmethod
     def d_clean(string):
         s = string
-        for c in '\\=@-,\'".!;':
+        for c in '\\=@-,\'".!:;':
             s = s.replace(c, '_')
         s = s.replace('$', '_dollars')
         if s == '#':
