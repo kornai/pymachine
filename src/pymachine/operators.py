@@ -145,9 +145,9 @@ class AppendToNewBinaryOperator(AppendToBinaryOperator):
     """will create a new binary machine every time it's used"""
 
     def act(self, seq):
-        #logging.info(
-            #"appending machines {0} and {1} to new binary {2}".format(
-                #seq[self.first_pos], seq[self.second_pos], self.bin_rel))
+        # logging.info(
+        #    "appending machines {0} and {1} to new binary {2}".format(
+        #        seq[self.first_pos], seq[self.second_pos], self.bin_rel))
         rel_machine = Machine(self.bin_rel)
         rel_machine.append(seq[self.first_pos], 1)
         rel_machine.append(seq[self.second_pos], 2)
@@ -164,11 +164,11 @@ class AppendToBinaryFromLexiconOperator(AppendToBinaryOperator):
         return [rel_machine]
 
 
-###############################
-###                         ###
-### There be dragons ahead! ###
-###                         ###
-###############################
+# ###############################
+# ###                         ###
+# ### There be dragons ahead! ###
+# ###                         ###
+# ###############################
 
 
 class FillArgumentOperator(Operator):

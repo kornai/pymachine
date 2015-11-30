@@ -8,7 +8,7 @@ from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=3):
-        # assert name
+        assert name
         self.printname_ = name
         # if name.isupper():
         #     part_num = 3  # TODO crude, but effective
@@ -67,6 +67,7 @@ class Machine(object):
         for c in '\\=@-,\'".!:;':
             s = s.replace(c, '_')
         s = s.replace('$', '_dollars')
+        s = s.replace('%', '_percent')
         if s == '#':
             s = '_number'
         keywords = ("graph", "node", "strict", "edge")
