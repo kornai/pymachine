@@ -8,7 +8,9 @@ from constants import deep_pre, avm_pre, enc_pre
 
 class Machine(object):
     def __init__(self, name, control=None, part_num=3):
-        assert name
+        if not name:
+            logging.warning('empty printname! replacing with "???"')
+            name = "???"
         self.printname_ = name
         # if name.isupper():
         #     part_num = 3  # TODO crude, but effective
