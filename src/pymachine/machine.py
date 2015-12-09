@@ -43,7 +43,7 @@ class Machine(object):
                 m.add_parent_link(new_machine, part_i)
         return new_machine
 
-    def unify(self, machine2):
+    def unify(self, machine2, exclude_0_case=False):
         """
         moves all incoming and outgoing links of machine2 to machine1.
         The list() part is essential in all three places (going through
@@ -52,7 +52,10 @@ class Machine(object):
         """
         for i, part in enumerate(list(machine2.partitions)):
             for m in list(part):
-                self.append(m, i)
+                if not (
+                        i == 0 and m.printname().startswith('=') and
+                        exclude_0_case):
+                    self.append(m, i)
                 machine2.remove(m, i)
 
         for parent, i in list(machine2.parents):
