@@ -55,15 +55,18 @@ class MachineGraph:
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                strict=False, depth=0):
-        # pn = machine.printname()
-        # logging.info(u'getting edges for machine: {}'.format(pn))
-        # logging.info("{0}".format(machine.partitions))
         #  if pn.isupper():
         #      if depth >= 2:
         #          return
+        # pn = machine.unique_name()
         if machine in self.seen or (max_depth is not None and
                                     depth > max_depth):
+            # logging.info(u'skipping machine: {}'.format(pn))
             return
+
+        # logging.info(u'getting edges for machine: {}'.format(pn))
+        # logging.info("{0}".format(machine.partitions))
+
         self.seen.add(machine)
         # if printname == 'from':
         #     logging.info('from machine: {0}'.format(machine))
@@ -130,8 +133,8 @@ class MachineGraph:
                 for i, attributes in edges.iteritems():
                     edge_lines.append(
                         u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                            d_node1.replace('-', '_'),
-                            d_node2.replace('-', '_'), attributes['color']))
+                            Machine.d_clean(d_node1), Machine.d_clean(d_node2),
+                            attributes['color']))
         lines += sorted(edge_lines)
         lines.append('}')
         return u'\n'.join(lines)

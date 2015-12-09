@@ -44,12 +44,17 @@ class Machine(object):
         return new_machine
 
     def unify(self, machine2):
-        for i, part in enumerate(machine2.partitions):
-            for m in part:
+        """
+        moves all incoming and outgoing links of machine2 to machine1.
+        The list() part is essential in all three places (going through
+        partitions, machines of partitions, and parents), because that creates
+        a new list, but doesn't copy the machines themselves, as deepcopy would
+        """
+        for i, part in enumerate(list(machine2.partitions)):
+            for m in list(part):
                 self.append(m, i)
                 machine2.remove(m, i)
 
-        # for parent, i in copy.deepcopy(machine2.parents):
         for parent, i in list(machine2.parents):
             parent.remove(machine2, i)
             parent.append(self, i)
