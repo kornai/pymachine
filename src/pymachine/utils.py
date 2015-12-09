@@ -12,32 +12,38 @@ def ensure_dir(path):
 
 class MachineTraverser():
     @staticmethod
-    def get_nodes(machine, exclude_words=[]):
+    def get_nodes(
+            machine, exclude_words=[], names_only=True, keep_upper=False):
         traverser = MachineTraverser()
         # logging.info('getting nodes for: {0}'.format(machine.printname()))
-        return traverser._get_nodes(machine, depth=0,
-                                    exclude_words=set(exclude_words))
+        return traverser._get_nodes(
+            machine, 0, set(exclude_words), names_only, keep_upper)
 
     def __init__(self):
         self.seen_for_nodes = set()
 
-    def _get_nodes(self, machine, depth, exclude_words=set()):
+    def _get_nodes(
+            self, machine, depth, exclude_words, names_only, keep_upper):
         if machine in self.seen_for_nodes:
             return
         self.seen_for_nodes.add(machine)
         name = machine.printname()
         # logging.info(u'traversing: {0}'.format(name))
-        if not name.isupper() and name not in exclude_words:
-            yield name
+        if (keep_upper or not name.isupper()) and name not in exclude_words:
+            if names_only:
+                yield name
+            else:
+                yield machine
 
         for part in machine.partitions:
             for submachine in part:
-                for node in self._get_nodes(submachine, depth=depth+1,
-                                            exclude_words=exclude_words):
+                for node in self._get_nodes(
+                        submachine, depth+1, exclude_words, names_only,
+                        keep_upper):
                     yield node
         for parent, _ in machine.parents:
-            for node in self._get_nodes(parent, depth=depth+1,
-                                        exclude_words=exclude_words):
+            for node in self._get_nodes(
+                    parent, depth+1, exclude_words, names_only, keep_upper):
                 yield node
 
 class MachineGraph:
