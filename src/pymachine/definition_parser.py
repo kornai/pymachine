@@ -1,12 +1,23 @@
+import argparse
+from collections import defaultdict
 import logging
-import sys
 import re
 import string
-from collections import defaultdict
+import sys
 
 try:
     import pyparsing
-    from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList  # nopep8
+    from pyparsing import Literal
+    from pyparsing import Word
+    from pyparsing import Group
+    from pyparsing import Combine
+    from pyparsing import Optional
+    from pyparsing import Forward
+    from pyparsing import alphanums
+    from pyparsing import SkipTo
+    from pyparsing import LineEnd
+    from pyparsing import nums
+    from pyparsing import delimitedList 
 except ImportError:
     logging.critical("PyParsing has to be installed on the computer")
     sys.exit(-1)
@@ -38,8 +49,7 @@ class DefinitionParser(object):
     unary_p = re.compile("^[a-z_#\-/0-9]+(/[0-9]+)?$")
     binary_p = re.compile("^[A-Z_0-9]+(/[0-9]+)?$")
 
-    def __init__(self, plur_dict):
-        self.plur_dict = plur_dict
+    def __init__(self):
         self.init_parser()
 
     @classmethod
@@ -183,17 +193,9 @@ class DefinitionParser(object):
             name = "".join(name)
 
         # HACK until we find a good solution for defaults
-        name = name.strip('<>')
+        name = name.strip('<>') 
 
-        is_plur = name in self.plur_dict
-        if is_plur:
-            name = self.plur_dict[name]
-
-        m = Machine(decode_from_proszeky(name),
-                    ConceptControl(), partitions)
-        if is_plur:
-            m.append(self.create_machine('more', 1), 0)
-
+        m = Machine(decode_from_proszeky(name), ConceptControl(), partitions) 
         return m
 
     def unify(self, machine):
@@ -488,7 +490,7 @@ class DefinitionParser(object):
         raise pe
 
     def __parse_definition(self, definition, root, loop_to_defendum=True,
-                           three_parts=False):
+                           three_parts=True):
         logging.debug(str(definition))
         for d in definition:
             yield self.__parse_expr(d, root, loop_to_defendum, three_parts)[0]
@@ -499,7 +501,7 @@ class DefinitionParser(object):
         try:
             id_, urob, pos, def_, comment = string.split('\t')[4:]
         except:
-            raise Exception(string.split('\t'))
+            raise Exception("Wrong number of fields in {}".format(string))
 
         machine = self.create_machine(printname.lower(), 1)
         #TODO =AGT -> partition 1, =PAT -> partition 2, =TO -> ?
@@ -518,53 +520,44 @@ class DefinitionParser(object):
         self.unify(machine)
         return machine
 
-def read(f, plur_filn, printname_index=0, add_indices=False,
+def read_lexicon(f, def_parser, printname_index=0, add_indices=False,
          loop_to_defendum=True, three_parts=False):
-    logging.warning(
-        "Will now discard all but the first definition of each \
-        headword!".upper())
-    d = defaultdict(set)
-    plur_dict = read_plur(open(plur_filn)) if plur_filn else {}
-    dp = DefinitionParser(plur_dict)
     for line in f:
         l = line.strip('\n')
         logging.debug("Parsing: {0}".format(l))
         try:
-            m = dp.parse_into_machines(l, printname_index, add_indices,
+            m = def_parser.parse_into_machines(l, printname_index, add_indices,
                                        loop_to_defendum, three_parts)
             if m.partitions[0] == []:
                 logging.debug('dropping empty definition of '+m.printname())
                 continue
             pn = m.printname()
-            if pn in d:
-                continue
-                # logging.warning('duplicate pn: {0}, machines: {1}, {2}'.format(
-                #    pn, d[pn], "{0}:{1}".format(m, m.partitions)))
-            d[m.printname()].add(m)
-            logging.debug('\n'+m.to_debug_str())
+            yield m.to_debug_str()
         except pyparsing.ParseException, pe:
-            print l
-            logging.error("Error: "+str(pe))
-    return d
+            logging.error('Cannot parse {} in {}: '.format(pe, l))
 
-def read_plur(_file):
-    plur_dict = {}
-    for line in _file:
-        plur, sg = line.split()
-        plur_dict[plur] = sg
-    return plur_dict
+
+def parse_args(): 
+    parser = argparse.ArgumentParser(
+        description='Parse manually written 4lang definitions')
+    parser.add_argument('formula_or_lexicon')
+    parser.add_argument('-s', '--singe_formula', action='store_true',
+                        help='default: the input is the lexicon file')
+    parser.add_argument('-d', '--debug_machine', action='store_true')
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING,
-                        format="%(asctime)s : %(module)s (%(lineno)s) " +
-                        "- %(levelname)s - %(message)s")
-    plur_dict = read_plur(open('/home/recski/projects/4lang/4lang.plural'))
-    dp = DefinitionParser(plur_dict)
-    pstr = sys.argv[-1]
-    if sys.argv[1] == "-d":
-        print Machine.to_debug_str(dp.parse_into_machines(pstr), max_depth=99)
-    elif sys.argv[1] == "-f":
-        lexicon = read(file(sys.argv[2]), '../../res/4lang/4lang.plural',
-                       three_parts=True)
+    format_ = "%(asctime)s: %(module)s (%(lineno)s) %(levelname)s %(message)s"
+    logging.basicConfig(level=logging.WARNING, format=format_)
+    args = parse_args()
+    def_parser = DefinitionParser()
+    if args.singe_formula:
+        machine_iterable = [def_parser.parse_into_machines(
+            args.formula_or_lexicon)]
     else:
-        print dp.parse(pstr)
+        machine_iterable = read_lexicon(file(args.formula_or_lexicon), def_parser)
+    # in some third case: print def_parser.parse(args.formula_or_lexicon)
+    if args.debug_machine:
+        for machine in machine_iterable:
+            print Machine.to_debug_str(machine)
+
