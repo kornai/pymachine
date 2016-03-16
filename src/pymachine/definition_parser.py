@@ -543,6 +543,7 @@ if __name__ == "__main__":
     else:
         machine_iterable = read_lexicon(file(args.formula_or_lexicon), def_parser)
     # in some third case: print def_parser.parse(args.formula_or_lexicon)
-    if args.debug_machine:
-        for machine in machine_iterable:
-            print Machine.to_debug_str(machine)
+    for machine in machine_iterable:
+        debug_str = Machine.to_debug_str(machine)
+        if args.debug_machine:
+            print debug_str
