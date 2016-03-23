@@ -93,6 +93,7 @@ class MachineGraph:
         for machine1, machine2, color in edges:
             printname1 = machine1.printname()
             printname2 = machine2.printname()
+            # TODO
             if (whitelist is not None and printname1 not in whitelist and
                     printname2 not in whitelist):
                 continue
@@ -127,7 +128,7 @@ class MachineGraph:
         node_lines = []
         for node in self.G.nodes_iter():
             d_node = Machine.d_clean(node)
-            printname = Machine.d_clean(d_node.split('_')[0])
+            printname = Machine.d_clean('_'.join(d_node.split('_')[:-1]))
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
                 d_node, printname).replace('-', '_'))
         lines += sorted(node_lines)
