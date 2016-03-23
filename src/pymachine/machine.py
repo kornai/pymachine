@@ -31,6 +31,8 @@ class Machine(object):
             self.unique_name(), self.control.to_debug_str().replace('\n', ' '))
 
     def __deepcopy__(self, memo):
+        if id(self) in memo:
+            return memo[id(self)]
         new_machine = self.__class__(self.printname_)
         memo[id(self)] = new_machine
         new_partitions = copy.deepcopy(self.partitions, memo)
@@ -46,7 +48,7 @@ class Machine(object):
         for part_i, part in enumerate(new_machine.partitions):
             for m in part:
                 m.add_parent_link(new_machine, part_i)
-
+        copy.deepcopy(self.parents, memo)
         return new_machine
 
     def unify(self, machine2, exclude_0_case=False, exclude_negation=False,
