@@ -34,32 +34,48 @@ class Machine(object):
         new_machine = self.__class__(self.printname_)
         memo[id(self)] = new_machine
         new_partitions = copy.deepcopy(self.partitions, memo)
+        # new_parents = copy.deepcopy(self.parents, memo)
         new_control = copy.deepcopy(self.control, memo)
         new_machine.partitions = new_partitions
+        # new_machine.parents = new_parents
         new_machine.control = new_control
+
+        # for parent, i in new_machine.parents:
+        #    parent.append(new_machine, i)
 
         for part_i, part in enumerate(new_machine.partitions):
             for m in part:
                 m.add_parent_link(new_machine, part_i)
+
         return new_machine
 
-    def unify(self, machine2, exclude_0_case=False):
+    def unify(self, machine2, exclude_0_case=False, exclude_negation=False,
+              keep_orig=False):
         """
         moves all incoming and outgoing links of machine2 to machine1.
         The list() part is essential in all three places (going through
         partitions, machines of partitions, and parents), because that creates
         a new list, but doesn't copy the machines themselves, as deepcopy would
         """
+        # logging.info('unifying {0}'.format(machine2.printname()))
         for i, part in enumerate(list(machine2.partitions)):
             for m in list(part):
-                if not (
+                if (
                         i == 0 and m.printname().startswith('=') and
                         exclude_0_case):
-                    self.append(m, i)
-                machine2.remove(m, i)
+                    continue
+                if exclude_negation and m.printname() == 'not':
+                    continue
+                # logging.info('actually moving edge')
+                self.append(m, i)
+                if not keep_orig:
+                    machine2.remove(m, i)
 
+        # logging.info('parents: {0}'.format(list(machine2.parents)))
         for parent, i in list(machine2.parents):
-            parent.remove(machine2, i)
+            # logging.info('parent: {0}'.format(parent.printname()))
+            if not keep_orig:
+                parent.remove(machine2, i)
             parent.append(self, i)
 
     def dot_id(self):
