@@ -434,7 +434,7 @@ class DefinitionParser(object):
             #        expr[1] == "(" and
             #        is_tree(expr[2]) and
             #        expr[3] == ")"):
-            #    ms = self.__parse_expr(expr[2], root, loop_to_defendum, #                           three_parts)
+            #    ms = self.__parse_expr(expr[2], root, loop_to_defendum)
             #    # if BE was an expression with an apostrophe, then
             #    # return of __parse_expr() is None
             #    if len(ms) != 0:
@@ -496,7 +496,7 @@ class DefinitionParser(object):
         self.unify(machine)
         return machine
 
-def read_lexicon(f, def_parser, language_index=0, add_indices=False,
+def read_defs(f, def_parser, language_index=0, add_indices=False,
                  loop_to_defendum=True):
     for line in f:
         fields = line.strip('\n').split('\t')
@@ -541,7 +541,7 @@ if __name__ == "__main__":
         machine_iterable = [
             def_parser.parse_into_machines(args.formula_or_lexicon)]
     else:
-        machine_iterable = read_lexicon(file(args.formula_or_lexicon), def_parser)
+        machine_iterable = read_defs(file(args.formula_or_lexicon), def_parser)
     # in some third case: print def_parser.parse(args.formula_or_lexicon)
     for machine in machine_iterable:
         debug_str = Machine.to_debug_str(machine)
