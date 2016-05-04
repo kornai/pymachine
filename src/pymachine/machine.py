@@ -6,6 +6,7 @@ import re
 from pymachine.control import Control
 from constants import deep_pre, avm_pre, enc_pre
 
+
 class Machine(object):
     def __init__(self, name, control=None, part_num=3):
         if not name:
@@ -128,6 +129,9 @@ class Machine(object):
     def children(self):
         """Returns all direct children of the machine."""
         return set(chain(*self.partitions))
+
+    def hypernyms(self):
+        return set(self.partitions[0])
 
     def unique_machines_in_tree(self):
         """Returns all unique machines under (and including)
@@ -272,6 +276,7 @@ class Machine(object):
 
         if depth == 0:
             return u"\n".join(lines)
+
 
 def test_printname():
     m_unicode = Machine(u"\u00c1")
