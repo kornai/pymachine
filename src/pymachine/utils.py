@@ -100,7 +100,8 @@ class MachineGraph:
             elif whitelist is None or (printname1 in whitelist and
                                        printname2 in whitelist):
                 self.add_edge(
-                    machine1.unique_name(), machine2.unique_name(), color)
+                    machine1.unique_name(), machine1.printname().encode('utf-8'),
+                    machine2.unique_name(), machine2.printname().encode('utf-8'), color)
 
         for neighbour in neighbours:
             self._get_edges_recursively(
@@ -109,9 +110,10 @@ class MachineGraph:
     def __init__(self):
         self.G = nx.MultiDiGraph()
 
-    def add_edge(self, node1, node2, color):
+    def add_edge(self, node1, name1, node2, name2, color):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
-        self.G.add_nodes_from([node1, node2])
+        self.G.add_node(node1, str_name=name1)
+        self.G.add_node(node2, str_name=name2)
         self.G.add_edge(node1, node2, color=color)
 
     def to_dict(self):
@@ -126,22 +128,22 @@ class MachineGraph:
         # lines.append('\tordering=out;')
         # sorting everything to make the process deterministic
         node_lines = []
-        for node in self.G.nodes_iter():
+        for node in self.G.nodes():
             d_node = Machine.d_clean(node)
             printname = Machine.d_clean('_'.join(d_node.split('_')[:-1]))
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
                 d_node, printname).replace('-', '_'))
         lines += sorted(node_lines)
+
         edge_lines = []
-        for node1, adjacency in self.G.adjacency_iter():
-            d_node1 = Machine.d_clean(node1)
-            for node2, edges in adjacency.iteritems():
-                d_node2 = Machine.d_clean(node2)
-                for i, attributes in edges.iteritems():
-                    edge_lines.append(
-                        u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                            Machine.d_clean(d_node1), Machine.d_clean(d_node2),
-                            attributes['color']))
+        for u,v,edata in self.G.edges(data=True):
+            if 'color' in edata:
+                d_node1 = Machine.d_clean(u)
+                d_node2 = Machine.d_clean(v)
+                edge_lines.append(
+                    u'\t{0} -> {1} [ label = "{2}" ];'.format(
+                        Machine.d_clean(d_node1), Machine.d_clean(d_node2),edata['color']))
+
         lines += sorted(edge_lines)
         lines.append('}')
         return u'\n'.join(lines)
