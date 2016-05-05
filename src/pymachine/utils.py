@@ -49,18 +49,18 @@ class MachineTraverser():
 class MachineGraph:
     @staticmethod
     def create_from_machines(iterable, max_depth=None, whitelist=None,
-                             strict=False):
+                             strict=False, str_graph=False):
         g = MachineGraph()
         g.seen = set()
         # logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
             g._get_edges_recursively(machine, max_depth, whitelist,
-                                     strict=strict)
+                                     strict=strict, str_graph=str_graph)
 
         return g
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
-                               strict=False, depth=0):
+                               strict=False, depth=0, str_graph=False):
         #  if pn.isupper():
         #      if depth >= 2:
         #          return
@@ -101,23 +101,40 @@ class MachineGraph:
                                        printname2 in whitelist):
                 self.add_edge(
                     machine1.unique_name(), machine1.printname().encode('utf-8'),
-                    machine2.unique_name(), machine2.printname().encode('utf-8'), color)
+                    machine2.unique_name(), machine2.printname().encode('utf-8'), color, str_graph)
 
         for neighbour in neighbours:
             self._get_edges_recursively(
-                neighbour, max_depth, whitelist, depth=depth+1)
+                neighbour, max_depth, whitelist, depth=depth+1, str_graph=str_graph)
 
     def __init__(self):
         self.G = nx.MultiDiGraph()
 
-    def add_edge(self, node1, name1, node2, name2, color):
+    def add_edge(self, node1, name1, node2, name2, color, str_graph):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
-        self.G.add_node(node1, str_name=name1)
-        self.G.add_node(node2, str_name=name2)
-        self.G.add_edge(node1, node2, color=color)
+        if str_graph:
+            node1 = node1.encode('utf-8')
+            node2 = node2.encode('utf-8')
+            # name1 = name1.encode('utf-8')
+            # name2 = name2.encode('utf-8')
+            nodes_names = list()
+            for (node, name) in [(node1,name1), (node2,name2)]:
+                if node.isupper() or name in ['lack', 'before', 'not']:
+                    nodes_names.append(node)
+                else:
+                    nodes_names.append(name)
+            self.G.add_edge(nodes_names[0], nodes_names[1], color=color)
+        else:
+            self.G.add_node(node1, str_name=name1)
+            self.G.add_node(node2, str_name=name2)
+            self.G.add_edge(node1, node2, color=color)
 
     def to_dict(self):
         return json_graph.adjacency.adjacency_data(self.G)
+
+    @staticmethod
+    def to_dict(G):
+        return json_graph.adjacency.adjacency_data(G)
 
     @staticmethod
     def from_dict(d):
@@ -143,6 +160,34 @@ class MachineGraph:
                 edge_lines.append(
                     u'\t{0} -> {1} [ label = "{2}" ];'.format(
                         Machine.d_clean(d_node1), Machine.d_clean(d_node2),edata['color']))
+
+        lines += sorted(edge_lines)
+        lines.append('}')
+        return u'\n'.join(lines)
+
+    def to_dot_str_graph(self):
+        lines = [u'digraph finite_state_machine {', '\tdpi=100;']
+        node_lines = []
+        for node in self.G.nodes():
+            d_node = Machine.d_clean(node)
+            d_node_id = d_node.replace('=', '_')
+            if "_" in d_node_id:
+                d_node = d_node_id.split('_')[-2]
+            else:
+                d_node= d_node_id
+            node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
+                d_node_id, d_node).replace('-', '_'))
+        lines += sorted(node_lines)
+
+        edge_lines = []
+        for u,v, edata in self.G.edges(data=True):
+            d_u = Machine.d_clean(u)
+            d_v = Machine.d_clean(v)
+            d_u = d_u.replace('=', '_')
+            d_v = d_v.replace('=', '_')
+            edge_lines.append(
+                u'\t{0} -> {1} [ label = "{2}" ];'.format(
+                    d_u, d_v,edata['color']))
 
         lines += sorted(edge_lines)
         lines.append('}')
