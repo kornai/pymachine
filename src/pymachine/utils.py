@@ -49,18 +49,20 @@ class MachineTraverser():
 class MachineGraph:
     @staticmethod
     def create_from_machines(iterable, max_depth=None, whitelist=None,
-                             strict=False):
+                             strict=False, orig_machines=[]):
         g = MachineGraph()
         g.seen = set()
         # logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
-            g._get_edges_recursively(machine, max_depth, whitelist,
-                                     strict=strict)
+            g._get_edges_recursively(
+                machine, max_depth, whitelist, strict=strict,
+                orig_machines=orig_machines)
 
         return g
 
-    def _get_edges_recursively(self, machine, max_depth, whitelist,
-                               strict=False, depth=0):
+    def _get_edges_recursively(
+            self, machine, max_depth, whitelist, strict=False, depth=0,
+            orig_machines=[]):
         #  if pn.isupper():
         #      if depth >= 2:
         #          return
@@ -99,21 +101,26 @@ class MachineGraph:
                 continue
             elif whitelist is None or (printname1 in whitelist and
                                        printname2 in whitelist):
-                self.add_edge(
-                    machine1.unique_name(), machine1.printname().encode('utf-8'),
-                    machine2.unique_name(), machine2.printname().encode('utf-8'), color)
+                self.add_edge(machine1, machine2, color, orig_machines)
 
         for neighbour in neighbours:
             self._get_edges_recursively(
-                neighbour, max_depth, whitelist, depth=depth+1)
+                neighbour, max_depth, whitelist, depth=depth+1,
+                orig_machines=orig_machines)
 
     def __init__(self):
         self.G = nx.MultiDiGraph()
 
-    def add_edge(self, node1, name1, node2, name2, color):
-        # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
-        self.G.add_node(node1, str_name=name1)
-        self.G.add_node(node2, str_name=name2)
+    def add_edge(self, machine1, machine2, color, orig_machines):
+        node1, node2 = machine1.unique_name(), machine2.unique_name()
+        for machine, node in ((machine1, node1), (machine2, node2)):
+            name = machine.printname().encode('utf-8')
+            expanded = machine not in orig_machines
+            # logging.info(
+            #     u'orig words: {0}, printname: {1}, expanded: {2}'.format(
+            #         orig_machines, machine.printname(), expanded))
+            self.G.add_node(node, str_name=name, expanded=expanded)
+
         self.G.add_edge(node1, node2, color=color)
 
     def to_dict(self):
@@ -128,11 +135,16 @@ class MachineGraph:
         # lines.append('\tordering=out;')
         # sorting everything to make the process deterministic
         node_lines = []
-        for node in self.G.nodes():
+        for node, n_data in self.G.nodes(data=True):
             d_node = Machine.d_clean(node)
             printname = Machine.d_clean('_'.join(d_node.split('_')[:-1]))
-            node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
-                d_node, printname).replace('-', '_'))
+            if not n_data['expanded']:
+                node_line = u'\t{0} [shape = circle, label = "{1}", style="filled"];'.format(  # nopep8
+                    d_node, printname).replace('-', '_')
+            else:
+                node_line = u'\t{0} [shape = circle, label = "{1}"];'.format(
+                    d_node, printname).replace('-', '_')
+            node_lines.append(node_line)
         lines += sorted(node_lines)
 
         edge_lines = []
