@@ -132,9 +132,9 @@ class MachineGraph:
     def to_dict(self):
         return json_graph.adjacency.adjacency_data(self.G)
 
-    @staticmethod
-    def to_dict(G):
-        return json_graph.adjacency.adjacency_data(G)
+    # @staticmethod
+    # def to_dict(G):
+    #     return json_graph.adjacency.adjacency_data(G)
 
     @staticmethod
     def from_dict(d):
