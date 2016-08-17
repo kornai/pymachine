@@ -539,7 +539,7 @@ if __name__ == "__main__":
     def_parser = DefinitionParser()
     if args.singe_formula:
         machine_iterable = [
-            def_parser.parse_into_machines(args.formula_or_lexicon)]
+            def_parser.parse_into_machines('NO PRINTNAME', 'NO ID', args.formula_or_lexicon)]
     else:
         machine_iterable = read_defs(file(args.formula_or_lexicon), def_parser)
     # in some third case: print def_parser.parse(args.formula_or_lexicon)
