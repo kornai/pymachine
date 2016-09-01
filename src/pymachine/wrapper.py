@@ -79,7 +79,7 @@ class Wrapper:
             else:
                 logging.info('parsing 4lang definitions...')
                 definitions = read_defs(
-                    file(file_name), self.plural_fn, printname_index,
+                    file(file_name), printname_index=printname_index,
                     three_parts=True)
 
                 logging.info('dumping 4lang definitions to file...')
