@@ -496,8 +496,8 @@ class DefinitionParser(object):
         self.unify(machine)
         return machine
 
-def read_defs(f, def_parser, language_index=0, add_indices=False,
-                 loop_to_defendum=True):
+def read_defs(f, language_index=0, add_indices=False, loop_to_defendum=True):
+    def_parser = DefinitionParser()
     for line in f:
         fields = line.strip('\n').split('\t')
         if len(fields) != 9:
@@ -536,8 +536,8 @@ if __name__ == "__main__":
     format_ = "%(asctime)s: %(module)s (%(lineno)s) %(levelname)s %(message)s"
     logging.basicConfig(level=logging.INFO, format=format_)
     args = parse_args()
-    def_parser = DefinitionParser()
     if args.singe_formula:
+        def_parser = DefinitionParser()
         machine_iterable = [
             def_parser.parse_into_machines('NO PRINTNAME', 'NO ID', args.formula_or_lexicon)]
     else:
