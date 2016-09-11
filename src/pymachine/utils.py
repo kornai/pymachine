@@ -49,18 +49,18 @@ class MachineTraverser():
 class MachineGraph:
     @staticmethod
     def create_from_machines(iterable, max_depth=None, whitelist=None,
-                             strict=False, str_graph=False):
+                             strict=False, machinegraph_options = None):
         g = MachineGraph()
         g.seen = set()
         # logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
             g._get_edges_recursively(machine, max_depth, whitelist,
-                                     strict=strict, str_graph=str_graph)
+                                     strict=strict, machinegraph_options=machinegraph_options)
 
         return g
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
-                               strict=False, depth=0, str_graph=False):
+                               strict=False, depth=0, machinegraph_options=None):
         #  if pn.isupper():
         #      if depth >= 2:
         #          return
@@ -97,37 +97,44 @@ class MachineGraph:
             if (whitelist is not None and printname1 not in whitelist and
                     printname2 not in whitelist):
                 continue
+            elif machinegraph_options.upper_excl == True and (printname1.isupper() or printname2.isupper()):
+                continue
             elif whitelist is None or (printname1 in whitelist and
                                        printname2 in whitelist):
                 self.add_edge(
                     machine1.unique_name(), machine1.printname().encode('utf-8'),
-                    machine2.unique_name(), machine2.printname().encode('utf-8'), color, str_graph)
+                    machine2.unique_name(), machine2.printname().encode('utf-8'), color, machinegraph_options)
 
         for neighbour in neighbours:
             self._get_edges_recursively(
-                neighbour, max_depth, whitelist, depth=depth+1, str_graph=str_graph)
+                neighbour, max_depth, whitelist, depth=depth+1, machinegraph_options=machinegraph_options)
 
     def __init__(self):
         self.G = nx.MultiDiGraph()
 
-    def add_edge(self, node1, name1, node2, name2, color, str_graph):
+    def add_edge(self, node1, name1, node2, name2, color, machinegraph_options):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
-        if str_graph:
+        nn_option = machinegraph_options.nodename_option
+        if nn_option == 0:
+            self.G.add_node(node1, str_name=name1)
+            self.G.add_node(node2, str_name=name2)
+            self.G.add_edge(node1, node2, color=color)
+        elif nn_option == 1 or nn_option == 2:
             node1 = node1.encode('utf-8')
             node2 = node2.encode('utf-8')
             # name1 = name1.encode('utf-8')
             # name2 = name2.encode('utf-8')
             nodes_names = list()
             for (node, name) in [(node1,name1), (node2,name2)]:
-                if node.isupper() or name in ['lack', 'before', 'not']:
-                    nodes_names.append(node)
-                else:
+                if nn_option == 1:
                     nodes_names.append(name)
+                elif nn_option == 2:
+                    # TODO: hack: have should be isupper HAS
+                    if node.isupper() or name in ['lack', 'before', 'not', 'have']:
+                        nodes_names.append(node)
+                    else:
+                        nodes_names.append(name)
             self.G.add_edge(nodes_names[0], nodes_names[1], color=color)
-        else:
-            self.G.add_node(node1, str_name=name1)
-            self.G.add_node(node2, str_name=name2)
-            self.G.add_edge(node1, node2, color=color)
 
     def to_dict(self):
         return json_graph.adjacency.adjacency_data(self.G)

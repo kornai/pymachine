@@ -551,7 +551,9 @@ class Lexicon:
         pass
 
     def get_machine(self, printname, second=False):
+        print "PYMACHINE"
         if printname == 'have':
+            print "HAVE FOUND"
             #logging.info('interpreting a form of "have" as "HAS"')
             return self.get_machine("HAS")
 
