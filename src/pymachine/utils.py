@@ -97,7 +97,7 @@ class MachineGraph:
             if (whitelist is not None and printname1 not in whitelist and
                     printname2 not in whitelist):
                 continue
-            elif machinegraph_options.upper_excl == True and (printname1.isupper() or printname2.isupper()):
+            elif (not machinegraph_options == None) and machinegraph_options.upper_excl == True and (printname1.isupper() or printname2.isupper()):
                 continue
             elif whitelist is None or (printname1 in whitelist and
                                        printname2 in whitelist):
@@ -114,7 +114,9 @@ class MachineGraph:
 
     def add_edge(self, node1, name1, node2, name2, color, machinegraph_options):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
-        nn_option = machinegraph_options.nodename_option
+        nn_option = 0
+        if not machinegraph_options == None:
+            nn_option = machinegraph_options.nodename_option
         if nn_option == 0:
             self.G.add_node(node1, str_name=name1)
             self.G.add_node(node2, str_name=name2)
@@ -134,7 +136,23 @@ class MachineGraph:
                         nodes_names.append(node)
                     else:
                         nodes_names.append(name)
-            self.G.add_edge(nodes_names[0], nodes_names[1], color=color)
+
+            weight = 1
+            alfa = 2
+            if machinegraph_options.weighted == True:
+                if machinegraph_options.embedding_model == None:
+                    logging.error('fullgraph.weighted is set to true, but no embedding model is given')
+                else:
+                    if machinegraph_options.color_based == True:
+                        if not color == 0:
+                            weight = alfa
+                    else:
+                        weight = machinegraph_options.embedding_model.get_sim(nodes_names[0], nodes_names[1])
+                        if weight == None:
+                            weight = 2
+                        else:
+                            weight = 1 - weight
+            self.G.add_edge(nodes_names[0], nodes_names[1], color=color, weight=weight)
 
     def to_dict(self):
         return json_graph.adjacency.adjacency_data(self.G)
