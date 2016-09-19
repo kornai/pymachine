@@ -179,9 +179,9 @@ class MachineGraph:
             else:
                 node_line = u'\t{0} [shape = circle, label = "{1}"];'.format(
                     d_node, printname).replace('-', '_')
-                node_lines.append(node_line)
-                node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
-                    d_node, printname).replace('-', '_'))
+            node_lines.append(node_line)
+            node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
+                d_node, printname).replace('-', '_'))
         lines += sorted(node_lines)
 
         edge_lines = []
