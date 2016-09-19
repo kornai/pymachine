@@ -173,7 +173,7 @@ class MachineGraph:
         for node, n_data in self.G.nodes(data=True):
             d_node = Machine.d_clean(node)
             printname = Machine.d_clean('_'.join(d_node.split('_')[:-1]))
-            if 'expanded' in n_data:
+            if 'expanded' in n_data and not n_data['expanded']:
                 node_line = u'\t{0} [shape = circle, label = "{1}", style="filled"];'.format(  # nopep8
                     d_node, printname).replace('-', '_')
             else:
