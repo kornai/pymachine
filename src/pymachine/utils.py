@@ -115,7 +115,7 @@ class MachineGraph:
     def add_edge(self, node1, name1, node2, name2, color, machinegraph_options):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
         nn_option = 0
-        if not machinegraph_options == None:
+        if machinegraph_options is not None:
             nn_option = machinegraph_options.nodename_option
         if nn_option == 0:
             self.G.add_node(node1, str_name=name1)
@@ -170,7 +170,7 @@ class MachineGraph:
         # lines.append('\tordering=out;')
         # sorting everything to make the process deterministic
         node_lines = []
-        for node in self.G.nodes():
+        for node, n_data in self.G.nodes(data=True):
             d_node = Machine.d_clean(node)
             printname = Machine.d_clean('_'.join(d_node.split('_')[:-1]))
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
