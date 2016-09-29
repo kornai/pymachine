@@ -135,8 +135,8 @@ class AppendToBinaryOperator(Operator):
             type(self), self.bin_rel, self.first_pos, self.second_pos)
 
     def act(self, seq):
-        logging.info("appending machines {0} and {1} to binary {2}".format(
-            seq[self.first_pos], seq[self.second_pos], self.bin_rel))
+        #logging.info("appending machines {0} and {1} to binary {2}".format(
+        #    seq[self.first_pos], seq[self.second_pos], self.bin_rel))
         self.bin_rel.append(seq[self.first_pos], 1)
         self.bin_rel.append(seq[self.second_pos], 2)
         return [self.bin_rel]

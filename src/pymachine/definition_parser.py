@@ -540,7 +540,7 @@ def read(f, plur_filn, printname_index=0, add_indices=False,
                 continue
                 # logging.warning('duplicate pn: {0}, machines: {1}, {2}'.format(
                 #    pn, d[pn], "{0}:{1}".format(m, m.partitions)))
-            d[m.printname()].add(m)
+            d[pn].add(m)
             logging.debug('\n'+m.to_debug_str())
         except pyparsing.ParseException, pe:
             print l
