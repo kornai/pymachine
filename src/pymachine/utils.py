@@ -1,6 +1,7 @@
 import logging
 import os
 
+from fourlang.lexicon import Lexicon
 import networkx as nx
 from networkx.readwrite import json_graph
 
@@ -120,6 +121,44 @@ class MachineGraph:
     def __init__(self):
         self.G = nx.MultiDiGraph()
 
+    def do_closure(self):
+        g0 = nx.DiGraph()
+        curr_edges = [
+            (n1, n2, d['color']) for n1, n2, d in self.G.edges(data=True)]
+        for n1, n2, c in curr_edges:
+            if c == 0:
+                g0.add_edge(n1, n2, color=0)
+
+        g0_edges = g0.edges()
+        for n1 in g0.nodes():
+            for n2 in g0.nodes():
+                if n1 == n2:
+                    continue
+                if nx.has_path(g0, n1, n2):
+                    # print 'adding edge:', n1, n2
+                    if (n1, n2) not in g0_edges:
+                        g0.add_edge(n1, n2)
+                    if (n1, n2, 0) not in curr_edges:
+                        self.G.add_edge(n1, n2, color=0)
+
+        curr_edges = [
+            (n1, n2, d['color']) for n1, n2, d in self.G.edges(data=True)]
+
+        for n1, n2, c in curr_edges:
+            if c != 0:
+                if n1 in g0:
+                    for n3 in g0.neighbors(n1):
+                        if n3 == n2:
+                            continue
+                        if (n3, n2, c) not in curr_edges:
+                            self.G.add_edge(n3, n2, color=c)
+                if n2 in g0:
+                    for n3 in g0.neighbors(n2):
+                        if n3 == n1:
+                            continue
+                        if (n1, n3, c) not in curr_edges:
+                            self.G.add_edge(n1, n3, color=c)
+
     def add_edge(self, node1, name1, node2, name2, color,
                  machinegraph_options):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
@@ -178,12 +217,14 @@ class MachineGraph:
     def from_dict(d):
         return json_graph.adjacency.adjacency_graph(d)
 
-    def to_dot(self):
+    def to_dot(self, graph=None):
+        if graph is None:
+            graph = self.G
         lines = [u'digraph finite_state_machine {', '\tdpi=100;']
         # lines.append('\tordering=out;')
         # sorting everything to make the process deterministic
         node_lines = []
-        for node, n_data in self.G.nodes(data=True):
+        for node, n_data in graph.nodes(data=True):
             d_node = Machine.d_clean(node)
             printname = Machine.d_clean('_'.join(d_node.split('_')[:-1]))
             if 'expanded' in n_data and not n_data['expanded']:
@@ -197,7 +238,7 @@ class MachineGraph:
         lines += sorted(node_lines)
 
         edge_lines = []
-        for u, v, edata in self.G.edges(data=True):
+        for u, v, edata in graph.edges(data=True):
             if 'color' in edata:
                 d_node1 = Machine.d_clean(u)
                 d_node2 = Machine.d_clean(v)
@@ -302,3 +343,25 @@ def jaccard(seq1, seq2, log=False):
             logging.info(u'shared: {0}'.format(intersection))
             logging.info('sim: {0}'.format(sim))
         return sim
+
+def test_closure():
+    import os
+    fourlangpath = os.environ['FOURLANGPATH']
+    lex_fn = os.path.join(fourlangpath, 'data/machines/4lang_test.pickle')
+    lexicon = Lexicon.load_from_binary(lex_fn)
+    lemma = 'bird'
+    machine = lexicon.get_machine(lemma)
+    # lexicon.expand({lemma: machine})
+    g = MachineGraph.create_from_machines([machine])
+    with open('{0}.dot'.format(lemma), 'w') as f:
+        f.write(g.to_dot())
+    g.do_closure()
+    with open('{0}_closed.dot'.format(lemma), 'w') as f:
+        f.write(g.to_dot())
+
+def main():
+    test_closure()
+
+
+if __name__ == "__main__":
+    main()
