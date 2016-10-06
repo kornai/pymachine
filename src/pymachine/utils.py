@@ -1,7 +1,6 @@
 import logging
 import os
 
-from fourlang.lexicon import Lexicon
 import networkx as nx
 from networkx.readwrite import json_graph
 
@@ -346,6 +345,7 @@ def jaccard(seq1, seq2, log=False):
 
 def test_closure():
     import os
+    from fourlang.lexicon import Lexicon
     fourlangpath = os.environ['FOURLANGPATH']
     lex_fn = os.path.join(fourlangpath, 'data/machines/4lang_test.pickle')
     lexicon = Lexicon.load_from_binary(lex_fn)
