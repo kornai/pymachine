@@ -49,18 +49,20 @@ class MachineTraverser():
 class MachineGraph:
     @staticmethod
     def create_from_machines(iterable, max_depth=None, whitelist=None,
-                             strict=False, machinegraph_options = None):
+                             strict=False, machinegraph_options=None):
         g = MachineGraph()
         g.seen = set()
         # logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
-            g._get_edges_recursively(machine, max_depth, whitelist,
-                                     strict=strict, machinegraph_options=machinegraph_options)
+            g._get_edges_recursively(
+                machine, max_depth, whitelist, strict=strict,
+                machinegraph_options=machinegraph_options)
 
         return g
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
-                               strict=False, depth=0, machinegraph_options=None):
+                               strict=False, depth=0,
+                               machinegraph_options=None):
         #  if pn.isupper():
         #      if depth >= 2:
         #          return
@@ -97,22 +99,29 @@ class MachineGraph:
             if (whitelist is not None and printname1 not in whitelist and
                     printname2 not in whitelist):
                 continue
-            elif (not machinegraph_options == None) and machinegraph_options.upper_excl == True and (printname1.isupper() or printname2.isupper()):
+            elif ((machinegraph_options is not None) and
+                  machinegraph_options.upper_excl and
+                  (printname1.isupper() or printname2.isupper())):
                 continue
             elif whitelist is None or (printname1 in whitelist and
                                        printname2 in whitelist):
                 self.add_edge(
-                    machine1.unique_name(), machine1.printname().encode('utf-8'),
-                    machine2.unique_name(), machine2.printname().encode('utf-8'), color, machinegraph_options)
+                    machine1.unique_name(),
+                    machine1.printname().encode('utf-8'),
+                    machine2.unique_name(),
+                    machine2.printname().encode('utf-8'), color,
+                    machinegraph_options)
 
         for neighbour in neighbours:
             self._get_edges_recursively(
-                neighbour, max_depth, whitelist, depth=depth+1, machinegraph_options=machinegraph_options)
+                neighbour, max_depth, whitelist, depth=depth+1,
+                machinegraph_options=machinegraph_options)
 
     def __init__(self):
         self.G = nx.MultiDiGraph()
 
-    def add_edge(self, node1, name1, node2, name2, color, machinegraph_options):
+    def add_edge(self, node1, name1, node2, name2, color,
+                 machinegraph_options):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
         nn_option = 0
         if machinegraph_options is not None:
@@ -127,32 +136,36 @@ class MachineGraph:
             # name1 = name1.encode('utf-8')
             # name2 = name2.encode('utf-8')
             nodes_names = list()
-            for (node, name) in [(node1,name1), (node2,name2)]:
+            for (node, name) in [(node1, name1), (node2, name2)]:
                 if nn_option == 1:
                     nodes_names.append(name)
                 elif nn_option == 2:
                     # TODO: hack: have should be isupper HAS
-                    if node.isupper() or name in ['lack', 'before', 'not', 'have']:
+                    if node.isupper() or name in [
+                            'lack', 'before', 'not', 'have']:
                         nodes_names.append(node)
                     else:
                         nodes_names.append(name)
 
             weight = 1
             alfa = 2
-            if machinegraph_options.weighted == True:
-                if machinegraph_options.embedding_model == None:
-                    logging.error('fullgraph.weighted is set to true, but no embedding model is given')
+            if machinegraph_options.weighted:
+                if machinegraph_options.embedding_model is None:
+                    logging.error('fullgraph.weighted is set to true, \
+                        but no embedding model is given')
                 else:
-                    if machinegraph_options.color_based == True:
+                    if machinegraph_options.color_based:
                         if not color == 0:
                             weight = alfa
                     else:
-                        weight = machinegraph_options.embedding_model.get_sim(nodes_names[0], nodes_names[1])
-                        if weight == None:
+                        weight = machinegraph_options.embedding_model.get_sim(
+                            nodes_names[0], nodes_names[1])
+                        if weight is None:
                             weight = 2
                         else:
                             weight = 1 - weight
-            self.G.add_edge(nodes_names[0], nodes_names[1], color=color, weight=weight)
+            self.G.add_edge(
+                nodes_names[0], nodes_names[1], color=color, weight=weight)
 
     def to_dict(self):
         return json_graph.adjacency.adjacency_data(self.G)
@@ -174,7 +187,8 @@ class MachineGraph:
             d_node = Machine.d_clean(node)
             printname = Machine.d_clean('_'.join(d_node.split('_')[:-1]))
             if 'expanded' in n_data and not n_data['expanded']:
-                node_line = u'\t{0} [shape = circle, label = "{1}", style="filled"];'.format(  # nopep8
+                node_line = u'\t{0} [shape = circle, label = "{1}", \
+                    style="filled"];'.format(
                     d_node, printname).replace('-', '_')
             else:
                 node_line = u'\t{0} [shape = circle, label = "{1}"];'.format(
@@ -183,13 +197,14 @@ class MachineGraph:
         lines += sorted(node_lines)
 
         edge_lines = []
-        for u,v,edata in self.G.edges(data=True):
+        for u, v, edata in self.G.edges(data=True):
             if 'color' in edata:
                 d_node1 = Machine.d_clean(u)
                 d_node2 = Machine.d_clean(v)
                 edge_lines.append(
                     u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                        Machine.d_clean(d_node1), Machine.d_clean(d_node2),edata['color']))
+                        Machine.d_clean(d_node1), Machine.d_clean(d_node2),
+                        edata['color']))
 
         lines += sorted(edge_lines)
         lines.append('}')
@@ -204,20 +219,20 @@ class MachineGraph:
             if "_" in d_node_id:
                 d_node = d_node_id.split('_')[-2]
             else:
-                d_node= d_node_id
+                d_node = d_node_id
             node_lines.append(u'\t{0} [shape = circle, label = "{1}"];'.format(
                 d_node_id, d_node).replace('-', '_'))
         lines += sorted(node_lines)
 
         edge_lines = []
-        for u,v, edata in self.G.edges(data=True):
+        for u, v, edata in self.G.edges(data=True):
             d_u = Machine.d_clean(u)
             d_v = Machine.d_clean(v)
             d_u = d_u.replace('=', '_')
             d_v = d_v.replace('=', '_')
             edge_lines.append(
                 u'\t{0} -> {1} [ label = "{2}" ];'.format(
-                    d_u, d_v,edata['color']))
+                    d_u, d_v, edata['color']))
 
         lines += sorted(edge_lines)
         lines.append('}')
