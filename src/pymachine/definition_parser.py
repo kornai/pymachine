@@ -498,6 +498,7 @@ class DefinitionParser(object):
 
 def read_defs(f, language_index=0, add_indices=False, loop_to_defendum=True):
     def_parser = DefinitionParser()
+    d = defaultdict(set)
     for line in f:
         fields = line.strip('\n').split('\t')
         if len(fields) != 9:
@@ -523,7 +524,7 @@ def read_defs(f, language_index=0, add_indices=False, loop_to_defendum=True):
                 #    pn, d[pn], "{0}:{1}".format(m, m.partitions)))
             d[pn].add(m)
             logging.debug('\n'+m.to_debug_str())
-            yield m
+            yield pn, d[pn]
         except pyparsing.ParseException, pe:
             logging.error('Cannot parse {}/{}: {}\n{}'.format(printname, id_,
                                                               def_, pe))
