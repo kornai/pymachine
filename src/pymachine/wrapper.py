@@ -9,11 +9,10 @@ import sys
 from pymachine.construction import VerbConstruction
 from pymachine.sentence_parser import SentenceParser
 from pymachine.lexicon import Lexicon
-from pymachine.operators import AppendToBinaryFromLexiconOperator  # nopep8
 from pymachine.utils import ensure_dir, MachineGraph, MachineTraverser
 from pymachine.machine import Machine
 from pymachine.spreading_activation import SpreadingActivation
-from pymachine.definition_parser import read as read_defs
+from pymachine.definition_parser import read_defs
 from pymachine.sup_dic import supplementary_dictionary_reader as sdreader
 from pymachine import np_grammar
 
@@ -80,7 +79,7 @@ class Wrapper:
             else:
                 logging.info('parsing 4lang definitions...')
                 definitions = read_defs(
-                    file(file_name), self.plural_fn, printname_index,
+                    file(file_name), printname_index=printname_index,
                     three_parts=True)
 
                 logging.info('dumping 4lang definitions to file...')

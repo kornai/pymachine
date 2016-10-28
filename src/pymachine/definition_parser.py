@@ -1,12 +1,23 @@
+import argparse
+from collections import defaultdict
 import logging
-import sys
 import re
 import string
-from collections import defaultdict
+import sys
 
 try:
     import pyparsing
-    from pyparsing import Literal, Word, Group, Combine, Optional, Forward, alphanums, SkipTo, LineEnd, nums, delimitedList  # nopep8
+    from pyparsing import Literal
+    from pyparsing import Word
+    from pyparsing import Group
+    from pyparsing import Combine
+    from pyparsing import Optional
+    from pyparsing import Forward
+    from pyparsing import alphanums
+    from pyparsing import SkipTo
+    from pyparsing import LineEnd
+    from pyparsing import nums
+    from pyparsing import delimitedList 
 except ImportError:
     logging.critical("PyParsing has to be installed on the computer")
     sys.exit(-1)
@@ -38,8 +49,7 @@ class DefinitionParser(object):
     unary_p = re.compile("^[a-z_#\-/0-9]+(/[0-9]+)?$")
     binary_p = re.compile("^[A-Z_0-9]+(/[0-9]+)?$")
 
-    def __init__(self, plur_dict):
-        self.plur_dict = plur_dict
+    def __init__(self):
         self.init_parser()
 
     @classmethod
@@ -183,17 +193,9 @@ class DefinitionParser(object):
             name = "".join(name)
 
         # HACK until we find a good solution for defaults
-        name = name.strip('<>')
+        name = name.strip('<>') 
 
-        is_plur = name in self.plur_dict
-        if is_plur:
-            name = self.plur_dict[name]
-
-        m = Machine(decode_from_proszeky(name),
-                    ConceptControl(), partitions)
-        if is_plur:
-            m.append(self.create_machine('more', 1), 0)
-
+        m = Machine(decode_from_proszeky(name), ConceptControl(), partitions) 
         return m
 
     def unify(self, machine):
@@ -280,8 +282,7 @@ class DefinitionParser(object):
                 unified = __get_unified(machines_to_unify)
             __replace(machine, unified, is_other)
 
-    def __parse_expr(self, expr, root, loop_to_defendum=True,
-                     three_parts=False):
+    def __parse_expr(self, expr, root, loop_to_defendum=True):
         """
         creates machines from a parse node and its children
         there should be one handler for every rule
@@ -296,9 +297,9 @@ class DefinitionParser(object):
         is_unary = cls._is_unary
         is_tree = lambda r: type(r) == list
 
-        left_part = 0 + int(three_parts)
-        right_part = 1 + int(three_parts)
-        most_part = 2 + int(three_parts)
+        most_part = 0
+        left_part = 1
+        right_part = 2
 
         if (len(expr) == 1):
             # UE -> U
@@ -309,8 +310,7 @@ class DefinitionParser(object):
             # E -> UE | BE, A -> UE
             if (is_tree(expr[0])):
                 logging.debug("Parsing {0} as a tree.".format(expr[0]))
-                return self.__parse_expr(expr[0], root, loop_to_defendum,
-                                         three_parts)
+                return self.__parse_expr(expr[0], root, loop_to_defendum)
 
         if (len(expr) == 2):
             # BE -> A B
@@ -319,8 +319,7 @@ class DefinitionParser(object):
                 m = self.create_machine(expr[1], most_part)
                 if expr[0] != ["'"]:
                     m.append_all(
-                        self.__parse_expr(expr[0], root, loop_to_defendum,
-                                          three_parts),
+                        self.__parse_expr(expr[0], root, loop_to_defendum),
                         left_part)
                 if loop_to_defendum:
                     m.append(root, right_part)
@@ -332,8 +331,7 @@ class DefinitionParser(object):
                 m = self.create_machine(expr[0], most_part)
                 if expr[1] != ["'"]:
                     m.append_all(
-                        self.__parse_expr(expr[1], root, loop_to_defendum,
-                                          three_parts),
+                        self.__parse_expr(expr[1], root, loop_to_defendum),
                         right_part)
                 if loop_to_defendum:
                     m.append(root, left_part)
@@ -383,13 +381,11 @@ class DefinitionParser(object):
                 if expr[0] != [DefinitionParser.prime]:
                     logging.debug(expr[0])
                     m.append_all(
-                        self.__parse_expr(expr[0], root, loop_to_defendum,
-                                          three_parts),
+                        self.__parse_expr(expr[0], root, loop_to_defendum),
                         left_part)
                 if expr[2] != [DefinitionParser.prime]:
                     m.append_all(
-                        self.__parse_expr(expr[2], root, loop_to_defendum,
-                                          three_parts),
+                        self.__parse_expr(expr[2], root, loop_to_defendum),
                         right_part)
                 return [m]
 
@@ -400,15 +396,13 @@ class DefinitionParser(object):
                 logging.debug(
                     "Parsing expr {0} as an embedded definition".format(expr))
                 res = list(
-                    self.__parse_definition(expr[1], root, loop_to_defendum,
-                                            three_parts))
+                    self.__parse_definition(expr[1], root, loop_to_defendum))
                 return res
 
             # E -> < E >, U -> < U >
             if expr[0] == '<' and expr[2] == '>':
                 logging.debug('E -> < E >' + str(expr[1]))
-                return list(self.__parse_expr(expr[1], root, loop_to_defendum,
-                                              three_parts))
+                return list(self.__parse_expr(expr[1], root, loop_to_defendum))
 
         if (len(expr) == 4):
             # UE -> U ( U )
@@ -420,12 +414,7 @@ class DefinitionParser(object):
                 if is_unary(expr[2]):
                     m = self.create_machine(expr[2], 1)
                 else:
-                    m = self.__parse_expr(expr[2], root, loop_to_defendum,
-                                          three_parts)[0]
-                    if not three_parts:
-                        logging.warning(
-                            "for 0th partition of binary machines, " +
-                            "set three_parts=True, "+str(expr))
+                    m = self.__parse_expr(expr[2], root, loop_to_defendum)[0]
                 m.append(self.create_machine(expr[0], 1), 0)
                 return [m]
 
@@ -436,8 +425,7 @@ class DefinitionParser(object):
                     expr[3] == "]"):
                 m = self.create_machine(expr[0], 1)
                 for parsed_expr in self.__parse_definition(expr[2], root,
-                                                           loop_to_defendum,
-                                                           three_parts):
+                                                           loop_to_defendum):
                     m.append(parsed_expr, 0)
                 return [m]
 
@@ -446,8 +434,7 @@ class DefinitionParser(object):
             #        expr[1] == "(" and
             #        is_tree(expr[2]) and
             #        expr[3] == ")"):
-            #    ms = self.__parse_expr(expr[2], root, loop_to_defendum,
-            #                           three_parts)
+            #    ms = self.__parse_expr(expr[2], root, loop_to_defendum)
             #    # if BE was an expression with an apostrophe, then
             #    # return of __parse_expr() is None
             #    if len(ms) != 0:
@@ -470,12 +457,10 @@ class DefinitionParser(object):
                     expr[5] == "]"):
                 m = self.create_machine(expr[0], 2)
                 m.append_all(
-                    self.__parse_expr(expr[2], m, root, loop_to_defendum,
-                                      three_parts),
+                    self.__parse_expr(expr[2], m, root, loop_to_defendum),
                     0)
                 m.append_all(
-                    self.__parse_expr(expr[4], m, root, loop_to_defendum,
-                                      three_parts),
+                    self.__parse_expr(expr[4], m, root, loop_to_defendum),
                     1)
                 return [m]
 
@@ -487,51 +472,47 @@ class DefinitionParser(object):
         logging.debug(expr)
         raise pe
 
-    def __parse_definition(self, definition, root, loop_to_defendum=True,
-                           three_parts=False):
+    def __parse_definition(self, definition, root, loop_to_defendum=True):
         logging.debug(str(definition))
         for d in definition:
-            yield self.__parse_expr(d, root, loop_to_defendum, three_parts)[0]
+            yield self.__parse_expr(d, root, loop_to_defendum)[0]
 
-    def parse_into_machines(self, string, printname_index=0, add_indices=False,
-                            loop_to_defendum=True, three_parts=False):
-        printname = string.split('\t')[printname_index]
-        try:
-            id_, urob, pos, def_, comment = string.split('\t')[4:]
-        except:
-            raise Exception(string.split('\t'))
+    def parse_into_machines(self, printname, id_, def_, add_indices=False,
+                            loop_to_defendum=True):
 
         machine = self.create_machine(printname.lower(), 1)
-        #TODO =AGT -> partition 1, =PAT -> partition 2, =TO -> ?
 
         if add_indices:
             machine.printname_ = machine.printname() + id_sep + id_
 
-        if def_ != '':
-            logging.debug(def_)
-            parsed = self.parse(def_)
-            logging.debug(parsed)
-            for parsed_expr in self.__parse_definition(
-                    parsed[0], machine, loop_to_defendum, three_parts):
-                machine.append(parsed_expr, 0)
+        #if def_ != '':
+        logging.debug(def_)
+        parsed = self.parse(def_)
+        logging.debug(parsed)
+        for parsed_expr in self.__parse_definition(
+                parsed[0], machine, loop_to_defendum):
+            machine.append(parsed_expr, 0)
 
         self.unify(machine)
         return machine
 
-def read(f, plur_filn, printname_index=0, add_indices=False,
-         loop_to_defendum=True, three_parts=False):
-    logging.warning(
-        "Will now discard all but the first definition of each \
-        headword!".upper())
-    d = defaultdict(set)
-    plur_dict = read_plur(open(plur_filn)) if plur_filn else {}
-    dp = DefinitionParser(plur_dict)
+def read_defs(f, language_index=0, add_indices=False, loop_to_defendum=True):
+    def_parser = DefinitionParser()
     for line in f:
-        l = line.strip('\n')
-        logging.debug("Parsing: {0}".format(l))
+        fields = line.strip('\n').split('\t')
+        if len(fields) != 9:
+            logging.warning(
+                "Wrong number of fields ({}) in {}".format(len(fields), fields))
+            continue
+        forms_in_langs = fields[:4] 
+        id_, dv, pos, def_, comment = fields[4:]
+        if not def_:
+            continue
+        logging.debug("Parsing: {0}".format(line))
+        printname = forms_in_langs[language_index]
         try:
-            m = dp.parse_into_machines(l, printname_index, add_indices,
-                                       loop_to_defendum, three_parts)
+            m = def_parser.parse_into_machines(printname, id_, def_,
+                                               add_indices, loop_to_defendum)
             if m.partitions[0] == []:
                 logging.debug('dropping empty definition of '+m.printname())
                 continue
@@ -542,29 +523,34 @@ def read(f, plur_filn, printname_index=0, add_indices=False,
                 #    pn, d[pn], "{0}:{1}".format(m, m.partitions)))
             d[pn].add(m)
             logging.debug('\n'+m.to_debug_str())
+            yield m
         except pyparsing.ParseException, pe:
-            print l
-            logging.error("Error: "+str(pe))
-    return d
+            logging.error('Cannot parse {}/{}: {}\n{}'.format(printname, id_,
+                                                              def_, pe))
 
-def read_plur(_file):
-    plur_dict = {}
-    for line in _file:
-        plur, sg = line.split()
-        plur_dict[plur] = sg
-    return plur_dict
+
+def parse_args(): 
+    parser = argparse.ArgumentParser(
+        description='Parse manually written 4lang definitions')
+    parser.add_argument('formula_or_lexicon')
+    parser.add_argument('-s', '--singe_formula', action='store_true',
+                        help='default: the input is the lexicon file')
+    parser.add_argument('-d', '--debug_machine', action='store_true')
+    return parser.parse_args()
+
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING,
-                        format="%(asctime)s : %(module)s (%(lineno)s) " +
-                        "- %(levelname)s - %(message)s")
-    plur_dict = read_plur(open('/home/recski/projects/4lang/4lang.plural'))
-    dp = DefinitionParser(plur_dict)
-    pstr = sys.argv[-1]
-    if sys.argv[1] == "-d":
-        print Machine.to_debug_str(dp.parse_into_machines(pstr), max_depth=99)
-    elif sys.argv[1] == "-f":
-        lexicon = read(file(sys.argv[2]), '../../res/4lang/4lang.plural',
-                       three_parts=True)
+    format_ = "%(asctime)s: %(module)s (%(lineno)s) %(levelname)s %(message)s"
+    logging.basicConfig(level=logging.INFO, format=format_)
+    args = parse_args()
+    if args.singe_formula:
+        def_parser = DefinitionParser()
+        machine_iterable = [
+            def_parser.parse_into_machines('NO PRINTNAME', 'NO ID', args.formula_or_lexicon)]
     else:
-        print dp.parse(pstr)
+        machine_iterable = read_defs(file(args.formula_or_lexicon))
+    # in some third case: print def_parser.parse(args.formula_or_lexicon)
+    for machine in machine_iterable:
+        debug_str = Machine.to_debug_str(machine)
+        if args.debug_machine:
+            print debug_str
