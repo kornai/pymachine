@@ -555,16 +555,16 @@ def read_plur(_file):
     return plur_dict
 
 if __name__ == "__main__":
+    plural_f = '../../4lang/4lang.plural'
     logging.basicConfig(level=logging.WARNING,
                         format="%(asctime)s : %(module)s (%(lineno)s) " +
                         "- %(levelname)s - %(message)s")
-    plur_dict = read_plur(open('/home/recski/projects/4lang/4lang.plural'))
+    plur_dict = read_plur(open(plural_f))
     dp = DefinitionParser(plur_dict)
     pstr = sys.argv[-1]
     if sys.argv[1] == "-d":
         print Machine.to_debug_str(dp.parse_into_machines(pstr), max_depth=99)
     elif sys.argv[1] == "-f":
-        lexicon = read(file(sys.argv[2]), '../../res/4lang/4lang.plural',
-                       three_parts=True)
+        lexicon = read(file(sys.argv[2]), plural_f, three_parts=True)
     else:
         print dp.parse(pstr)
