@@ -6,9 +6,11 @@ from networkx.readwrite import json_graph
 
 from pymachine.machine import Machine
 
+
 def ensure_dir(path):
     if not os.path.exists(path):
         os.mkdir(path)
+
 
 class MachineTraverser():
     @staticmethod
@@ -46,23 +48,26 @@ class MachineTraverser():
                     parent, depth+1, exclude_words, names_only, keep_upper):
                 yield node
 
+
 class MachineGraph:
     @staticmethod
     def create_from_machines(iterable, max_depth=None, whitelist=None,
-                             strict=False, machinegraph_options=None):
+                             strict=False, machinegraph_options=None,
+                             orig_machines=[]):
         g = MachineGraph()
         g.seen = set()
         # logging.debug('whitelist: {}'.format(whitelist))
         for machine in iterable:
             g._get_edges_recursively(
                 machine, max_depth, whitelist, strict=strict,
-                machinegraph_options=machinegraph_options)
+                machinegraph_options=machinegraph_options,
+                orig_machines=orig_machines)
 
         return g
 
     def _get_edges_recursively(self, machine, max_depth, whitelist,
                                strict=False, depth=0,
-                               machinegraph_options=None):
+                               machinegraph_options=None, orig_machines=[]):
         #  if pn.isupper():
         #      if depth >= 2:
         #          return
@@ -106,16 +111,14 @@ class MachineGraph:
             elif whitelist is None or (printname1 in whitelist and
                                        printname2 in whitelist):
                 self.add_edge(
-                    machine1.unique_name(),
-                    machine1.printname().encode('utf-8'),
-                    machine2.unique_name(),
-                    machine2.printname().encode('utf-8'), color,
-                    machinegraph_options)
+                    machine1, machine2, color, machinegraph_options,
+                    orig_machines=orig_machines)
 
         for neighbour in neighbours:
             self._get_edges_recursively(
                 neighbour, max_depth, whitelist, depth=depth+1,
-                machinegraph_options=machinegraph_options)
+                machinegraph_options=machinegraph_options,
+                orig_machines=orig_machines)
 
     def __init__(self):
         self.G = nx.MultiDiGraph()
@@ -158,15 +161,26 @@ class MachineGraph:
                         if (n1, n3, c) not in curr_edges:
                             self.G.add_edge(n1, n3, color=c)
 
-    def add_edge(self, node1, name1, node2, name2, color,
-                 machinegraph_options):
+    def add_edge(self, machine1, machine2, color,
+                 machinegraph_options, orig_machines=[]):
         # logging.debug(u'adding edge: {} -> {}'.format(node1, node2))
+        node1 = machine1.unique_name()
+        name1 = machine1.printname().encode('utf-8')
+        node2 = machine2.unique_name()
+        name2 = machine2.printname().encode('utf-8')
         nn_option = 0
         if machinegraph_options is not None:
             nn_option = machinegraph_options.nodename_option
         if nn_option == 0:
-            self.G.add_node(node1, str_name=name1)
-            self.G.add_node(node2, str_name=name2)
+            expanded1 = machine1 not in orig_machines
+            expanded2 = machine2 not in orig_machines
+            # logging.info(
+            #         'adding edge: \
+            #         node1: {0}, str_name: {1}, expanded: {2} \
+            #         node2: {0}, str_name: {1}, expanded: {2}'.format(
+            #             node1, name1, expanded1, node2, name2, expanded2))
+            self.G.add_node(node1, str_name=name1, expanded=expanded1)
+            self.G.add_node(node2, str_name=name2, expanded=expanded2)
             self.G.add_edge(node1, node2, color=color)
         elif nn_option == 1 or nn_option == 2:
             node1 = node1.encode('utf-8')
@@ -278,6 +292,7 @@ class MachineGraph:
         lines.append('}')
         return u'\n'.join(lines)
 
+
 def harmonic_mean(seq):
     try:
         length = float(len(seq))
@@ -309,11 +324,13 @@ def average(seq):
     return total / length
     # return sum(seq) / float(len(seq))
 
+
 def my_max(seq, default=0.0):
     try:
         return max(seq)
     except ValueError:
         return default
+
 
 def min_jaccard(seq1, seq2, log=False):
     set1, set2 = map(set, (seq1, seq2))
@@ -329,6 +346,7 @@ def min_jaccard(seq1, seq2, log=False):
             logging.info('sim: {0}'.format(sim))
         return sim
 
+
 def jaccard(seq1, seq2, log=False):
     set1, set2 = map(set, (seq1, seq2))
     union = set1 | set2
@@ -342,6 +360,7 @@ def jaccard(seq1, seq2, log=False):
             logging.info(u'shared: {0}'.format(intersection))
             logging.info('sim: {0}'.format(sim))
         return sim
+
 
 def test_closure():
     import os
@@ -358,6 +377,7 @@ def test_closure():
     g.do_closure()
     with open('{0}_closed.dot'.format(lemma), 'w') as f:
         f.write(g.to_dot())
+
 
 def main():
     test_closure()
